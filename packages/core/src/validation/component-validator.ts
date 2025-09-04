@@ -1,52 +1,122 @@
-import { z } from "zod";
-import { ComponentSchemas } from "../types/component-schemas";
+import { z } from 'zod';
+import { BasePropsSchema } from './base-schemas';
+import { 
+  ButtonPropsSchema,
+  TextInputPropsSchema,
+  SelectPropsSchema,
+  CheckboxPropsSchema,
+  RadioGroupPropsSchema,
+  ProgressBarPropsSchema,
+  SpinnerPropsSchema,
+  CardPropsSchema,
+  ModalPropsSchema,
+  TabsPropsSchema,
+  TablePropsSchema,
+  ToastPropsSchema,
+  BadgePropsSchema,
+  AvatarPropsSchema,
+} from './component-schemas';
 
-// Component validation result type
-export type ValidationResult = {
+// Component validation registry
+const componentSchemas = {
+  Button: ButtonPropsSchema,
+  TextInput: TextInputPropsSchema,
+  Select: SelectPropsSchema,
+  Checkbox: CheckboxPropsSchema,
+  RadioGroup: RadioGroupPropsSchema,
+  ProgressBar: ProgressBarPropsSchema,
+  Spinner: SpinnerPropsSchema,
+  Card: CardPropsSchema,
+  Modal: ModalPropsSchema,
+  Tabs: TabsPropsSchema,
+  Table: TablePropsSchema,
+  Toast: ToastPropsSchema,
+  Badge: BadgePropsSchema,
+  Avatar: AvatarPropsSchema,
+} as const;
+
+// Validation result type
+export interface ValidationResult {
   success: boolean;
-  errors: z.ZodError | null;
-  warnings: string[];
-  data: any;
-};
+  data?: any;
+  errors?: z.ZodError;
+  warnings?: string[];
+}
 
 // Component validator class
 export class ComponentValidator {
   private static instance: ComponentValidator;
-  private schemas = ComponentSchemas;
+  private validationCache = new Map<string, any>();
 
-  private constructor() {}
-
-  // Singleton pattern
-  public static getInstance(): ComponentValidator {
+  static getInstance(): ComponentValidator {
     if (!ComponentValidator.instance) {
       ComponentValidator.instance = new ComponentValidator();
     }
     return ComponentValidator.instance;
   }
 
-  // Validate component props using the appropriate schema
-  public validateComponent<T extends keyof typeof ComponentSchemas>(
+  /**
+   * Validate component props using Zod schema
+   */
+  validateComponent<T extends keyof typeof componentSchemas>(
     componentName: T,
     props: any
   ): ValidationResult {
     try {
-      const schema = this.schemas[componentName];
+      const schema = componentSchemas[componentName];
       if (!schema) {
         return {
           success: false,
-          errors: null,
-          warnings: [`Unknown component: ${componentName}`],
-          data: props,
+          errors: new z.ZodError([
+            {
+              code: 'invalid_component',
+              message: `Unknown component: ${componentName}`,
+              path: [],
+            },
+          ]),
         };
       }
 
       // Validate props
       const validatedData = schema.parse(props);
+      
+      // Check for warnings
+      const warnings = this.checkWarnings(componentName, props);
 
       return {
         success: true,
-        errors: null,
-        warnings: [],
+        data: validatedData,
+        warnings,
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          errors: error,
+        };
+      }
+      
+      return {
+        success: false,
+        errors: new z.ZodError([
+          {
+            code: 'validation_error',
+            message: error instanceof Error ? error.message : 'Unknown validation error',
+            path: [],
+          },
+        ]),
+      };
+    }
+  }
+
+  /**
+   * Validate base props for any component
+   */
+  validateBaseProps(props: any): ValidationResult {
+    try {
+      const validatedData = BasePropsSchema.parse(props);
+      return {
+        success: true,
         data: validatedData,
       };
     } catch (error) {
@@ -54,195 +124,146 @@ export class ComponentValidator {
         return {
           success: false,
           errors: error,
-          warnings: [],
-          data: props,
         };
       }
-
+      
       return {
         success: false,
-        errors: null,
-        warnings: [`Validation error: ${error}`],
-        data: props,
+        errors: new z.ZodError([
+          {
+            code: 'validation_error',
+            message: error instanceof Error ? error.message : 'Unknown validation error',
+            path: [],
+          },
+        ]),
       };
     }
   }
 
-  // Validate component props with warnings for unknown properties
-  public validateComponentStrict<T extends keyof typeof ComponentSchemas>(
+  /**
+   * Validate component props with warnings
+   */
+  validateWithWarnings<T extends keyof typeof componentSchemas>(
     componentName: T,
     props: any
   ): ValidationResult {
     const result = this.validateComponent(componentName, props);
-
+    
     if (result.success) {
-      const warnings = this.checkUnknownProperties(componentName, props);
-      return {
-        ...result,
-        warnings: [...result.warnings, ...warnings],
-      };
+      const warnings = this.checkWarnings(componentName, props);
+      if (warnings.length > 0) {
+        result.warnings = warnings;
+      }
     }
-
+    
     return result;
   }
 
-  // Check for unknown properties that might indicate typos or deprecated props
-  private checkUnknownProperties(
-    componentName: keyof typeof ComponentSchemas,
-    props: any
-  ): string[] {
+  /**
+   * Check for potential warnings in component props
+   */
+  private checkWarnings(componentName: string, props: any): string[] {
     const warnings: string[] = [];
-    const schema = this.schemas[componentName];
 
-    if (!schema) return warnings;
+    // Check for deprecated props
+    if (props.deprecated) {
+      warnings.push(`Prop 'deprecated' is deprecated and will be removed in future versions`);
+    }
 
-    // Get all valid property names from the schema
-    const validProps = this.getSchemaProperties(schema);
+    // Check for conflicting props
+    if (props.variant === 'outline' && props.bg) {
+      warnings.push(`Variant 'outline' with background color may cause visual conflicts`);
+    }
 
-    // Check for unknown properties
-    Object.keys(props).forEach((prop) => {
-      if (!validProps.includes(prop)) {
-        warnings.push(
-          `Unknown property '${prop}' for component '${componentName}'`
-        );
-      }
-    });
+    // Check for performance issues
+    if (props.animation && props.animation.includes('complex')) {
+      warnings.push(`Complex animations may impact performance on slower terminals`);
+    }
+
+    // Component-specific warnings
+    switch (componentName) {
+      case 'Button':
+        if (props.loading && props.onClick) {
+          warnings.push(`Button is loading but has onClick handler - consider disabling during load`);
+        }
+        break;
+      
+      case 'TextInput':
+        if (props.maxLength && props.maxLength < 1) {
+          warnings.push(`maxLength should be greater than 0`);
+        }
+        break;
+      
+      case 'ProgressBar':
+        if (props.value > 100) {
+          warnings.push(`Progress value exceeds 100% - may cause display issues`);
+        }
+        break;
+      
+      case 'Table':
+        if (props.dataSource && props.dataSource.length > 1000) {
+          warnings.push(`Large datasets may impact performance - consider pagination`);
+        }
+        break;
+    }
 
     return warnings;
   }
 
-  // Extract property names from a Zod schema
-  private getSchemaProperties(schema: z.ZodSchema): string[] {
-    try {
-      const shape = (schema as any)._def?.shape;
-      if (shape) {
-        return Object.keys(shape);
-      }
-      return [];
-    } catch {
-      return [];
-    }
-  }
-
-  // Validate multiple components at once
-  public validateComponents(
-    components: Array<{ name: string; props: any }>
-  ): ValidationResult[] {
-    return components.map((component) =>
-      this.validateComponent(
-        component.name as keyof typeof ComponentSchemas,
-        component.props
-      )
-    );
-  }
-
-  // Get validation schema for a specific component
-  public getSchema<T extends keyof typeof ComponentSchemas>(
+  /**
+   * Get component schema for a specific component
+   */
+  getComponentSchema<T extends keyof typeof componentSchemas>(
     componentName: T
-  ): z.ZodSchema {
-    return this.schemas[componentName];
+  ): typeof componentSchemas[T] | null {
+    return componentSchemas[componentName] || null;
   }
 
-  // Check if a component has a specific property
-  public hasProperty<T extends keyof typeof ComponentSchemas>(
-    componentName: T,
-    propertyName: string
-  ): boolean {
-    const schema = this.schemas[componentName];
-    if (!schema) return false;
-
-    const properties = this.getSchemaProperties(schema);
-    return properties.includes(propertyName);
+  /**
+   * Get all available component names
+   */
+  getAvailableComponents(): string[] {
+    return Object.keys(componentSchemas);
   }
 
-  // Get all available component names
-  public getAvailableComponents(): string[] {
-    return Object.keys(this.schemas);
+  /**
+   * Check if a component exists
+   */
+  hasComponent(componentName: string): boolean {
+    return componentName in componentSchemas;
   }
 
-  // Validate component props and provide suggestions for common mistakes
-  public validateWithSuggestions<T extends keyof typeof ComponentSchemas>(
-    componentName: T,
-    props: any
-  ): ValidationResult & { suggestions: string[] } {
-    const result = this.validateComponent(componentName, props);
-    const suggestions: string[] = [];
-
-    if (!result.success && result.errors) {
-      // Provide helpful suggestions based on validation errors
-      result.errors.issues.forEach((issue) => {
-        switch (issue.code) {
-          case "invalid_type":
-            if (issue.received === "undefined") {
-              suggestions.push(
-                `Property '${issue.path.join(".")}' is required`
-              );
-            } else {
-              suggestions.push(
-                `Property '${issue.path.join(".")}' should be of type ${
-                  issue.expected
-                }`
-              );
-            }
-            break;
-          case "invalid_string":
-            if (issue.validation === "regex") {
-              suggestions.push(
-                `Property '${issue.path.join(".")}' has invalid format`
-              );
-            }
-            break;
-          case "too_small":
-            suggestions.push(
-              `Property '${issue.path.join(".")}' is too small (minimum: ${
-                issue.minimum
-              })`
-            );
-            break;
-          case "too_big":
-            suggestions.push(
-              `Property '${issue.path.join(".")}' is too big (maximum: ${
-                issue.maximum
-              })`
-            );
-            break;
-          case "invalid_enum_value":
-            suggestions.push(
-              `Property '${issue.path.join(
-                "."
-              )}' must be one of: ${issue.options.join(", ")}`
-            );
-            break;
-        }
-      });
-    }
-
-    return {
-      ...result,
-      suggestions,
-    };
+  /**
+   * Get component prop types as TypeScript types
+   */
+  getComponentPropTypes<T extends keyof typeof componentSchemas>(
+    componentName: T
+  ): z.infer<typeof componentSchemas[T]> | null {
+    const schema = this.getComponentSchema(componentName);
+    return schema ? schema.shape : null;
   }
 }
 
 // Export singleton instance
 export const componentValidator = ComponentValidator.getInstance();
 
-// Export convenience functions
-export const validateComponent = <T extends keyof typeof ComponentSchemas>(
+// Export validation function for easy use
+export function validateComponent<T extends keyof typeof componentSchemas>(
   componentName: T,
   props: any
-) => componentValidator.validateComponent(componentName, props);
+): ValidationResult {
+  return componentValidator.validateComponent(componentName, props);
+}
 
-export const validateComponentStrict = <
-  T extends keyof typeof ComponentSchemas
->(
-  componentName: T,
-  props: any
-) => componentValidator.validateComponentStrict(componentName, props);
+// Export base validation function
+export function validateBaseProps(props: any): ValidationResult {
+  return componentValidator.validateBaseProps(props);
+}
 
-export const validateWithSuggestions = <
-  T extends keyof typeof ComponentSchemas
->(
+// Export validation with warnings
+export function validateWithWarnings<T extends keyof typeof componentSchemas>(
   componentName: T,
   props: any
-) => componentValidator.validateWithSuggestions(componentName, props);
+): ValidationResult {
+  return componentValidator.validateWithWarnings(componentName, props);
+}
