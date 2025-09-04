@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDFTool Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .pdftool-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 PDFTool Component Example</h1>
+            <p>PDF processing, text extraction, search, and analysis</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Operations:</strong> Load, View pages, Extract text/tables/images, Search content</p>
+            <p><strong>Features:</strong> Document list, Page viewer, Search results, Metadata display</p>
+            <p><strong>Formats:</strong> PDF documents with text, images, tables, and forms</p>
+        </div>
+        
+        <div class="controls">
+            <select class="select" id="document-select">
+                <option value="">Select Document</option>
+                <option value="sample1">Sample Document 1</option>
+                <option value="sample2">Sample Document 2</option>
+                <option value="sample3">Sample Document 3</option>
+            </select>
+            
+            <button class="btn" id="load-document">Load Document</button>
+            <button class="btn" id="extract-text">Extract Text</button>
+            <button class="btn" id="extract-tables">Extract Tables</button>
+            <button class="btn" id="extract-images">Extract Images</button>
+            <button class="btn" id="search-content">Search Content</button>
+            <button class="btn" id="clear-document">Clear Document</button>
+        </div>
+        
+        <div class="pdftool-container" id="pdftool-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Document:</strong> Select a sample PDF document to load</p>
+            <p><strong>Load Document:</strong> Load the selected document into the viewer</p>
+            <p><strong>Extract Text:</strong> Extract and display all text content</p>
+            <p><strong>Extract Tables:</strong> Extract and display table data</p>
+            <p><strong>Extract Images:</strong> Extract and display image information</p>
+            <p><strong>Search Content:</strong> Search for specific text in the document</p>
+            <p><strong>Clear Document:</strong> Clear the current document and reset</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { PDFTool } from '@tui-kit-ai/ai';
+
+const pdfTool = new PDFTool({
+  showDocumentList: true,
+  showPageViewer: true,
+  showSearchResults: true,
+  onDocumentLoad: (doc) => console.log('Document loaded:', doc),
+  onTextExtract: (text) => console.log('Text extracted:', text),
+  onSearch: (results) => console.log('Search results:', results)
+});
+
+// Load PDF document
+pdfTool.loadDocument('path/to/document.pdf');
+
+// Extract content
+const text = pdfTool.extractText();
+const tables = pdfTool.extractTables();
+const images = pdfTool.extractImages();
+
+// Search content
+const results = pdfTool.search('search term');
+
+// Get document metadata
+const metadata = pdfTool.getMetadata();</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock PDFTool component for demonstration
+        class MockPDFTool {
+            constructor(options = {}) {
+                this.options = {
+                    showDocumentList: true,
+                    showPageViewer: true,
+                    showSearchResults: true,
+                    onDocumentLoad: () => {},
+                    onTextExtract: () => {},
+                    onSearch: () => {},
+                    ...options
+                };
+                
+                this.currentDocument = null;
+                this.documents = this.getSampleDocuments();
+                this.currentPage = 1;
+                this.totalPages = 0;
+                this.extractedText = '';
+                this.extractedTables = [];
+                this.extractedImages = [];
+                this.searchResults = [];
+                this.isLoading = false;
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            getSampleDocuments() {
+                return [
+                    {
+                        id: 'sample1',
+                        name: 'AI Research Paper',
+                        size: '2.3 MB',
+                        pages: 15,
+                        lastModified: '2024-01-15',
+                        metadata: {
+                            title: 'Advances in Artificial Intelligence',
+                            author: 'Dr. Jane Smith',
+                            subject: 'Computer Science',
+                            keywords: 'AI, Machine Learning, Neural Networks',
+                            creator: 'LaTeX',
+                            producer: 'PDFLaTeX'
+                        }
+                    },
+                    {
+                        id: 'sample2',
+                        name: 'Technical Manual',
+                        size: '5.7 MB',
+                        pages: 42,
+                        lastModified: '2024-01-10',
+                        metadata: {
+                            title: 'System Administration Guide',
+                            author: 'Technical Team',
+                            subject: 'System Administration',
+                            keywords: 'Linux, Server, Configuration',
+                            creator: 'Microsoft Word',
+                            producer: 'Microsoft Word'
+                        }
+                    },
+                    {
+                        id: 'sample3',
+                        name: 'Financial Report',
+                        size: '1.8 MB',
+                        pages: 28,
+                        lastModified: '2024-01-05',
+                        metadata: {
+                            title: 'Q4 Financial Report 2023',
+                            author: 'Finance Department',
+                            subject: 'Financial Analysis',
+                            keywords: 'Revenue, Profit, Growth',
+                            creator: 'Excel',
+                            producer: 'Microsoft Excel'
+                        }
+                    }
+                ];
+            }
+            
+            loadDocument(documentId) {
+                if (!documentId) return;
+                
+                this.isLoading = true;
+                this.render();
+                
+                // Simulate loading delay
+                setTimeout(() => {
+                    const doc = this.documents.find(d => d.id === documentId);
+                    if (doc) {
+                        this.currentDocument = doc;
+                        this.totalPages = doc.pages;
+                        this.currentPage = 1;
+                        this.extractedText = '';
+                        this.extractedTables = [];
+                        this.extractedImages = [];
+                        this.searchResults = [];
+                        
+                        this.options.onDocumentLoad(doc);
+                    }
+                    
+                    this.isLoading = false;
+                    this.render();
+                }, 1000);
+            }
+            
+            extractText() {
+                if (!this.currentDocument) return '';
+                
+                // Generate mock text content
+                const mockText = `
+                    ${this.currentDocument.metadata.title}
+                    
+                    Abstract
+                    This document provides a comprehensive overview of ${this.currentDocument.metadata.subject.toLowerCase()}. 
+                    The content covers various aspects including methodology, implementation, and results.
+                    
+                    Introduction
+                    ${this.currentDocument.metadata.subject} has become increasingly important in modern technology. 
+                    This section introduces the key concepts and provides context for the following chapters.
+                    
+                    Methodology
+                    The approach used in this study involves several key steps:
+                    1. Data collection and preprocessing
+                    2. Analysis and interpretation
+                    3. Results validation
+                    4. Conclusion and recommendations
+                    
+                    Results
+                    The analysis reveals significant insights into ${this.currentDocument.metadata.subject.toLowerCase()}. 
+                    Key findings include improved performance metrics and enhanced user experience.
+                    
+                    Conclusion
+                    This study demonstrates the effectiveness of the proposed approach. 
+                    Future work will focus on extending the methodology to additional domains.
+                    
+                    References
+                    [1] Smith, J. (2023). "Advances in ${this.currentDocument.metadata.subject}". Journal of Technology.
+                    [2] Johnson, M. (2023). "Modern Approaches to ${this.currentDocument.metadata.subject}". Tech Review.
+                    [3] Brown, K. (2023). "Implementation Strategies for ${this.currentDocument.metadata.subject}". IEEE Conference.
+                `;
+                
+                this.extractedText = mockText.trim();
+                this.options.onTextExtract(this.extractedText);
+                this.render();
+                
+                return this.extractedText;
+            }
+            
+            extractTables() {
+                if (!this.currentDocument) return [];
+                
+                // Generate mock table data
+                const mockTables = [
+                    {
+                        id: 'table1',
+                        title: 'Performance Metrics',
+                        headers: ['Metric', 'Value', 'Unit', 'Status'],
+                        rows: [
+                            ['Accuracy', '95.2', '%', 'Good'],
+                            ['Precision', '94.8', '%', 'Good'],
+                            ['Recall', '95.6', '%', 'Excellent'],
+                            ['F1 Score', '95.2', '%', 'Good']
+                        ]
+                    },
+                    {
+                        id: 'table2',
+                        title: 'Resource Usage',
+                        headers: ['Resource', 'Usage', 'Limit', 'Percentage'],
+                        rows: [
+                            ['CPU', '2.3', '4.0', '57.5%'],
+                            ['Memory', '1.8', '8.0', '22.5%'],
+                            ['Storage', '45.2', '100.0', '45.2%'],
+                            ['Network', '0.5', '1.0', '50.0%']
+                        ]
+                    }
+                ];
+                
+                this.extractedTables = mockTables;
+                this.render();
+                
+                return this.extractedTables;
+            }
+            
+            extractImages() {
+                if (!this.currentDocument) return [];
+                
+                // Generate mock image data
+                const mockImages = [
+                    {
+                        id: 'image1',
+                        name: 'Figure 1: System Architecture',
+                        type: 'PNG',
+                        size: '245 KB',
+                        dimensions: '800x600',
+                        page: 3,
+                        description: 'High-level system architecture diagram'
+                    },
+                    {
+                        id: 'image2',
+                        name: 'Figure 2: Performance Chart',
+                        type: 'JPEG',
+                        size: '189 KB',
+                        dimensions: '1024x768',
+                        page: 7,
+                        description: 'Performance comparison chart'
+                    },
+                    {
+                        id: 'image3',
+                        name: 'Figure 3: Data Flow',
+                        type: 'SVG',
+                        size: '156 KB',
+                        dimensions: '600x400',
+                        page: 12,
+                        description: 'Data flow diagram'
+                    }
+                ];
+                
+                this.extractedImages = mockImages;
+                this.render();
+                
+                return this.extractedImages;
+            }
+            
+            search(query) {
+                if (!this.currentDocument || !query.trim()) return [];
+                
+                // Generate mock search results
+                const mockResults = [
+                    {
+                        id: 'result1',
+                        page: 3,
+                        line: 15,
+                        text: `This section discusses ${query} in detail...`,
+                        context: `The methodology section provides comprehensive information about ${query}. This approach has been validated through extensive testing.`,
+                        relevance: 95
+                    },
+                    {
+                        id: 'result2',
+                        page: 7,
+                        line: 8,
+                        text: `The results show significant improvements in ${query}...`,
+                        context: `Analysis of the data reveals that ${query} has a direct impact on performance. The correlation coefficient is 0.87.`,
+                        relevance: 88
+                    },
+                    {
+                        id: 'result3',
+                        page: 12,
+                        line: 22,
+                        text: `Future work will focus on enhancing ${query}...`,
+                        context: `The conclusion section outlines potential improvements to ${query}. These enhancements will be implemented in the next version.`,
+                        relevance: 82
+                    }
+                ];
+                
+                this.searchResults = mockResults;
+                this.options.onSearch(this.searchResults);
+                this.render();
+                
+                return this.searchResults;
+            }
+            
+            clearDocument() {
+                this.currentDocument = null;
+                this.currentPage = 1;
+                this.totalPages = 0;
+                this.extractedText = '';
+                this.extractedTables = [];
+                this.extractedImages = [];
+                this.searchResults = [];
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="pdftool">
+                        <div class="pdftool-header">
+                            <div class="pdftool-title">
+                                <span class="pdftool-title-text">PDF Tool</span>
+                                ${this.currentDocument ? `
+                                    <span class="pdftool-document-name">${this.currentDocument.name}</span>
+                                ` : ''}
+                            </div>
+                            <div class="pdftool-actions">
+                                <button class="pdftool-action-btn" onclick="this.parentElement.parentElement.parentElement.pdftool.clearDocument()">
+                                    Clear Document
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${this.options.showDocumentList ? `
+                            <div class="pdftool-documents">
+                                <div class="pdftool-documents-title">Available Documents</div>
+                                <div class="pdftool-documents-list">
+                                    ${this.documents.map(doc => `
+                                        <div class="pdftool-document ${this.currentDocument?.id === doc.id ? 'active' : ''}" 
+                                             onclick="this.parentElement.parentElement.parentElement.pdftool.loadDocument('${doc.id}')">
+                                            <div class="pdftool-document-name">${doc.name}</div>
+                                            <div class="pdftool-document-meta">
+                                                <span class="pdftool-document-size">${doc.size}</span>
+                                                <span class="pdftool-document-pages">${doc.pages} pages</span>
+                                                <span class="pdftool-document-date">${doc.lastModified}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${this.isLoading ? `
+                            <div class="pdftool-loading">
+                                <div class="pdftool-loading-spinner"></div>
+                                <div class="pdftool-loading-text">Loading document...</div>
+                            </div>
+                        ` : this.currentDocument ? `
+                            <div class="pdftool-content">
+                                ${this.options.showPageViewer ? `
+                                    <div class="pdftool-viewer">
+                                        <div class="pdftool-viewer-header">
+                                            <div class="pdftool-viewer-title">Page Viewer</div>
+                                            <div class="pdftool-viewer-controls">
+                                                <button class="pdftool-viewer-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.pdftool.currentPage = Math.max(1, this.parentElement.parentElement.parentElement.parentElement.pdftool.currentPage - 1); this.parentElement.parentElement.parentElement.parentElement.pdftool.render();">← Previous</button>
+                                                <span class="pdftool-viewer-page">Page ${this.currentPage} of ${this.totalPages}</span>
+                                                <button class="pdftool-viewer-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.pdftool.currentPage = Math.min(this.parentElement.parentElement.parentElement.parentElement.pdftool.totalPages, this.parentElement.parentElement.parentElement.parentElement.pdftool.currentPage + 1); this.parentElement.parentElement.parentElement.parentElement.pdftool.render();">Next →</button>
+                                            </div>
+                                        </div>
+                                        <div class="pdftool-viewer-content">
+                                            <div class="pdftool-page">
+                                                <div class="pdftool-page-content">
+                                                    <div class="pdftool-page-text">
+                                                        <h3>Page ${this.currentPage}</h3>
+                                                        <p>This is a mock representation of page ${this.currentPage} of the document "${this.currentDocument.name}".</p>
+                                                        <p>In a real implementation, this would display the actual PDF page content.</p>
+                                                        <p>The page contains text, images, and other elements as they appear in the original document.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="pdftool-extracted">
+                                    ${this.extractedText ? `
+                                        <div class="pdftool-extracted-text">
+                                            <div class="pdftool-extracted-title">Extracted Text</div>
+                                            <div class="pdftool-extracted-content">
+                                                <pre>${this.extractedText}</pre>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${this.extractedTables.length > 0 ? `
+                                        <div class="pdftool-extracted-tables">
+                                            <div class="pdftool-extracted-title">Extracted Tables</div>
+                                            <div class="pdftool-extracted-content">
+                                                ${this.extractedTables.map(table => `
+                                                    <div class="pdftool-table">
+                                                        <div class="pdftool-table-title">${table.title}</div>
+                                                        <table class="pdftool-table-content">
+                                                            <thead>
+                                                                <tr>
+                                                                    ${table.headers.map(header => `<th>${header}</th>`).join('')}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                ${table.rows.map(row => `
+                                                                    <tr>
+                                                                        ${row.map(cell => `<td>${cell}</td>`).join('')}
+                                                                    </tr>
+                                                                `).join('')}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${this.extractedImages.length > 0 ? `
+                                        <div class="pdftool-extracted-images">
+                                            <div class="pdftool-extracted-title">Extracted Images</div>
+                                            <div class="pdftool-extracted-content">
+                                                ${this.extractedImages.map(image => `
+                                                    <div class="pdftool-image">
+                                                        <div class="pdftool-image-name">${image.name}</div>
+                                                        <div class="pdftool-image-meta">
+                                                            <span class="pdftool-image-type">${image.type}</span>
+                                                            <span class="pdftool-image-size">${image.size}</span>
+                                                            <span class="pdftool-image-dimensions">${image.dimensions}</span>
+                                                            <span class="pdftool-image-page">Page ${image.page}</span>
+                                                        </div>
+                                                        <div class="pdftool-image-description">${image.description}</div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${this.searchResults.length > 0 ? `
+                                        <div class="pdftool-search-results">
+                                            <div class="pdftool-extracted-title">Search Results</div>
+                                            <div class="pdftool-extracted-content">
+                                                ${this.searchResults.map(result => `
+                                                    <div class="pdftool-search-result">
+                                                        <div class="pdftool-search-result-header">
+                                                            <span class="pdftool-search-result-page">Page ${result.page}, Line ${result.line}</span>
+                                                            <span class="pdftool-search-result-relevance">${result.relevance}% relevance</span>
+                                                        </div>
+                                                        <div class="pdftool-search-result-text">${result.text}</div>
+                                                        <div class="pdftool-search-result-context">${result.context}</div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="pdftool-no-document">
+                                <div class="pdftool-no-document-text">No document loaded. Select a document from the list above.</div>
+                            </div>
+                        `}
+                    </div>
+                `;
+                
+                // Store reference for event handlers
+                this.container.querySelector('.pdftool').pdftool = this;
+                
+                // Add styles
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('pdftool-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'pdftool-styles';
+                    style.textContent = `
+                        .pdftool {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .pdftool-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .pdftool-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .pdftool-title-text {
+                            font-weight: bold;
+                            color: #00ff00;
+                            font-size: 1.1em;
+                        }
+                        
+                        .pdftool-document-name {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .pdftool-actions {
+                            display: flex;
+                            gap: 10px;
+                        }
+                        
+                        .pdftool-action-btn {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.9em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .pdftool-action-btn:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .pdftool-documents {
+                            padding: 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .pdftool-documents-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .pdftool-documents-list {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        
+                        .pdftool-document {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 15px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .pdftool-document:hover {
+                            border-color: #555;
+                            background: #333;
+                        }
+                        
+                        .pdftool-document.active {
+                            border-color: #00ff00;
+                            background: #001100;
+                        }
+                        
+                        .pdftool-document-name {
+                            color: #fff;
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .pdftool-document-meta {
+                            display: flex;
+                            gap: 15px;
+                            font-size: 0.8em;
+                            color: #888;
+                        }
+                        
+                        .pdftool-document-size {
+                            color: #00ff00;
+                        }
+                        
+                        .pdftool-document-pages {
+                            color: #0088ff;
+                        }
+                        
+                        .pdftool-document-date {
+                            color: #666;
+                        }
+                        
+                        .pdftool-loading {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 15px;
+                            padding: 40px;
+                        }
+                        
+                        .pdftool-loading-spinner {
+                            width: 40px;
+                            height: 40px;
+                            border: 3px solid #333;
+                            border-top: 3px solid #00ff00;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                        }
+                        
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                        
+                        .pdftool-loading-text {
+                            color: #888;
+                            font-size: 1.1em;
+                        }
+                        
+                        .pdftool-content {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 20px;
+                            padding: 20px;
+                        }
+                        
+                        .pdftool-viewer {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            overflow: hidden;
+                        }
+                        
+                        .pdftool-viewer-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px;
+                            background: #222;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .pdftool-viewer-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                        }
+                        
+                        .pdftool-viewer-controls {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .pdftool-viewer-btn {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 6px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.8em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .pdftool-viewer-btn:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .pdftool-viewer-page {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .pdftool-viewer-content {
+                            padding: 20px;
+                        }
+                        
+                        .pdftool-page {
+                            background: #fff;
+                            color: #000;
+                            border-radius: 4px;
+                            padding: 20px;
+                            min-height: 400px;
+                        }
+                        
+                        .pdftool-page-content {
+                            line-height: 1.6;
+                        }
+                        
+                        .pdftool-page-text h3 {
+                            color: #333;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .pdftool-page-text p {
+                            margin-bottom: 10px;
+                            color: #555;
+                        }
+                        
+                        .pdftool-extracted {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 20px;
+                        }
+                        
+                        .pdftool-extracted-text,
+                        .pdftool-extracted-tables,
+                        .pdftool-extracted-images,
+                        .pdftool-search-results {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            overflow: hidden;
+                        }
+                        
+                        .pdftool-extracted-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            padding: 15px;
+                            background: #222;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .pdftool-extracted-content {
+                            padding: 15px;
+                            max-height: 300px;
+                            overflow-y: auto;
+                        }
+                        
+                        .pdftool-extracted-content pre {
+                            margin: 0;
+                            white-space: pre-wrap;
+                            font-family: inherit;
+                            line-height: 1.5;
+                        }
+                        
+                        .pdftool-table {
+                            margin-bottom: 20px;
+                        }
+                        
+                        .pdftool-table-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .pdftool-table-content {
+                            width: 100%;
+                            border-collapse: collapse;
+                            background: #222;
+                        }
+                        
+                        .pdftool-table-content th,
+                        .pdftool-table-content td {
+                            border: 1px solid #333;
+                            padding: 8px 12px;
+                            text-align: left;
+                        }
+                        
+                        .pdftool-table-content th {
+                            background: #333;
+                            color: #00ff00;
+                            font-weight: bold;
+                        }
+                        
+                        .pdftool-table-content td {
+                            color: #fff;
+                        }
+                        
+                        .pdftool-image {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 15px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .pdftool-image-name {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .pdftool-image-meta {
+                            display: flex;
+                            gap: 15px;
+                            font-size: 0.8em;
+                            color: #888;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .pdftool-image-type {
+                            color: #00ff00;
+                        }
+                        
+                        .pdftool-image-size {
+                            color: #0088ff;
+                        }
+                        
+                        .pdftool-image-dimensions {
+                            color: #ffaa00;
+                        }
+                        
+                        .pdftool-image-page {
+                            color: #666;
+                        }
+                        
+                        .pdftool-image-description {
+                            color: #ccc;
+                            font-size: 0.9em;
+                        }
+                        
+                        .pdftool-search-result {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 15px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .pdftool-search-result-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .pdftool-search-result-page {
+                            color: #00ff00;
+                            font-weight: bold;
+                        }
+                        
+                        .pdftool-search-result-relevance {
+                            color: #0088ff;
+                            font-size: 0.8em;
+                        }
+                        
+                        .pdftool-search-result-text {
+                            color: #fff;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .pdftool-search-result-context {
+                            color: #ccc;
+                            font-size: 0.9em;
+                            line-height: 1.5;
+                        }
+                        
+                        .pdftool-no-document {
+                            text-align: center;
+                            padding: 40px;
+                        }
+                        
+                        .pdftool-no-document-text {
+                            color: #888;
+                            font-size: 1.1em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+        
+        // Initialize the example
+        const pdfTool = new MockPDFTool({
+            showDocumentList: true,
+            showPageViewer: true,
+            showSearchResults: true,
+            onDocumentLoad: (doc) => {
+                console.log('Document loaded:', doc);
+            },
+            onTextExtract: (text) => {
+                console.log('Text extracted:', text);
+            },
+            onSearch: (results) => {
+                console.log('Search results:', results);
+            }
+        });
+        
+        pdfTool.mount(document.getElementById('pdftool-container'));
+        
+        // Event handlers
+        document.getElementById('document-select').addEventListener('change', (e) => {
+            if (e.target.value) {
+                pdfTool.loadDocument(e.target.value);
+            }
+        });
+        
+        document.getElementById('load-document').addEventListener('click', () => {
+            const select = document.getElementById('document-select');
+            if (select.value) {
+                pdfTool.loadDocument(select.value);
+            }
+        });
+        
+        document.getElementById('extract-text').addEventListener('click', () => {
+            pdfTool.extractText();
+        });
+        
+        document.getElementById('extract-tables').addEventListener('click', () => {
+            pdfTool.extractTables();
+        });
+        
+        document.getElementById('extract-images').addEventListener('click', () => {
+            pdfTool.extractImages();
+        });
+        
+        document.getElementById('search-content').addEventListener('click', () => {
+            const query = prompt('Enter search term:');
+            if (query) {
+                pdfTool.search(query);
+            }
+        });
+        
+        document.getElementById('clear-document').addEventListener('click', () => {
+            pdfTool.clearDocument();
+        });
+    </script>
+</body>
+</html>

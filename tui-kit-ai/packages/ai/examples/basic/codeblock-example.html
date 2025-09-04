@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeBlock Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .codeblock-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💻 CodeBlock Component Example</h1>
+            <p>Syntax highlighting with line numbers and multi-language support</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Languages:</strong> JavaScript, TypeScript, Python, Java, C++, Go, Rust, HTML, CSS, SQL</p>
+            <p><strong>Themes:</strong> Dark, Light, Monokai, Dracula, GitHub, VS Code, Atom, Solarized</p>
+            <p><strong>Features:</strong> Line numbers, Copy button, Expand/collapse, Syntax highlighting</p>
+        </div>
+        
+        <div class="controls">
+            <select class="select" id="language-select">
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="sql">SQL</option>
+            </select>
+            
+            <select class="select" id="theme-select">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option value="monokai">Monokai</option>
+                <option value="dracula">Dracula</option>
+                <option value="github">GitHub</option>
+                <option value="vs-code">VS Code</option>
+                <option value="atom">Atom</option>
+                <option value="solarized">Solarized</option>
+            </select>
+            
+            <button class="btn" id="toggle-lines">Toggle Line Numbers</button>
+            <button class="btn" id="toggle-copy">Toggle Copy Button</button>
+            <button class="btn" id="toggle-expand">Toggle Expandable</button>
+            <button class="btn" id="new-code">New Code</button>
+        </div>
+        
+        <div class="codeblock-container" id="codeblock-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Language:</strong> Change syntax highlighting language</p>
+            <p><strong>Theme:</strong> Switch between different color themes</p>
+            <p><strong>Line Numbers:</strong> Show/hide line numbers</p>
+            <p><strong>Copy Button:</strong> Show/hide copy to clipboard button</p>
+            <p><strong>Expandable:</strong> Make code block expandable/collapsible</p>
+            <p><strong>New Code:</strong> Load a new code example</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { CodeBlock } from '@tui-kit-ai/ai';
+
+const codeBlock = new CodeBlock({
+  language: 'typescript',
+  theme: 'dark',
+  showLineNumbers: true,
+  showCopyButton: true,
+  expandable: true,
+  onCopy: (code) => console.log('Copied:', code),
+  onExpand: (expanded) => console.log('Expanded:', expanded)
+});
+
+// Set code content
+codeBlock.setCode(`
+function processData(data: any[]): any[] {
+  return data.map(item => ({
+    ...item,
+    processed: true,
+    timestamp: new Date().toISOString()
+  }));
+}
+`);</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock CodeBlock component for demonstration
+        class MockCodeBlock {
+            constructor(options = {}) {
+                this.options = {
+                    language: 'javascript',
+                    theme: 'dark',
+                    showLineNumbers: true,
+                    showCopyButton: true,
+                    expandable: false,
+                    onCopy: () => {},
+                    onExpand: () => {},
+                    ...options
+                };
+                
+                this.code = '';
+                this.isExpanded = true;
+                this.maxHeight = 300;
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            setCode(code) {
+                this.code = code;
+                this.render();
+            }
+            
+            setLanguage(language) {
+                this.options.language = language;
+                this.render();
+            }
+            
+            setTheme(theme) {
+                this.options.theme = theme;
+                this.render();
+            }
+            
+            toggleLineNumbers() {
+                this.options.showLineNumbers = !this.options.showLineNumbers;
+                this.render();
+            }
+            
+            toggleCopyButton() {
+                this.options.showCopyButton = !this.options.showCopyButton;
+                this.render();
+            }
+            
+            toggleExpandable() {
+                this.options.expandable = !this.options.expandable;
+                this.render();
+            }
+            
+            toggleExpanded() {
+                this.isExpanded = !this.isExpanded;
+                this.options.onExpand(this.isExpanded);
+                this.render();
+            }
+            
+            copyToClipboard() {
+                navigator.clipboard.writeText(this.code).then(() => {
+                    this.options.onCopy(this.code);
+                    this.showCopyFeedback();
+                });
+            }
+            
+            showCopyFeedback() {
+                const btn = this.container.querySelector('.copy-btn');
+                if (btn) {
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.background = '#00ff00';
+                    btn.style.color = '#000';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                        btn.style.color = '';
+                    }, 2000);
+                }
+            }
+            
+            render() {
+                const { language, theme, showLineNumbers, showCopyButton, expandable } = this.options;
+                
+                const lines = this.code.split('\n');
+                const highlightedCode = this.highlightCode(this.code, language);
+                
+                this.container.innerHTML = `
+                    <div class="codeblock ${theme} ${language}">
+                        <div class="codeblock-header">
+                            <div class="codeblock-title">
+                                <span class="codeblock-language">${language.toUpperCase()}</span>
+                                <span class="codeblock-lines">${lines.length} lines</span>
+                            </div>
+                            <div class="codeblock-actions">
+                                ${showCopyButton ? `
+                                    <button class="copy-btn" onclick="this.parentElement.parentElement.parentElement.codeblock.copyToClipboard()">
+                                        📋 Copy
+                                    </button>
+                                ` : ''}
+                                ${expandable ? `
+                                    <button class="expand-btn" onclick="this.parentElement.parentElement.parentElement.codeblock.toggleExpanded()">
+                                        ${this.isExpanded ? '📉 Collapse' : '📈 Expand'}
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="codeblock-content ${this.isExpanded ? 'expanded' : 'collapsed'}" 
+                             style="${!this.isExpanded ? `max-height: ${this.maxHeight}px;` : ''}">
+                            <div class="codeblock-code">
+                                ${showLineNumbers ? `
+                                    <div class="codeblock-lines">
+                                        ${lines.map((_, i) => `<div class="line-number">${i + 1}</div>`).join('')}
+                                    </div>
+                                ` : ''}
+                                <div class="codeblock-text">
+                                    <pre><code>${highlightedCode}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${expandable && !this.isExpanded ? `
+                            <div class="codeblock-overlay">
+                                <button class="expand-overlay-btn" onclick="this.parentElement.parentElement.codeblock.toggleExpanded()">
+                                    Show more...
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Store reference for event handlers
+                this.container.querySelector('.codeblock').codeblock = this;
+                
+                // Add styles
+                this.addStyles();
+            }
+            
+            highlightCode(code, language) {
+                // Simple syntax highlighting for demonstration
+                const keywords = {
+                    javascript: ['function', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'async', 'await'],
+                    typescript: ['function', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'async', 'await', 'interface', 'type', 'enum'],
+                    python: ['def', 'class', 'if', 'else', 'elif', 'for', 'while', 'return', 'import', 'from', 'as', 'try', 'except', 'finally', 'with'],
+                    java: ['public', 'private', 'protected', 'class', 'interface', 'extends', 'implements', 'if', 'else', 'for', 'while', 'return', 'import', 'package'],
+                    cpp: ['#include', 'using', 'namespace', 'class', 'struct', 'if', 'else', 'for', 'while', 'return', 'int', 'float', 'double', 'char', 'bool'],
+                    go: ['package', 'import', 'func', 'var', 'const', 'type', 'struct', 'interface', 'if', 'else', 'for', 'range', 'return', 'go', 'chan'],
+                    rust: ['fn', 'let', 'mut', 'const', 'struct', 'enum', 'impl', 'trait', 'if', 'else', 'for', 'while', 'loop', 'return', 'use', 'mod'],
+                    html: ['<html>', '<head>', '<body>', '<div>', '<span>', '<p>', '<h1>', '<h2>', '<h3>', '<a>', '<img>', '<script>', '<style>'],
+                    css: ['color', 'background', 'margin', 'padding', 'border', 'width', 'height', 'display', 'position', 'float', 'clear', 'font-size', 'font-weight'],
+                    sql: ['SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER', 'TABLE', 'INDEX', 'JOIN', 'LEFT', 'RIGHT', 'INNER']
+                };
+                
+                const langKeywords = keywords[language] || [];
+                let highlighted = code;
+                
+                // Highlight keywords
+                langKeywords.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+                    highlighted = highlighted.replace(regex, `<span class="keyword">${keyword}</span>`);
+                });
+                
+                // Highlight strings
+                highlighted = highlighted.replace(/(["'`])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="string">$1$2$1</span>');
+                
+                // Highlight comments
+                if (language === 'javascript' || language === 'typescript') {
+                    highlighted = highlighted.replace(/\/\/.*$/gm, '<span class="comment">$&</span>');
+                    highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
+                } else if (language === 'python') {
+                    highlighted = highlighted.replace(/#.*$/gm, '<span class="comment">$&</span>');
+                } else if (language === 'java' || language === 'cpp') {
+                    highlighted = highlighted.replace(/\/\/.*$/gm, '<span class="comment">$&</span>');
+                    highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
+                } else if (language === 'go') {
+                    highlighted = highlighted.replace(/\/\/.*$/gm, '<span class="comment">$&</span>');
+                    highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
+                } else if (language === 'rust') {
+                    highlighted = highlighted.replace(/\/\/.*$/gm, '<span class="comment">$&</span>');
+                    highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
+                } else if (language === 'html') {
+                    highlighted = highlighted.replace(/<!--[\s\S]*?-->/g, '<span class="comment">$&</span>');
+                } else if (language === 'css') {
+                    highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
+                } else if (language === 'sql') {
+                    highlighted = highlighted.replace(/--.*$/gm, '<span class="comment">$&</span>');
+                }
+                
+                // Highlight numbers
+                highlighted = highlighted.replace(/\b\d+\.?\d*\b/g, '<span class="number">$&</span>');
+                
+                return highlighted;
+            }
+            
+            addStyles() {
+                if (!document.getElementById('codeblock-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'codeblock-styles';
+                    style.textContent = `
+                        .codeblock {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .codeblock-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 10px 15px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .codeblock-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .codeblock-language {
+                            background: #00ff00;
+                            color: #000;
+                            padding: 2px 8px;
+                            border-radius: 3px;
+                            font-size: 0.8em;
+                            font-weight: bold;
+                        }
+                        
+                        .codeblock-lines {
+                            color: #888;
+                            font-size: 0.8em;
+                        }
+                        
+                        .codeblock-actions {
+                            display: flex;
+                            gap: 5px;
+                        }
+                        
+                        .copy-btn, .expand-btn {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 5px 10px;
+                            border-radius: 3px;
+                            cursor: pointer;
+                            font-size: 0.8em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .copy-btn:hover, .expand-btn:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .codeblock-content {
+                            position: relative;
+                            overflow: hidden;
+                            transition: max-height 0.3s ease;
+                        }
+                        
+                        .codeblock-content.collapsed {
+                            overflow: hidden;
+                        }
+                        
+                        .codeblock-code {
+                            display: flex;
+                        }
+                        
+                        .codeblock-lines {
+                            background: #111;
+                            color: #666;
+                            padding: 15px 10px;
+                            border-right: 1px solid #333;
+                            text-align: right;
+                            user-select: none;
+                            min-width: 50px;
+                        }
+                        
+                        .line-number {
+                            line-height: 1.5;
+                            font-size: 0.9em;
+                        }
+                        
+                        .codeblock-text {
+                            flex: 1;
+                            padding: 15px;
+                            overflow-x: auto;
+                        }
+                        
+                        .codeblock-text pre {
+                            margin: 0;
+                            white-space: pre;
+                            overflow-x: auto;
+                        }
+                        
+                        .codeblock-text code {
+                            font-family: inherit;
+                            line-height: 1.5;
+                        }
+                        
+                        .codeblock-overlay {
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            background: linear-gradient(transparent, #000);
+                            padding: 20px;
+                            text-align: center;
+                        }
+                        
+                        .expand-overlay-btn {
+                            background: #00ff00;
+                            color: #000;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        }
+                        
+                        /* Syntax highlighting */
+                        .keyword { color: #ff6b6b; font-weight: bold; }
+                        .string { color: #4ecdc4; }
+                        .comment { color: #888; font-style: italic; }
+                        .number { color: #feca57; }
+                        
+                        /* Theme variations */
+                        .codeblock.light {
+                            background: #fff;
+                            color: #000;
+                            border-color: #ddd;
+                        }
+                        
+                        .codeblock.light .codeblock-header {
+                            background: #f5f5f5;
+                            border-bottom-color: #ddd;
+                        }
+                        
+                        .codeblock.light .codeblock-lines {
+                            background: #f5f5f5;
+                            border-right-color: #ddd;
+                        }
+                        
+                        .codeblock.monokai {
+                            background: #272822;
+                            color: #f8f8f2;
+                        }
+                        
+                        .codeblock.monokai .codeblock-header {
+                            background: #3e3d32;
+                        }
+                        
+                        .codeblock.monokai .codeblock-lines {
+                            background: #3e3d32;
+                        }
+                        
+                        .codeblock.dracula {
+                            background: #282a36;
+                            color: #f8f8f2;
+                        }
+                        
+                        .codeblock.dracula .codeblock-header {
+                            background: #44475a;
+                        }
+                        
+                        .codeblock.dracula .codeblock-lines {
+                            background: #44475a;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+        
+        // Sample code examples
+        const codeExamples = {
+            javascript: `function processData(data) {
+  return data.map(item => ({
+    ...item,
+    processed: true,
+    timestamp: new Date().toISOString()
+  }));
+}
+
+const result = processData([
+  { id: 1, name: 'John' },
+  { id: 2, name: 'Jane' }
+]);
+
+console.log(result);`,
+            
+            typescript: `interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function processUser(user: User): User & { processed: boolean } {
+  return {
+    ...user,
+    processed: true
+  };
+}
+
+const user: User = {
+  id: 1,
+  name: 'John Doe',
+  email: 'john@example.com'
+};
+
+const processedUser = processUser(user);`,
+            
+            python: `def process_data(data):
+    """Process a list of data items."""
+    processed = []
+    for item in data:
+        processed_item = {
+            **item,
+            'processed': True,
+            'timestamp': datetime.now().isoformat()
+        }
+        processed.append(processed_item)
+    return processed
+
+# Example usage
+data = [
+    {'id': 1, 'name': 'John'},
+    {'id': 2, 'name': 'Jane'}
+]
+
+result = process_data(data)
+print(result)`,
+            
+            java: `public class DataProcessor {
+    private String timestamp;
+    
+    public DataProcessor() {
+        this.timestamp = new Date().toString();
+    }
+    
+    public List<Map<String, Object>> processData(List<Map<String, Object>> data) {
+        return data.stream()
+            .map(item -> {
+                Map<String, Object> processed = new HashMap<>(item);
+                processed.put("processed", true);
+                processed.put("timestamp", this.timestamp);
+                return processed;
+            })
+            .collect(Collectors.toList());
+    }
+}`,
+            
+            cpp: `#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+
+class DataProcessor {
+private:
+    std::string timestamp;
+    
+public:
+    DataProcessor() {
+        timestamp = std::to_string(std::time(nullptr));
+    }
+    
+    std::vector<std::map<std::string, std::string>> processData(
+        const std::vector<std::map<std::string, std::string>>& data) {
+        
+        std::vector<std::map<std::string, std::string>> processed;
+        for (const auto& item : data) {
+            std::map<std::string, std::string> processedItem = item;
+            processedItem["processed"] = "true";
+            processedItem["timestamp"] = timestamp;
+            processed.push_back(processedItem);
+        }
+        return processed;
+    }
+};`,
+            
+            go: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+type DataItem struct {
+    ID   int    \`json:"id"\`
+    Name string \`json:"name"\`
+}
+
+type ProcessedItem struct {
+    DataItem
+    Processed bool      \`json:"processed"\`
+    Timestamp time.Time \`json:"timestamp"\`
+}
+
+func processData(data []DataItem) []ProcessedItem {
+    var processed []ProcessedItem
+    for _, item := range data {
+        processed = append(processed, ProcessedItem{
+            DataItem:   item,
+            Processed:  true,
+            Timestamp:  time.Now(),
+        })
+    }
+    return processed
+}`,
+            
+            rust: `use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataItem {
+    id: u32,
+    name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ProcessedItem {
+    #[serde(flatten)]
+    item: DataItem,
+    processed: bool,
+    timestamp: String,
+}
+
+fn process_data(data: Vec<DataItem>) -> Vec<ProcessedItem> {
+    data.into_iter()
+        .map(|item| ProcessedItem {
+            item,
+            processed: true,
+            timestamp: chrono::Utc::now().to_rfc3339(),
+        })
+        .collect()
+}`,
+            
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Processing</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .data-item {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Data Processing Results</h1>
+        <div id="results"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>`,
+            
+            css: `.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.data-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.data-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.processed {
+    border-left: 4px solid #00ff00;
+}
+
+.timestamp {
+    font-size: 0.8em;
+    opacity: 0.8;
+    margin-top: 5px;
+}`,
+            
+            sql: `-- Create table for data items
+CREATE TABLE data_items (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert sample data
+INSERT INTO data_items (id, name) VALUES
+(1, 'John Doe'),
+(2, 'Jane Smith'),
+(3, 'Bob Johnson');
+
+-- Process data and add processed flag
+UPDATE data_items 
+SET processed = true, 
+    processed_at = CURRENT_TIMESTAMP
+WHERE processed IS NULL;
+
+-- Query processed data
+SELECT 
+    id,
+    name,
+    processed,
+    created_at,
+    processed_at
+FROM data_items
+WHERE processed = true
+ORDER BY processed_at DESC;`
+        };
+        
+        // Initialize the example
+        const codeBlock = new MockCodeBlock({
+            language: 'javascript',
+            theme: 'dark',
+            showLineNumbers: true,
+            showCopyButton: true,
+            expandable: false,
+            onCopy: (code) => {
+                console.log('Code copied to clipboard');
+            },
+            onExpand: (expanded) => {
+                console.log('Code block expanded:', expanded);
+            }
+        });
+        
+        codeBlock.mount(document.getElementById('codeblock-container'));
+        codeBlock.setCode(codeExamples.javascript);
+        
+        // Event handlers
+        document.getElementById('language-select').addEventListener('change', (e) => {
+            const language = e.target.value;
+            codeBlock.setLanguage(language);
+            codeBlock.setCode(codeExamples[language]);
+        });
+        
+        document.getElementById('theme-select').addEventListener('change', (e) => {
+            codeBlock.setTheme(e.target.value);
+        });
+        
+        document.getElementById('toggle-lines').addEventListener('click', () => {
+            codeBlock.toggleLineNumbers();
+        });
+        
+        document.getElementById('toggle-copy').addEventListener('click', () => {
+            codeBlock.toggleCopyButton();
+        });
+        
+        document.getElementById('toggle-expand').addEventListener('click', () => {
+            codeBlock.toggleExpandable();
+        });
+        
+        document.getElementById('new-code').addEventListener('click', () => {
+            const language = document.getElementById('language-select').value;
+            codeBlock.setCode(codeExamples[language]);
+        });
+    </script>
+</body>
+</html>

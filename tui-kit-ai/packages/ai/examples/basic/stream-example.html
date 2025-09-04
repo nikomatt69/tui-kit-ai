@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stream-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Stream Component Example</h1>
+            <p>Real-time streaming with progress tracking and statistics</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Variant:</strong> realtime</p>
+            <p><strong>Features:</strong> Progress tracking, Statistics, Chunk management</p>
+            <p><strong>States:</strong> idle, connecting, streaming, paused, completed, error</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="start-btn">▶️ Start Stream</button>
+            <button class="btn" id="pause-btn" disabled>⏸️ Pause</button>
+            <button class="btn" id="resume-btn" disabled>▶️ Resume</button>
+            <button class="btn" id="stop-btn" disabled>⏹️ Stop</button>
+            <button class="btn" id="clear-btn">🗑️ Clear</button>
+        </div>
+        
+        <div class="stream-container" id="stream-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Start:</strong> Begin streaming with mock data</p>
+            <p><strong>Pause/Resume:</strong> Control streaming state</p>
+            <p><strong>Stop:</strong> End streaming and show final stats</p>
+            <p><strong>Clear:</strong> Reset all data and statistics</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { Stream } from '@tui-kit-ai/ai';
+
+const stream = new Stream({
+  variant: 'realtime',
+  showProgress: true,
+  showStats: true,
+  onChunk: (chunk) => console.log('New chunk:', chunk),
+  onStateChange: (state) => console.log('State:', state)
+});
+
+// Add data chunks
+stream.addChunk({
+  type: 'text',
+  content: 'Hello, World!',
+  metadata: { source: 'api' }
+});
+
+// Control streaming
+stream.start();
+stream.pause();
+stream.resume();
+stream.stop();</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock Stream component for demonstration
+        class MockStream {
+            constructor(options = {}) {
+                this.options = {
+                    variant: 'default',
+                    showProgress: true,
+                    showStats: true,
+                    onChunk: () => {},
+                    onStateChange: () => {},
+                    ...options
+                };
+                
+                this.state = 'idle';
+                this.chunks = [];
+                this.stats = {
+                    totalChunks: 0,
+                    totalBytes: 0,
+                    chunksPerSecond: 0,
+                    bytesPerSecond: 0,
+                    startTime: 0
+                };
+                this.progress = { current: 0, total: 100, percentage: 0 };
+                this.isActive = false;
+                this.isPaused = false;
+                this.interval = null;
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            render() {
+                const { variant, showProgress, showStats } = this.options;
+                
+                this.container.innerHTML = `
+                    <div class="stream-container ${variant} ${this.state}">
+                        <div class="stream-header">
+                            <div class="stream-title">Stream ${variant}</div>
+                            <div class="stream-status">${this.state}</div>
+                        </div>
+                        
+                        ${showProgress ? `
+                            <div class="stream-progress">
+                                <div class="stream-progress-label">
+                                    <span>Progress</span>
+                                    <span>${this.progress.current} / ${this.progress.total} (${this.progress.percentage.toFixed(1)}%)</span>
+                                </div>
+                                <div class="stream-progress-bar" style="width: ${this.progress.percentage}%"></div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="stream-content">
+                            ${this.chunks.map(chunk => `
+                                <div class="stream-chunk stream-chunk-${chunk.type}">
+                                    <div class="stream-chunk-content">
+                                        <span class="stream-chunk-${chunk.type}">${this.escapeHtml(chunk.content)}</span>
+                                        ${chunk.metadata ? `<div class="stream-chunk-metadata">${JSON.stringify(chunk.metadata)}</div>` : ''}
+                                    </div>
+                                    <div class="stream-chunk-timestamp">${new Date(chunk.timestamp).toLocaleTimeString()}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        ${showStats ? `
+                            <div class="stream-stats">
+                                <div class="stream-stat">
+                                    <div class="stream-stat-value">${this.stats.totalChunks}</div>
+                                    <div class="stream-stat-label">Chunks</div>
+                                </div>
+                                <div class="stream-stat">
+                                    <div class="stream-stat-value">${this.formatBytes(this.stats.totalBytes)}</div>
+                                    <div class="stream-stat-label">Bytes</div>
+                                </div>
+                                <div class="stream-stat">
+                                    <div class="stream-stat-value">${this.stats.chunksPerSecond.toFixed(1)}</div>
+                                    <div class="stream-stat-label">Chunks/s</div>
+                                </div>
+                                <div class="stream-stat">
+                                    <div class="stream-stat-value">${this.formatBytes(this.stats.bytesPerSecond)}/s</div>
+                                    <div class="stream-stat-label">Speed</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="stream-footer">
+                            <div class="stream-footer-content">
+                                ${this.state === 'streaming' ? 'Streaming...' : ''}
+                                ${this.state === 'paused' ? 'Paused - Press SPACE to resume' : ''}
+                                ${this.state === 'completed' ? 'Completed' : ''}
+                                ${this.state === 'error' ? 'Error occurred' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add styles
+                if (!document.getElementById('stream-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'stream-styles';
+                    style.textContent = `
+                        .stream-container {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .stream-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .stream-title {
+                            font-weight: bold;
+                            color: #00ff00;
+                        }
+                        
+                        .stream-status {
+                            font-size: 0.9em;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        
+                        .stream-progress {
+                            padding: 10px 20px;
+                            background: #111;
+                        }
+                        
+                        .stream-progress-label {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 0.8em;
+                            color: #888;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .stream-progress-bar {
+                            height: 4px;
+                            background: linear-gradient(90deg, #00ff00, #0088ff);
+                            border-radius: 2px;
+                            transition: width 0.3s ease;
+                        }
+                        
+                        .stream-content {
+                            max-height: 300px;
+                            overflow-y: auto;
+                            padding: 20px;
+                        }
+                        
+                        .stream-chunk {
+                            margin: 10px 0;
+                            padding: 10px;
+                            border-left: 3px solid #00ff00;
+                            background: #111;
+                            border-radius: 0 4px 4px 0;
+                        }
+                        
+                        .stream-chunk-text { color: #fff; }
+                        .stream-chunk-code { color: #0088ff; }
+                        .stream-chunk-data { color: #00ff00; }
+                        .stream-chunk-error { color: #ff0000; }
+                        
+                        .stream-chunk-metadata {
+                            color: #888;
+                            font-size: 0.8em;
+                            margin-top: 5px;
+                        }
+                        
+                        .stream-chunk-timestamp {
+                            color: #666;
+                            font-size: 0.7em;
+                            float: right;
+                        }
+                        
+                        .stream-stats {
+                            display: flex;
+                            justify-content: space-around;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        .stream-stat {
+                            text-align: center;
+                        }
+                        
+                        .stream-stat-value {
+                            font-size: 1.2em;
+                            font-weight: bold;
+                            color: #00ff00;
+                        }
+                        
+                        .stream-stat-label {
+                            font-size: 0.8em;
+                            color: #888;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        
+                        .stream-footer {
+                            padding: 10px 20px;
+                            background: #111;
+                            border-top: 1px solid #333;
+                            font-size: 0.8em;
+                            color: #888;
+                        }
+                        
+                        .stream-container.streaming .stream-status {
+                            color: #00ff00;
+                        }
+                        
+                        .stream-container.paused .stream-status {
+                            color: #ffaa00;
+                        }
+                        
+                        .stream-container.completed .stream-status {
+                            color: #00ff00;
+                        }
+                        
+                        .stream-container.error .stream-status {
+                            color: #ff0000;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            start() {
+                this.state = 'connecting';
+                this.isActive = true;
+                this.isPaused = false;
+                this.stats.startTime = Date.now();
+                this.options.onStateChange(this.state);
+                this.render();
+                
+                setTimeout(() => {
+                    if (this.isActive) {
+                        this.state = 'streaming';
+                        this.options.onStateChange(this.state);
+                        this.render();
+                        this.startStreaming();
+                    }
+                }, 500);
+            }
+            
+            startStreaming() {
+                this.interval = setInterval(() => {
+                    if (this.isActive && !this.isPaused) {
+                        this.addMockChunk();
+                    }
+                }, 1000);
+            }
+            
+            addMockChunk() {
+                const types = ['text', 'code', 'data'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                const chunks = {
+                    text: [
+                        'Processing user request...',
+                        'Analyzing data patterns...',
+                        'Generating response...',
+                        'Validating results...',
+                        'Finalizing output...'
+                    ],
+                    code: [
+                        'function processData(data) { return data.map(x => x * 2); }',
+                        'const result = await api.call(endpoint, params);',
+                        'if (condition) { return success; } else { return error; }',
+                        'for (let i = 0; i < items.length; i++) { process(items[i]); }'
+                    ],
+                    data: [
+                        '{"status": "processing", "progress": 45}',
+                        '{"items": [1, 2, 3], "total": 3}',
+                        '{"error": null, "result": "success"}',
+                        '{"timestamp": "' + new Date().toISOString() + '"}'
+                    ]
+                };
+                
+                const content = chunks[type][Math.floor(Math.random() * chunks[type].length)];
+                
+                this.addChunk({
+                    type,
+                    content,
+                    metadata: { source: 'mock', timestamp: Date.now() }
+                });
+                
+                // Update progress
+                this.progress.current = Math.min(this.progress.current + 5, this.progress.total);
+                this.progress.percentage = (this.progress.current / this.progress.total) * 100;
+                
+                // Check if completed
+                if (this.progress.current >= this.progress.total) {
+                    this.stop();
+                }
+            }
+            
+            addChunk(chunk) {
+                const newChunk = {
+                    ...chunk,
+                    id: 'chunk-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                    timestamp: Date.now()
+                };
+                
+                this.chunks.push(newChunk);
+                this.updateStats();
+                this.options.onChunk(newChunk);
+                this.render();
+            }
+            
+            updateStats() {
+                const now = Date.now();
+                const duration = now - this.stats.startTime;
+                
+                this.stats.totalChunks = this.chunks.length;
+                this.stats.totalBytes = this.chunks.reduce((sum, chunk) => sum + chunk.content.length, 0);
+                this.stats.chunksPerSecond = duration > 0 ? (this.stats.totalChunks / duration) * 1000 : 0;
+                this.stats.bytesPerSecond = duration > 0 ? (this.stats.totalBytes / duration) * 1000 : 0;
+            }
+            
+            pause() {
+                if (this.isActive && !this.isPaused) {
+                    this.isPaused = true;
+                    this.state = 'paused';
+                    this.options.onStateChange(this.state);
+                    this.render();
+                }
+            }
+            
+            resume() {
+                if (this.isActive && this.isPaused) {
+                    this.isPaused = false;
+                    this.state = 'streaming';
+                    this.options.onStateChange(this.state);
+                    this.render();
+                }
+            }
+            
+            stop() {
+                this.isActive = false;
+                this.isPaused = false;
+                this.state = 'completed';
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                }
+                this.options.onStateChange(this.state);
+                this.render();
+            }
+            
+            clear() {
+                this.chunks = [];
+                this.stats = {
+                    totalChunks: 0,
+                    totalBytes: 0,
+                    chunksPerSecond: 0,
+                    bytesPerSecond: 0,
+                    startTime: 0
+                };
+                this.progress = { current: 0, total: 100, percentage: 0 };
+                this.state = 'idle';
+                this.isActive = false;
+                this.isPaused = false;
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                }
+                this.render();
+            }
+            
+            formatBytes(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+        
+        // Initialize the example
+        const stream = new MockStream({
+            variant: 'realtime',
+            showProgress: true,
+            showStats: true,
+            onChunk: (chunk) => {
+                console.log('New chunk:', chunk);
+            },
+            onStateChange: (state) => {
+                console.log('State changed:', state);
+            }
+        });
+        
+        stream.mount(document.getElementById('stream-container'));
+        
+        // Event handlers
+        document.getElementById('start-btn').addEventListener('click', () => {
+            stream.start();
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('pause-btn').disabled = false;
+            document.getElementById('stop-btn').disabled = false;
+        });
+        
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            stream.pause();
+            document.getElementById('pause-btn').disabled = true;
+            document.getElementById('resume-btn').disabled = false;
+        });
+        
+        document.getElementById('resume-btn').addEventListener('click', () => {
+            stream.resume();
+            document.getElementById('resume-btn').disabled = true;
+            document.getElementById('pause-btn').disabled = false;
+        });
+        
+        document.getElementById('stop-btn').addEventListener('click', () => {
+            stream.stop();
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = true;
+            document.getElementById('resume-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = true;
+        });
+        
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            stream.clear();
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = true;
+            document.getElementById('resume-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = true;
+        });
+    </script>
+</body>
+</html>

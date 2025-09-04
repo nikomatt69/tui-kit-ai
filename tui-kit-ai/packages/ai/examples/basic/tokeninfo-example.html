@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenInfo Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .tokeninfo-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 TokenInfo Component Example</h1>
+            <p>Token usage tracking with cost analysis and model information</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Token Types:</strong> Input, Output, Total, Prompt, Completion, System, User, Assistant</p>
+            <p><strong>Features:</strong> Progress bars, Cost breakdown, Real-time metrics, Model details</p>
+            <p><strong>Models:</strong> GPT-4, GPT-3.5, Claude-3, Gemini, LLaMA, and more</p>
+        </div>
+        
+        <div class="controls">
+            <select class="select" id="model-select">
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="claude-3-opus">Claude-3 Opus</option>
+                <option value="claude-3-sonnet">Claude-3 Sonnet</option>
+                <option value="claude-3-haiku">Claude-3 Haiku</option>
+                <option value="gemini-pro">Gemini Pro</option>
+                <option value="llama-2-70b">LLaMA-2 70B</option>
+                <option value="llama-2-13b">LLaMA-2 13B</option>
+            </select>
+            
+            <button class="btn" id="simulate-usage">Simulate Usage</button>
+            <button class="btn" id="reset-stats">Reset Stats</button>
+            <button class="btn" id="toggle-breakdown">Toggle Breakdown</button>
+            <button class="btn" id="toggle-cost">Toggle Cost</button>
+            <button class="btn" id="toggle-progress">Toggle Progress</button>
+        </div>
+        
+        <div class="tokeninfo-container" id="tokeninfo-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Model:</strong> Change the AI model to see different pricing</p>
+            <p><strong>Simulate Usage:</strong> Add random token usage to see real-time updates</p>
+            <p><strong>Reset Stats:</strong> Clear all token usage and reset to zero</p>
+            <p><strong>Toggle Breakdown:</strong> Show/hide detailed token breakdown by type</p>
+            <p><strong>Toggle Cost:</strong> Show/hide cost analysis and pricing information</p>
+            <p><strong>Toggle Progress:</strong> Show/hide progress bars for token usage</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { TokenInfo } from '@tui-kit-ai/ai';
+
+const tokenInfo = new TokenInfo({
+  model: 'gpt-4',
+  showCost: true,
+  showBreakdown: true,
+  showProgress: true,
+  onTokenUpdate: (tokens) => console.log('Tokens:', tokens),
+  onCostUpdate: (cost) => console.log('Cost:', cost)
+});
+
+// Add token usage
+tokenInfo.addTokens({
+  input: 150,
+  output: 75,
+  prompt: 100,
+  completion: 50
+});
+
+// Update model
+tokenInfo.setModel('claude-3-opus');
+
+// Get current stats
+const stats = tokenInfo.getStats();
+console.log('Total tokens:', stats.total);
+console.log('Total cost:', stats.cost);</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock TokenInfo component for demonstration
+        class MockTokenInfo {
+            constructor(options = {}) {
+                this.options = {
+                    model: 'gpt-4',
+                    showCost: true,
+                    showBreakdown: true,
+                    showProgress: true,
+                    onTokenUpdate: () => {},
+                    onCostUpdate: () => {},
+                    ...options
+                };
+                
+                this.tokens = {
+                    input: 0,
+                    output: 0,
+                    total: 0,
+                    prompt: 0,
+                    completion: 0,
+                    system: 0,
+                    user: 0,
+                    assistant: 0
+                };
+                
+                this.cost = {
+                    input: 0,
+                    output: 0,
+                    total: 0
+                };
+                
+                this.limits = {
+                    input: 1000,
+                    output: 1000,
+                    total: 2000
+                };
+                
+                this.modelInfo = this.getModelInfo(this.options.model);
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            setModel(model) {
+                this.options.model = model;
+                this.modelInfo = this.getModelInfo(model);
+                this.render();
+            }
+            
+            addTokens(tokens) {
+                Object.keys(tokens).forEach(key => {
+                    if (this.tokens.hasOwnProperty(key)) {
+                        this.tokens[key] += tokens[key];
+                    }
+                });
+                
+                this.updateTotals();
+                this.updateCosts();
+                this.options.onTokenUpdate(this.tokens);
+                this.options.onCostUpdate(this.cost);
+                this.render();
+            }
+            
+            updateTotals() {
+                this.tokens.total = this.tokens.input + this.tokens.output;
+                this.tokens.prompt = this.tokens.system + this.tokens.user;
+                this.tokens.completion = this.tokens.assistant;
+            }
+            
+            updateCosts() {
+                const pricing = this.modelInfo.pricing;
+                this.cost.input = (this.tokens.input / 1000) * pricing.input;
+                this.cost.output = (this.tokens.output / 1000) * pricing.output;
+                this.cost.total = this.cost.input + this.cost.output;
+            }
+            
+            getStats() {
+                return {
+                    tokens: this.tokens,
+                    cost: this.cost,
+                    model: this.modelInfo
+                };
+            }
+            
+            reset() {
+                this.tokens = {
+                    input: 0,
+                    output: 0,
+                    total: 0,
+                    prompt: 0,
+                    completion: 0,
+                    system: 0,
+                    user: 0,
+                    assistant: 0
+                };
+                this.cost = {
+                    input: 0,
+                    output: 0,
+                    total: 0
+                };
+                this.render();
+            }
+            
+            getModelInfo(model) {
+                const models = {
+                    'gpt-4': {
+                        name: 'GPT-4',
+                        provider: 'OpenAI',
+                        context: 8192,
+                        pricing: { input: 0.03, output: 0.06 },
+                        capabilities: ['text-generation', 'function-calling', 'multimodal']
+                    },
+                    'gpt-3.5-turbo': {
+                        name: 'GPT-3.5 Turbo',
+                        provider: 'OpenAI',
+                        context: 4096,
+                        pricing: { input: 0.001, output: 0.002 },
+                        capabilities: ['text-generation', 'function-calling']
+                    },
+                    'claude-3-opus': {
+                        name: 'Claude-3 Opus',
+                        provider: 'Anthropic',
+                        context: 200000,
+                        pricing: { input: 0.015, output: 0.075 },
+                        capabilities: ['text-generation', 'multimodal', 'tool-use']
+                    },
+                    'claude-3-sonnet': {
+                        name: 'Claude-3 Sonnet',
+                        provider: 'Anthropic',
+                        context: 200000,
+                        pricing: { input: 0.003, output: 0.015 },
+                        capabilities: ['text-generation', 'multimodal', 'tool-use']
+                    },
+                    'claude-3-haiku': {
+                        name: 'Claude-3 Haiku',
+                        provider: 'Anthropic',
+                        context: 200000,
+                        pricing: { input: 0.00025, output: 0.00125 },
+                        capabilities: ['text-generation', 'multimodal', 'tool-use']
+                    },
+                    'gemini-pro': {
+                        name: 'Gemini Pro',
+                        provider: 'Google',
+                        context: 32768,
+                        pricing: { input: 0.0005, output: 0.0015 },
+                        capabilities: ['text-generation', 'multimodal']
+                    },
+                    'llama-2-70b': {
+                        name: 'LLaMA-2 70B',
+                        provider: 'Meta',
+                        context: 4096,
+                        pricing: { input: 0.0007, output: 0.0009 },
+                        capabilities: ['text-generation']
+                    },
+                    'llama-2-13b': {
+                        name: 'LLaMA-2 13B',
+                        provider: 'Meta',
+                        context: 4096,
+                        pricing: { input: 0.0002, output: 0.0002 },
+                        capabilities: ['text-generation']
+                    }
+                };
+                
+                return models[model] || models['gpt-4'];
+            }
+            
+            render() {
+                const { model, showCost, showBreakdown, showProgress } = this.options;
+                const modelInfo = this.modelInfo;
+                
+                this.container.innerHTML = `
+                    <div class="tokeninfo ${model}">
+                        <div class="tokeninfo-header">
+                            <div class="tokeninfo-title">
+                                <span class="tokeninfo-model">${modelInfo.name}</span>
+                                <span class="tokeninfo-provider">${modelInfo.provider}</span>
+                            </div>
+                            <div class="tokeninfo-context">
+                                Context: ${modelInfo.context.toLocaleString()} tokens
+                            </div>
+                        </div>
+                        
+                        <div class="tokeninfo-stats">
+                            <div class="tokeninfo-stat">
+                                <div class="tokeninfo-stat-label">Total Tokens</div>
+                                <div class="tokeninfo-stat-value">${this.tokens.total.toLocaleString()}</div>
+                                ${showProgress ? `
+                                    <div class="tokeninfo-progress">
+                                        <div class="tokeninfo-progress-bar" style="width: ${Math.min((this.tokens.total / this.limits.total) * 100, 100)}%"></div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="tokeninfo-stat">
+                                <div class="tokeninfo-stat-label">Input Tokens</div>
+                                <div class="tokeninfo-stat-value">${this.tokens.input.toLocaleString()}</div>
+                                ${showProgress ? `
+                                    <div class="tokeninfo-progress">
+                                        <div class="tokeninfo-progress-bar input" style="width: ${Math.min((this.tokens.input / this.limits.input) * 100, 100)}%"></div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="tokeninfo-stat">
+                                <div class="tokeninfo-stat-label">Output Tokens</div>
+                                <div class="tokeninfo-stat-value">${this.tokens.output.toLocaleString()}</div>
+                                ${showProgress ? `
+                                    <div class="tokeninfo-progress">
+                                        <div class="tokeninfo-progress-bar output" style="width: ${Math.min((this.tokens.output / this.limits.output) * 100, 100)}%"></div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${showCost ? `
+                                <div class="tokeninfo-stat">
+                                    <div class="tokeninfo-stat-label">Total Cost</div>
+                                    <div class="tokeninfo-stat-value">$${this.cost.total.toFixed(4)}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${showBreakdown ? `
+                            <div class="tokeninfo-breakdown">
+                                <div class="tokeninfo-breakdown-title">Token Breakdown</div>
+                                <div class="tokeninfo-breakdown-items">
+                                    <div class="tokeninfo-breakdown-item">
+                                        <span class="tokeninfo-breakdown-label">System</span>
+                                        <span class="tokeninfo-breakdown-value">${this.tokens.system.toLocaleString()}</span>
+                                    </div>
+                                    <div class="tokeninfo-breakdown-item">
+                                        <span class="tokeninfo-breakdown-label">User</span>
+                                        <span class="tokeninfo-breakdown-value">${this.tokens.user.toLocaleString()}</span>
+                                    </div>
+                                    <div class="tokeninfo-breakdown-item">
+                                        <span class="tokeninfo-breakdown-label">Assistant</span>
+                                        <span class="tokeninfo-breakdown-value">${this.tokens.assistant.toLocaleString()}</span>
+                                    </div>
+                                    <div class="tokeninfo-breakdown-item">
+                                        <span class="tokeninfo-breakdown-label">Prompt</span>
+                                        <span class="tokeninfo-breakdown-value">${this.tokens.prompt.toLocaleString()}</span>
+                                    </div>
+                                    <div class="tokeninfo-breakdown-item">
+                                        <span class="tokeninfo-breakdown-label">Completion</span>
+                                        <span class="tokeninfo-breakdown-value">${this.tokens.completion.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${showCost ? `
+                            <div class="tokeninfo-cost">
+                                <div class="tokeninfo-cost-title">Cost Breakdown</div>
+                                <div class="tokeninfo-cost-items">
+                                    <div class="tokeninfo-cost-item">
+                                        <span class="tokeninfo-cost-label">Input Cost</span>
+                                        <span class="tokeninfo-cost-value">$${this.cost.input.toFixed(4)}</span>
+                                    </div>
+                                    <div class="tokeninfo-cost-item">
+                                        <span class="tokeninfo-cost-label">Output Cost</span>
+                                        <span class="tokeninfo-cost-value">$${this.cost.output.toFixed(4)}</span>
+                                    </div>
+                                    <div class="tokeninfo-cost-item">
+                                        <span class="tokeninfo-cost-label">Total Cost</span>
+                                        <span class="tokeninfo-cost-value">$${this.cost.total.toFixed(4)}</span>
+                                    </div>
+                                </div>
+                                <div class="tokeninfo-pricing">
+                                    <div class="tokeninfo-pricing-item">
+                                        <span class="tokeninfo-pricing-label">Input:</span>
+                                        <span class="tokeninfo-pricing-value">$${modelInfo.pricing.input}/1K tokens</span>
+                                    </div>
+                                    <div class="tokeninfo-pricing-item">
+                                        <span class="tokeninfo-pricing-label">Output:</span>
+                                        <span class="tokeninfo-pricing-value">$${modelInfo.pricing.output}/1K tokens</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="tokeninfo-capabilities">
+                            <div class="tokeninfo-capabilities-title">Capabilities</div>
+                            <div class="tokeninfo-capabilities-items">
+                                ${modelInfo.capabilities.map(cap => `
+                                    <span class="tokeninfo-capability">${cap}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add styles
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('tokeninfo-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'tokeninfo-styles';
+                    style.textContent = `
+                        .tokeninfo {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .tokeninfo-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .tokeninfo-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .tokeninfo-model {
+                            font-weight: bold;
+                            color: #00ff00;
+                            font-size: 1.1em;
+                        }
+                        
+                        .tokeninfo-provider {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .tokeninfo-context {
+                            color: #666;
+                            font-size: 0.8em;
+                        }
+                        
+                        .tokeninfo-stats {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 20px;
+                            padding: 20px;
+                        }
+                        
+                        .tokeninfo-stat {
+                            text-align: center;
+                        }
+                        
+                        .tokeninfo-stat-label {
+                            color: #888;
+                            font-size: 0.8em;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .tokeninfo-stat-value {
+                            font-size: 1.5em;
+                            font-weight: bold;
+                            color: #00ff00;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .tokeninfo-progress {
+                            height: 4px;
+                            background: #333;
+                            border-radius: 2px;
+                            overflow: hidden;
+                        }
+                        
+                        .tokeninfo-progress-bar {
+                            height: 100%;
+                            background: linear-gradient(90deg, #00ff00, #0088ff);
+                            transition: width 0.3s ease;
+                        }
+                        
+                        .tokeninfo-progress-bar.input {
+                            background: linear-gradient(90deg, #00ff00, #00aa00);
+                        }
+                        
+                        .tokeninfo-progress-bar.output {
+                            background: linear-gradient(90deg, #0088ff, #0066cc);
+                        }
+                        
+                        .tokeninfo-breakdown {
+                            padding: 20px;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        .tokeninfo-breakdown-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .tokeninfo-breakdown-items {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                            gap: 10px;
+                        }
+                        
+                        .tokeninfo-breakdown-item {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 8px 12px;
+                            background: #111;
+                            border-radius: 4px;
+                        }
+                        
+                        .tokeninfo-breakdown-label {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .tokeninfo-breakdown-value {
+                            color: #fff;
+                            font-weight: bold;
+                        }
+                        
+                        .tokeninfo-cost {
+                            padding: 20px;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        .tokeninfo-cost-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .tokeninfo-cost-items {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                            gap: 10px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .tokeninfo-cost-item {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 8px 12px;
+                            background: #111;
+                            border-radius: 4px;
+                        }
+                        
+                        .tokeninfo-cost-label {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .tokeninfo-cost-value {
+                            color: #00ff00;
+                            font-weight: bold;
+                        }
+                        
+                        .tokeninfo-pricing {
+                            display: flex;
+                            gap: 20px;
+                            font-size: 0.8em;
+                            color: #666;
+                        }
+                        
+                        .tokeninfo-pricing-item {
+                            display: flex;
+                            gap: 5px;
+                        }
+                        
+                        .tokeninfo-pricing-label {
+                            color: #888;
+                        }
+                        
+                        .tokeninfo-pricing-value {
+                            color: #00ff00;
+                        }
+                        
+                        .tokeninfo-capabilities {
+                            padding: 20px;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        .tokeninfo-capabilities-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .tokeninfo-capabilities-items {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 8px;
+                        }
+                        
+                        .tokeninfo-capability {
+                            background: #333;
+                            color: #fff;
+                            padding: 4px 8px;
+                            border-radius: 3px;
+                            font-size: 0.8em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+        
+        // Initialize the example
+        const tokenInfo = new MockTokenInfo({
+            model: 'gpt-4',
+            showCost: true,
+            showBreakdown: true,
+            showProgress: true,
+            onTokenUpdate: (tokens) => {
+                console.log('Tokens updated:', tokens);
+            },
+            onCostUpdate: (cost) => {
+                console.log('Cost updated:', cost);
+            }
+        });
+        
+        tokenInfo.mount(document.getElementById('tokeninfo-container'));
+        
+        // Event handlers
+        document.getElementById('model-select').addEventListener('change', (e) => {
+            tokenInfo.setModel(e.target.value);
+        });
+        
+        document.getElementById('simulate-usage').addEventListener('click', () => {
+            const randomTokens = {
+                input: Math.floor(Math.random() * 100) + 50,
+                output: Math.floor(Math.random() * 50) + 25,
+                system: Math.floor(Math.random() * 20) + 10,
+                user: Math.floor(Math.random() * 80) + 40,
+                assistant: Math.floor(Math.random() * 50) + 25
+            };
+            
+            tokenInfo.addTokens(randomTokens);
+        });
+        
+        document.getElementById('reset-stats').addEventListener('click', () => {
+            tokenInfo.reset();
+        });
+        
+        document.getElementById('toggle-breakdown').addEventListener('click', () => {
+            tokenInfo.options.showBreakdown = !tokenInfo.options.showBreakdown;
+            tokenInfo.render();
+        });
+        
+        document.getElementById('toggle-cost').addEventListener('click', () => {
+            tokenInfo.options.showCost = !tokenInfo.options.showCost;
+            tokenInfo.render();
+        });
+        
+        document.getElementById('toggle-progress').addEventListener('click', () => {
+            tokenInfo.options.showProgress = !tokenInfo.options.showProgress;
+            tokenInfo.render();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Components Dashboard</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto auto;
+            gap: 20px;
+        }
+        
+        .dashboard-section {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 20px;
+        }
+        
+        .dashboard-section h3 {
+            color: #00ff00;
+            margin: 0 0 15px 0;
+        }
+        
+        .dashboard-section.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .dashboard-section.half-width {
+            grid-column: span 1;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .status-bar {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-bar h3 {
+            color: #00ff00;
+            margin: 0 0 15px 0;
+        }
+        
+        .status-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .status-item-label {
+            color: #888;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        
+        .status-item-value {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI Components Dashboard</h1>
+            <p>Complete AI workflow demonstration with all components</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Dashboard Overview</h3>
+            <p><strong>Purpose:</strong> Demonstrate all AI components working together in a complete workflow</p>
+            <p><strong>Components:</strong> Stream, CodeBlock, TokenInfo, ModelSelector, WebSearchTool, PDFTool, ImageAI</p>
+            <p><strong>Features:</strong> Real-time updates, component interaction, automated workflows, data export</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="start-workflow">🚀 Start Workflow</button>
+            <button class="btn" id="reset-dashboard">🔄 Reset Dashboard</button>
+            <button class="btn" id="toggle-auto">⏰ Toggle Auto Mode</button>
+            <button class="btn" id="export-data">📊 Export Data</button>
+            <button class="btn" id="toggle-theme">🎨 Toggle Theme</button>
+        </div>
+        
+        <div class="status-bar">
+            <h3>📊 System Status</h3>
+            <div class="status-items">
+                <div class="status-item">
+                    <div class="status-item-label">Active Components</div>
+                    <div class="status-item-value" id="active-components">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">Total Tokens</div>
+                    <div class="status-item-value" id="total-tokens">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">Total Cost</div>
+                    <div class="status-item-value" id="total-cost">$0.00</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">Workflow Step</div>
+                    <div class="status-item-value" id="workflow-step">0/6</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <!-- Model Selection Section -->
+            <div class="dashboard-section half-width">
+                <h3>🤖 Model Selection</h3>
+                <div id="model-selector-container"></div>
+            </div>
+            
+            <!-- Token Usage Section -->
+            <div class="dashboard-section half-width">
+                <h3>📊 Token Usage</h3>
+                <div id="token-info-container"></div>
+            </div>
+            
+            <!-- Web Search Section -->
+            <div class="dashboard-section half-width">
+                <h3>🔍 Web Search</h3>
+                <div id="web-search-container"></div>
+            </div>
+            
+            <!-- Stream Section -->
+            <div class="dashboard-section half-width">
+                <h3>🚀 Content Stream</h3>
+                <div id="stream-container"></div>
+            </div>
+            
+            <!-- Code Block Section -->
+            <div class="dashboard-section half-width">
+                <h3>💻 Code Analysis</h3>
+                <div id="codeblock-container"></div>
+            </div>
+            
+            <!-- PDF Tool Section -->
+            <div class="dashboard-section half-width">
+                <h3>📄 Document Processing</h3>
+                <div id="pdf-tool-container"></div>
+            </div>
+            
+            <!-- Image AI Section -->
+            <div class="dashboard-section full-width">
+                <h3>🎨 Image Generation & Analysis</h3>
+                <div id="image-ai-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock AI Dashboard class
+        class MockAIDashboard {
+            constructor() {
+                this.components = {};
+                this.workflow = [];
+                this.isAutoMode = false;
+                this.currentStep = 0;
+                this.data = {
+                    selectedModel: null,
+                    searchResults: [],
+                    generatedContent: '',
+                    extractedCode: '',
+                    processedDocuments: [],
+                    generatedImages: []
+                };
+                
+                this.initializeComponents();
+            }
+            
+            initializeComponents() {
+                // Initialize all components
+                this.components.modelSelector = new MockModelSelector({
+                    onModelSelect: (model) => this.onModelSelect(model)
+                });
+                
+                this.components.tokenInfo = new MockTokenInfo({
+                    onTokenUpdate: (tokens) => this.onTokenUpdate(tokens)
+                });
+                
+                this.components.webSearch = new MockWebSearchTool({
+                    onSearch: (query, results) => this.onSearchComplete(query, results)
+                });
+                
+                this.components.stream = new MockStream({
+                    onChunk: (chunk) => this.onStreamChunk(chunk),
+                    onStateChange: (state) => this.onStreamStateChange(state)
+                });
+                
+                this.components.codeBlock = new MockCodeBlock({
+                    onCodeUpdate: (code) => this.onCodeUpdate(code)
+                });
+                
+                this.components.pdfTool = new MockPDFTool({
+                    onDocumentLoad: (doc) => this.onDocumentLoad(doc)
+                });
+                
+                this.components.imageAI = new MockImageAI({
+                    onImageGenerate: (image) => this.onImageGenerate(image)
+                });
+            }
+            
+            mount() {
+                // Mount all components
+                this.components.modelSelector.mount(document.getElementById('model-selector-container'));
+                this.components.tokenInfo.mount(document.getElementById('token-info-container'));
+                this.components.webSearch.mount(document.getElementById('web-search-container'));
+                this.components.stream.mount(document.getElementById('stream-container'));
+                this.components.codeBlock.mount(document.getElementById('codeblock-container'));
+                this.components.pdfTool.mount(document.getElementById('pdf-tool-container'));
+                this.components.imageAI.mount(document.getElementById('image-ai-container'));
+            }
+            
+            startWorkflow() {
+                this.workflow = [
+                    'selectModel',
+                    'searchWeb',
+                    'generateContent',
+                    'analyzeCode',
+                    'processDocument',
+                    'generateImage'
+                ];
+                
+                this.currentStep = 0;
+                this.executeNextStep();
+            }
+            
+            executeNextStep() {
+                if (this.currentStep >= this.workflow.length) {
+                    console.log('Workflow completed!');
+                    this.updateStatus();
+                    return;
+                }
+                
+                const step = this.workflow[this.currentStep];
+                console.log(`Executing step: ${step}`);
+                
+                switch (step) {
+                    case 'selectModel':
+                        this.selectModel();
+                        break;
+                    case 'searchWeb':
+                        this.searchWeb();
+                        break;
+                    case 'generateContent':
+                        this.generateContent();
+                        break;
+                    case 'analyzeCode':
+                        this.analyzeCode();
+                        break;
+                    case 'processDocument':
+                        this.processDocument();
+                        break;
+                    case 'generateImage':
+                        this.generateImage();
+                        break;
+                }
+                
+                this.currentStep++;
+                this.updateStatus();
+                
+                if (this.isAutoMode) {
+                    setTimeout(() => this.executeNextStep(), 2000);
+                }
+            }
+            
+            selectModel() {
+                // Simulate model selection
+                const models = ['gpt-4', 'claude-3-opus', 'gemini-pro'];
+                const selectedModel = models[Math.floor(Math.random() * models.length)];
+                this.components.modelSelector.selectModel(selectedModel);
+                this.data.selectedModel = selectedModel;
+            }
+            
+            searchWeb() {
+                // Simulate web search
+                const queries = [
+                    'artificial intelligence trends 2024',
+                    'machine learning best practices',
+                    'AI development tools',
+                    'neural network architectures'
+                ];
+                const query = queries[Math.floor(Math.random() * queries.length)];
+                this.components.webSearch.search(query);
+            }
+            
+            generateContent() {
+                // Simulate content generation
+                this.components.stream.start();
+                
+                // Add some mock chunks
+                setTimeout(() => {
+                    this.components.stream.addChunk({
+                        type: 'text',
+                        content: 'Generating comprehensive AI analysis...',
+                        metadata: { source: 'ai-model' }
+                    });
+                }, 500);
+                
+                setTimeout(() => {
+                    this.components.stream.addChunk({
+                        type: 'text',
+                        content: 'Analyzing current trends and best practices...',
+                        metadata: { source: 'ai-model' }
+                    });
+                }, 1000);
+                
+                setTimeout(() => {
+                    this.components.stream.addChunk({
+                        type: 'text',
+                        content: 'Content generation completed successfully.',
+                        metadata: { source: 'ai-model' }
+                    });
+                    this.components.stream.stop();
+                }, 2000);
+            }
+            
+            analyzeCode() {
+                // Simulate code analysis
+                const sampleCode = `
+function analyzeData(data) {
+    const results = data.map(item => ({
+        ...item,
+        processed: true,
+        timestamp: new Date().toISOString()
+    }));
+    
+    return results.filter(result => result.processed);
+}
+
+const processedData = analyzeData(rawData);
+console.log('Processed items:', processedData.length);
+                `;
+                
+                this.components.codeBlock.setCode(sampleCode);
+                this.components.codeBlock.setLanguage('javascript');
+            }
+            
+            processDocument() {
+                // Simulate document processing
+                const documents = ['sample1', 'sample2', 'sample3'];
+                const selectedDoc = documents[Math.floor(Math.random() * documents.length)];
+                this.components.pdfTool.loadDocument(selectedDoc);
+            }
+            
+            generateImage() {
+                // Simulate image generation
+                const prompts = [
+                    'A futuristic AI laboratory with glowing screens',
+                    'Abstract neural network visualization',
+                    'Modern tech workspace with AI elements',
+                    'Digital art representing machine learning'
+                ];
+                const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+                this.components.imageAI.generateImage(prompt);
+            }
+            
+            resetDashboard() {
+                // Reset all components
+                Object.values(this.components).forEach(component => {
+                    if (component.reset) component.reset();
+                    if (component.clear) component.clear();
+                    if (component.clearDocument) component.clearDocument();
+                    if (component.clearGallery) component.clearGallery();
+                });
+                
+                this.data = {
+                    selectedModel: null,
+                    searchResults: [],
+                    generatedContent: '',
+                    extractedCode: '',
+                    processedDocuments: [],
+                    generatedImages: []
+                };
+                
+                this.currentStep = 0;
+                this.workflow = [];
+                this.updateStatus();
+            }
+            
+            toggleAutoMode() {
+                this.isAutoMode = !this.isAutoMode;
+                const btn = document.getElementById('toggle-auto');
+                btn.textContent = this.isAutoMode ? '⏰ Auto Mode ON' : '⏰ Auto Mode OFF';
+                btn.classList.toggle('active', this.isAutoMode);
+                
+                if (this.isAutoMode && this.workflow.length > 0) {
+                    this.executeNextStep();
+                }
+            }
+            
+            exportData() {
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    workflow: this.workflow,
+                    data: this.data,
+                    components: {
+                        modelSelector: this.components.modelSelector.getStats(),
+                        tokenInfo: this.components.tokenInfo.getStats(),
+                        webSearch: this.components.webSearch.getHistory(),
+                        stream: this.components.stream.getStats(),
+                        codeBlock: this.components.codeBlock.getCode(),
+                        pdfTool: this.components.pdfTool.getStats(),
+                        imageAI: this.components.imageAI.getHistory()
+                    }
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ai-dashboard-export-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            updateStatus() {
+                // Update status bar
+                const activeComponents = Object.values(this.components).filter(comp => 
+                    comp.state === 'streaming' || comp.isActive || comp.currentDocument || comp.images.length > 0
+                ).length;
+                
+                document.getElementById('active-components').textContent = activeComponents;
+                document.getElementById('total-tokens').textContent = this.components.tokenInfo.tokens.total;
+                document.getElementById('total-cost').textContent = `$${this.components.tokenInfo.cost.total.toFixed(4)}`;
+                document.getElementById('workflow-step').textContent = `${this.currentStep}/${this.workflow.length}`;
+            }
+            
+            // Event handlers
+            onModelSelect(model) {
+                console.log('Model selected:', model);
+                this.data.selectedModel = model;
+                this.updateStatus();
+            }
+            
+            onTokenUpdate(tokens) {
+                console.log('Tokens updated:', tokens);
+                this.updateStatus();
+            }
+            
+            onSearchComplete(query, results) {
+                console.log('Search completed:', query, results);
+                this.data.searchResults = results;
+                this.updateStatus();
+            }
+            
+            onStreamChunk(chunk) {
+                console.log('Stream chunk:', chunk);
+                this.updateStatus();
+            }
+            
+            onStreamStateChange(state) {
+                console.log('Stream state:', state);
+                this.updateStatus();
+            }
+            
+            onCodeUpdate(code) {
+                console.log('Code updated:', code);
+                this.data.extractedCode = code;
+                this.updateStatus();
+            }
+            
+            onDocumentLoad(doc) {
+                console.log('Document loaded:', doc);
+                this.data.processedDocuments.push(doc);
+                this.updateStatus();
+            }
+            
+            onImageGenerate(image) {
+                console.log('Image generated:', image);
+                this.data.generatedImages.push(image);
+                this.updateStatus();
+            }
+        }
+        
+        // Initialize the dashboard
+        const dashboard = new MockAIDashboard();
+        dashboard.mount();
+        
+        // Event handlers
+        document.getElementById('start-workflow').addEventListener('click', () => {
+            dashboard.startWorkflow();
+        });
+        
+        document.getElementById('reset-dashboard').addEventListener('click', () => {
+            dashboard.resetDashboard();
+        });
+        
+        document.getElementById('toggle-auto').addEventListener('click', () => {
+            dashboard.toggleAutoMode();
+        });
+        
+        document.getElementById('export-data').addEventListener('click', () => {
+            dashboard.exportData();
+        });
+        
+        document.getElementById('toggle-theme').addEventListener('click', () => {
+            // Toggle between dark and light themes
+            document.body.classList.toggle('light-theme');
+        });
+        
+        // Include all the mock component classes from the basic examples
+        // (In a real implementation, these would be imported from the actual package)
+        
+        // Mock ModelSelector class
+        class MockModelSelector {
+            constructor(options = {}) {
+                this.options = options;
+                this.selectedModel = null;
+                this.models = [
+                    { id: 'gpt-4', name: 'GPT-4', provider: 'openai' },
+                    { id: 'claude-3-opus', name: 'Claude-3 Opus', provider: 'anthropic' },
+                    { id: 'gemini-pro', name: 'Gemini Pro', provider: 'google' }
+                ];
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            selectModel(modelId) {
+                this.selectedModel = modelId;
+                this.options.onModelSelect?.(modelId);
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="model-selector">
+                        <div class="model-selector-title">Select AI Model</div>
+                        <div class="model-selector-models">
+                            ${this.models.map(model => `
+                                <div class="model-selector-model ${this.selectedModel === model.id ? 'selected' : ''}" 
+                                     onclick="this.parentElement.parentElement.parentElement.modelSelector.selectModel('${model.id}')">
+                                    <div class="model-selector-model-name">${model.name}</div>
+                                    <div class="model-selector-model-provider">${model.provider}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                this.container.querySelector('.model-selector').modelSelector = this;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('model-selector-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'model-selector-styles';
+                    style.textContent = `
+                        .model-selector {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .model-selector-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .model-selector-models {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        
+                        .model-selector-model {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 12px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .model-selector-model:hover {
+                            border-color: #555;
+                        }
+                        
+                        .model-selector-model.selected {
+                            border-color: #00ff00;
+                            background: #001100;
+                        }
+                        
+                        .model-selector-model-name {
+                            color: #fff;
+                            font-weight: bold;
+                        }
+                        
+                        .model-selector-model-provider {
+                            color: #888;
+                            font-size: 0.8em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getStats() {
+                return {
+                    selectedModel: this.selectedModel,
+                    availableModels: this.models.length
+                };
+            }
+        }
+        
+        // Mock TokenInfo class
+        class MockTokenInfo {
+            constructor(options = {}) {
+                this.options = options;
+                this.tokens = { input: 0, output: 0, total: 0 };
+                this.cost = { input: 0, output: 0, total: 0 };
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            addTokens(tokens) {
+                this.tokens.input += tokens.input || 0;
+                this.tokens.output += tokens.output || 0;
+                this.tokens.total = this.tokens.input + this.tokens.output;
+                this.updateCosts();
+                this.options.onTokenUpdate?.(this.tokens);
+                this.render();
+            }
+            
+            updateCosts() {
+                this.cost.input = this.tokens.input * 0.001;
+                this.cost.output = this.tokens.output * 0.002;
+                this.cost.total = this.cost.input + this.cost.output;
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="token-info">
+                        <div class="token-info-title">Token Usage</div>
+                        <div class="token-info-stats">
+                            <div class="token-info-stat">
+                                <div class="token-info-stat-label">Input</div>
+                                <div class="token-info-stat-value">${this.tokens.input}</div>
+                            </div>
+                            <div class="token-info-stat">
+                                <div class="token-info-stat-label">Output</div>
+                                <div class="token-info-stat-value">${this.tokens.output}</div>
+                            </div>
+                            <div class="token-info-stat">
+                                <div class="token-info-stat-label">Total</div>
+                                <div class="token-info-stat-value">${this.tokens.total}</div>
+                            </div>
+                            <div class="token-info-stat">
+                                <div class="token-info-stat-label">Cost</div>
+                                <div class="token-info-stat-value">$${this.cost.total.toFixed(4)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('token-info-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'token-info-styles';
+                    style.textContent = `
+                        .token-info {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .token-info-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .token-info-stats {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 10px;
+                        }
+                        
+                        .token-info-stat {
+                            text-align: center;
+                            background: #222;
+                            padding: 10px;
+                            border-radius: 4px;
+                        }
+                        
+                        .token-info-stat-label {
+                            color: #888;
+                            font-size: 0.8em;
+                        }
+                        
+                        .token-info-stat-value {
+                            color: #00ff00;
+                            font-weight: bold;
+                            font-size: 1.2em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getStats() {
+                return {
+                    tokens: this.tokens,
+                    cost: this.cost
+                };
+            }
+        }
+        
+        // Mock WebSearchTool class
+        class MockWebSearchTool {
+            constructor(options = {}) {
+                this.options = options;
+                this.history = [];
+                this.currentResults = [];
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            search(query) {
+                const results = [
+                    { title: `${query} - Result 1`, url: 'https://example.com/1', snippet: 'First result for ' + query },
+                    { title: `${query} - Result 2`, url: 'https://example.com/2', snippet: 'Second result for ' + query },
+                    { title: `${query} - Result 3`, url: 'https://example.com/3', snippet: 'Third result for ' + query }
+                ];
+                
+                this.history.unshift({ query, timestamp: Date.now() });
+                this.currentResults = results;
+                this.options.onSearch?.(query, results);
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="web-search">
+                        <div class="web-search-title">Web Search</div>
+                        <div class="web-search-input">
+                            <input type="text" placeholder="Search..." onkeypress="if(event.key==='Enter') this.parentElement.parentElement.parentElement.webSearch.search(this.value)">
+                            <button onclick="this.parentElement.parentElement.parentElement.webSearch.search(this.previousElementSibling.value)">Search</button>
+                        </div>
+                        <div class="web-search-results">
+                            ${this.currentResults.map(result => `
+                                <div class="web-search-result">
+                                    <div class="web-search-result-title">${result.title}</div>
+                                    <div class="web-search-result-snippet">${result.snippet}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                this.container.querySelector('.web-search').webSearch = this;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('web-search-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'web-search-styles';
+                    style.textContent = `
+                        .web-search {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .web-search-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .web-search-input {
+                            display: flex;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .web-search-input input {
+                            flex: 1;
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 12px;
+                            border-radius: 4px;
+                            font-family: inherit;
+                        }
+                        
+                        .web-search-input button {
+                            background: #00ff00;
+                            color: #000;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-family: inherit;
+                        }
+                        
+                        .web-search-results {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        
+                        .web-search-result {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 12px;
+                        }
+                        
+                        .web-search-result-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .web-search-result-snippet {
+                            color: #ccc;
+                            font-size: 0.9em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getHistory() {
+                return this.history;
+            }
+        }
+        
+        // Mock Stream class
+        class MockStream {
+            constructor(options = {}) {
+                this.options = options;
+                this.state = 'idle';
+                this.chunks = [];
+                this.stats = { totalChunks: 0, totalBytes: 0 };
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            start() {
+                this.state = 'streaming';
+                this.options.onStateChange?.(this.state);
+                this.render();
+            }
+            
+            addChunk(chunk) {
+                this.chunks.push(chunk);
+                this.stats.totalChunks++;
+                this.stats.totalBytes += chunk.content.length;
+                this.options.onChunk?.(chunk);
+                this.render();
+            }
+            
+            stop() {
+                this.state = 'completed';
+                this.options.onStateChange?.(this.state);
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="stream">
+                        <div class="stream-title">Content Stream</div>
+                        <div class="stream-status">${this.state}</div>
+                        <div class="stream-content">
+                            ${this.chunks.map(chunk => `
+                                <div class="stream-chunk">
+                                    <div class="stream-chunk-content">${chunk.content}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="stream-stats">
+                            <div class="stream-stat">Chunks: ${this.stats.totalChunks}</div>
+                            <div class="stream-stat">Bytes: ${this.stats.totalBytes}</div>
+                        </div>
+                    </div>
+                `;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('stream-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'stream-styles';
+                    style.textContent = `
+                        .stream {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .stream-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .stream-status {
+                            color: #888;
+                            font-size: 0.8em;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .stream-content {
+                            max-height: 200px;
+                            overflow-y: auto;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .stream-chunk {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 10px;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .stream-chunk-content {
+                            color: #fff;
+                        }
+                        
+                        .stream-stats {
+                            display: flex;
+                            gap: 20px;
+                            font-size: 0.8em;
+                            color: #888;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getStats() {
+                return {
+                    state: this.state,
+                    stats: this.stats,
+                    chunks: this.chunks.length
+                };
+            }
+        }
+        
+        // Mock CodeBlock class
+        class MockCodeBlock {
+            constructor(options = {}) {
+                this.options = options;
+                this.code = '';
+                this.language = 'javascript';
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            setCode(code) {
+                this.code = code;
+                this.options.onCodeUpdate?.(code);
+                this.render();
+            }
+            
+            setLanguage(language) {
+                this.language = language;
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="code-block">
+                        <div class="code-block-title">Code Analysis</div>
+                        <div class="code-block-language">${this.language}</div>
+                        <div class="code-block-content">
+                            <pre><code>${this.code}</code></pre>
+                        </div>
+                    </div>
+                `;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('code-block-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'code-block-styles';
+                    style.textContent = `
+                        .code-block {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .code-block-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .code-block-language {
+                            color: #888;
+                            font-size: 0.8em;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .code-block-content {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 15px;
+                            overflow-x: auto;
+                        }
+                        
+                        .code-block-content pre {
+                            margin: 0;
+                            color: #00ff00;
+                            font-family: inherit;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getCode() {
+                return this.code;
+            }
+        }
+        
+        // Mock PDFTool class
+        class MockPDFTool {
+            constructor(options = {}) {
+                this.options = options;
+                this.currentDocument = null;
+                this.documents = [
+                    { id: 'sample1', name: 'Sample Document 1' },
+                    { id: 'sample2', name: 'Sample Document 2' },
+                    { id: 'sample3', name: 'Sample Document 3' }
+                ];
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            loadDocument(docId) {
+                const doc = this.documents.find(d => d.id === docId);
+                if (doc) {
+                    this.currentDocument = doc;
+                    this.options.onDocumentLoad?.(doc);
+                    this.render();
+                }
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="pdf-tool">
+                        <div class="pdf-tool-title">Document Processing</div>
+                        <div class="pdf-tool-documents">
+                            ${this.documents.map(doc => `
+                                <div class="pdf-tool-document ${this.currentDocument?.id === doc.id ? 'active' : ''}" 
+                                     onclick="this.parentElement.parentElement.parentElement.pdfTool.loadDocument('${doc.id}')">
+                                    ${doc.name}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${this.currentDocument ? `
+                            <div class="pdf-tool-status">Loaded: ${this.currentDocument.name}</div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                this.container.querySelector('.pdf-tool').pdfTool = this;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('pdf-tool-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'pdf-tool-styles';
+                    style.textContent = `
+                        .pdf-tool {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .pdf-tool-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .pdf-tool-documents {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .pdf-tool-document {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 10px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .pdf-tool-document:hover {
+                            border-color: #555;
+                        }
+                        
+                        .pdf-tool-document.active {
+                            border-color: #00ff00;
+                            background: #001100;
+                        }
+                        
+                        .pdf-tool-status {
+                            color: #888;
+                            font-size: 0.8em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getStats() {
+                return {
+                    currentDocument: this.currentDocument,
+                    totalDocuments: this.documents.length
+                };
+            }
+        }
+        
+        // Mock ImageAI class
+        class MockImageAI {
+            constructor(options = {}) {
+                this.options = options;
+                this.images = [];
+                this.history = [];
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            generateImage(prompt) {
+                const image = {
+                    id: 'img-' + Date.now(),
+                    prompt,
+                    url: `https://via.placeholder.com/300x200?text=${encodeURIComponent(prompt.substring(0, 20))}`,
+                    timestamp: Date.now()
+                };
+                
+                this.images.unshift(image);
+                this.history.unshift({ type: 'generate', prompt, timestamp: Date.now() });
+                this.options.onImageGenerate?.(image);
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="image-ai">
+                        <div class="image-ai-title">Image Generation</div>
+                        <div class="image-ai-gallery">
+                            ${this.images.slice(0, 3).map(image => `
+                                <div class="image-ai-image">
+                                    <img src="${image.url}" alt="${image.prompt}">
+                                    <div class="image-ai-prompt">${image.prompt}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('image-ai-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'image-ai-styles';
+                    style.textContent = `
+                        .image-ai {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                        }
+                        
+                        .image-ai-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .image-ai-gallery {
+                            display: flex;
+                            gap: 15px;
+                            overflow-x: auto;
+                        }
+                        
+                        .image-ai-image {
+                            flex-shrink: 0;
+                            text-align: center;
+                        }
+                        
+                        .image-ai-image img {
+                            width: 150px;
+                            height: 100px;
+                            object-fit: cover;
+                            border-radius: 4px;
+                            border: 1px solid #333;
+                        }
+                        
+                        .image-ai-prompt {
+                            color: #888;
+                            font-size: 0.8em;
+                            margin-top: 5px;
+                            max-width: 150px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            getHistory() {
+                return this.history;
+            }
+        }
+    </script>
+</body>
+</html>

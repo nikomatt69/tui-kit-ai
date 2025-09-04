@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Components - Advanced Examples</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .example {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 25px;
+            transition: all 0.2s ease;
+        }
+        
+        .example:hover {
+            border-color: #555;
+            transform: translateY(-2px);
+        }
+        
+        .example h3 {
+            color: #00ff00;
+            margin: 0 0 15px 0;
+        }
+        
+        .example p {
+            color: #ccc;
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+        }
+        
+        .example-features {
+            margin: 15px 0;
+        }
+        
+        .example-features h4 {
+            color: #0088ff;
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .example-features ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .example-features li {
+            margin: 5px 0;
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .example-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+        
+        .example-btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .example-btn.primary {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .example-btn.primary:hover {
+            background: #00cc00;
+        }
+        
+        .info {
+            background: #111;
+            padding: 25px;
+            border-radius: 6px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 15px 0;
+        }
+        
+        .info p {
+            margin: 10px 0;
+            color: #ccc;
+        }
+        
+        .info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .info li {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .info code {
+            background: #222;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+        
+        .workflow {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .workflow h4 {
+            color: #00ff00;
+            margin: 0 0 15px 0;
+        }
+        
+        .workflow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .workflow-step {
+            background: #222;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #333;
+        }
+        
+        .workflow-step.active {
+            background: #00ff00;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI Components - Advanced Examples</h1>
+            <p>Complex workflows and real-world applications</p>
+        </div>
+        
+        <div class="examples">
+            <div class="example">
+                <h3>🎯 AI Dashboard</h3>
+                <p>Complete AI workflow demonstrating how all components work together in a real-world application. Features automated workflows, component interaction, and data flow between different AI tools.</p>
+                
+                <div class="example-features">
+                    <h4>Key Features:</h4>
+                    <ul>
+                        <li>Automated workflow execution</li>
+                        <li>Component interaction and data flow</li>
+                        <li>Real-time updates across all components</li>
+                        <li>Export functionality for data analysis</li>
+                        <li>Auto-mode for continuous operation</li>
+                    </ul>
+                </div>
+                
+                <div class="workflow">
+                    <h4>Workflow Steps:</h4>
+                    <div class="workflow-steps">
+                        <div class="workflow-step">Model Selection</div>
+                        <div class="workflow-step">Web Search</div>
+                        <div class="workflow-step">Content Generation</div>
+                        <div class="workflow-step">Code Analysis</div>
+                        <div class="workflow-step">Document Processing</div>
+                        <div class="workflow-step">Image Generation</div>
+                    </div>
+                </div>
+                
+                <a href="ai-dashboard.html" class="example-btn primary">🚀 Launch Dashboard</a>
+            </div>
+        </div>
+        
+        <div class="info">
+            <h3>🎯 Advanced Examples Overview</h3>
+            <p>These advanced examples demonstrate complex, real-world scenarios where multiple AI components work together to solve practical problems. They showcase:</p>
+            
+            <ul>
+                <li><strong>Component Integration:</strong> How different AI components can work together seamlessly</li>
+                <li><strong>Data Flow:</strong> How information flows between components in a workflow</li>
+                <li><strong>Real-time Updates:</strong> Live updates and synchronization across components</li>
+                <li><strong>Workflow Automation:</strong> Automated execution of complex AI tasks</li>
+                <li><strong>Error Handling:</strong> Robust error handling and recovery mechanisms</li>
+                <li><strong>Performance Optimization:</strong> Efficient data handling and component management</li>
+            </ul>
+            
+            <h3>🔧 Technical Implementation</h3>
+            <p>The advanced examples use sophisticated patterns including:</p>
+            
+            <ul>
+                <li><strong>Event-Driven Architecture:</strong> Components communicate through events and callbacks</li>
+                <li><strong>State Management:</strong> Centralized state management for complex workflows</li>
+                <li><strong>Async Operations:</strong> Proper handling of asynchronous AI operations</li>
+                <li><strong>Data Persistence:</strong> Saving and loading workflow states</li>
+                <li><strong>Component Lifecycle:</strong> Proper initialization, updates, and cleanup</li>
+                <li><strong>Error Recovery:</strong> Graceful handling of failures and retries</li>
+            </ul>
+            
+            <h3>🚀 Use Cases</h3>
+            <p>These examples are designed for:</p>
+            
+            <ul>
+                <li><strong>AI Development Teams:</strong> Testing and validating AI workflows</li>
+                <li><strong>Content Creators:</strong> Automated content generation and analysis</li>
+                <li><strong>Researchers:</strong> Data collection, analysis, and visualization</li>
+                <li><strong>Business Analysts:</strong> Automated report generation and insights</li>
+                <li><strong>Educators:</strong> Interactive AI learning experiences</li>
+                <li><strong>Developers:</strong> Integration examples and best practices</li>
+            </ul>
+            
+            <h3>📖 Getting Started</h3>
+            <p>To use these advanced examples:</p>
+            <ol>
+                <li>Explore the AI Dashboard to understand component interaction</li>
+                <li>Study the workflow patterns and data flow</li>
+                <li>Adapt the examples to your specific use case</li>
+                <li>Integrate the patterns into your own applications</li>
+            </ol>
+            
+            <h3>🔗 Related Resources</h3>
+            <ul>
+                <li><a href="../basic/index.html" style="color: #00ff00;">Basic Examples</a> - Individual component demonstrations</li>
+                <li><a href="../dashboard/index.html" style="color: #00ff00;">Dashboard Example</a> - Complete application showcase</li>
+                <li><a href="../../README.md" style="color: #00ff00;">Documentation</a> - Complete API reference and guides</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

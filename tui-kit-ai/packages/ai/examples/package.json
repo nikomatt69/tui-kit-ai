@@ -1,0 +1,46 @@
+{
+  "name": "@tui-kit-ai/examples",
+  "version": "1.0.0",
+  "description": "Examples and demonstrations for the AI components package",
+  "main": "index.js",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build step required for HTML examples'",
+    "clean": "echo 'No cleanup required'"
+  },
+  "keywords": [
+    "ai",
+    "components",
+    "examples",
+    "demonstrations",
+    "tui-kit",
+    "terminal",
+    "ui"
+  ],
+  "author": "TUI Kit Team",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tui-kit/ai.git",
+    "directory": "examples"
+  },
+  "bugs": {
+    "url": "https://github.com/tui-kit/ai/issues"
+  },
+  "homepage": "https://github.com/tui-kit/ai#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "python": ">=3.6.0"
+  },
+  "files": [
+    "basic/",
+    "advanced/",
+    "dashboard/",
+    "package.json",
+    "README.md"
+  ]
+}

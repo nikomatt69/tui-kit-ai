@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Components - Basic Examples</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .component {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .component:hover {
+            border-color: #555;
+            transform: translateY(-2px);
+        }
+        
+        .component h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .component p {
+            color: #ccc;
+            margin: 0 0 15px 0;
+            line-height: 1.5;
+        }
+        
+        .component-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .component-btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .info {
+            background: #111;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 15px 0;
+        }
+        
+        .info p {
+            margin: 10px 0;
+            color: #ccc;
+        }
+        
+        .info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .info li {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .info code {
+            background: #222;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AI Components - Basic Examples</h1>
+            <p>Interactive demonstrations of all AI components</p>
+        </div>
+        
+        <div class="components">
+            <div class="component">
+                <h3>🚀 Stream Component</h3>
+                <p>Real-time streaming with progress tracking and statistics. Features chunk management, progress bars, and real-time metrics.</p>
+                <a href="stream-example.html" class="component-btn">View Example</a>
+            </div>
+            
+            <div class="component">
+                <h3>💻 CodeBlock Component</h3>
+                <p>Syntax highlighting with line numbers and multi-language support. Supports multiple themes and code actions.</p>
+                <a href="codeblock-example.html" class="component-btn">View Example</a>
+            </div>
+            
+            <div class="component">
+                <h3>📊 TokenInfo Component</h3>
+                <p>Token usage tracking with cost analysis and model information. Real-time metrics and detailed breakdowns.</p>
+                <a href="tokeninfo-example.html" class="component-btn">View Example</a>
+            </div>
+            
+            <div class="component">
+                <h3>🤖 ModelSelector Component</h3>
+                <p>AI model selection and comparison with advanced filters. Support for multiple providers and capabilities.</p>
+                <a href="modelselector-example.html" class="component-btn">View Example</a>
+            </div>
+            
+            <div class="component">
+                <h3>🔍 WebSearchTool Component</h3>
+                <p>Web search with multiple engines and advanced filters. Search history and result metadata.</p>
+                <a href="websearch-example.html" class="component-btn">View Example</a>
+            </div>
+            
+            <div class="component">
+                <h3>📄 PDFTool Component</h3>
+                <p>PDF processing, text extraction, search, and analysis. Document viewer and content extraction.</p>
+                <a href="pdftool-example.html" class="component-btn">View Example</a>
+            </div>
+            
+            <div class="component">
+                <h3>🎨 ImageAI Component</h3>
+                <p>AI image generation and analysis with multiple models. Prompt editor and image gallery.</p>
+                <a href="imageai-example.html" class="component-btn">View Example</a>
+            </div>
+        </div>
+        
+        <div class="info">
+            <h3>📚 About These Examples</h3>
+            <p>These examples demonstrate the core functionality of each AI component in the <code>@tui-kit-ai/ai</code> package. Each example includes:</p>
+            <ul>
+                <li><strong>Interactive Controls:</strong> Buttons and inputs to test different features</li>
+                <li><strong>Real-time Updates:</strong> Live demonstration of component behavior</li>
+                <li><strong>Mock Data:</strong> Realistic sample data for testing</li>
+                <li><strong>Usage Examples:</strong> Code snippets showing how to use each component</li>
+            </ul>
+            
+            <h3>🎯 Key Features Demonstrated</h3>
+            <ul>
+                <li><strong>Stream:</strong> Real-time data streaming, progress tracking, chunk management</li>
+                <li><strong>CodeBlock:</strong> Syntax highlighting, line numbers, multiple themes</li>
+                <li><strong>TokenInfo:</strong> Token counting, cost analysis, model information</li>
+                <li><strong>ModelSelector:</strong> Model comparison, filtering, provider selection</li>
+                <li><strong>WebSearchTool:</strong> Multi-engine search, filters, result metadata</li>
+                <li><strong>PDFTool:</strong> Document loading, text extraction, content search</li>
+                <li><strong>ImageAI:</strong> Image generation, analysis, prompt editing</li>
+            </ul>
+            
+            <h3>🚀 Getting Started</h3>
+            <p>To use these components in your own project:</p>
+            <ol>
+                <li>Install the package: <code>npm install @tui-kit-ai/ai</code></li>
+                <li>Import the components: <code>import { Stream, CodeBlock, TokenInfo } from '@tui-kit-ai/ai'</code></li>
+                <li>Configure and use: <code>const stream = new Stream({ variant: 'realtime' })</code></li>
+            </ol>
+            
+            <h3>📖 Documentation</h3>
+            <p>For complete documentation, API reference, and advanced examples, see the main README.md file in the package root.</p>
+        </div>
+    </div>
+</body>
+</html>

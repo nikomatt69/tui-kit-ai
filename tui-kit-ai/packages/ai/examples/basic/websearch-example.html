@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSearchTool Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .websearch-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 WebSearchTool Component Example</h1>
+            <p>Web search with multiple engines and advanced filters</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Engines:</strong> Google, Bing, DuckDuckGo, Yahoo, Brave, Custom</p>
+            <p><strong>Result Types:</strong> Webpage, News, Image, Video, Shopping, Academic, Social</p>
+            <p><strong>Features:</strong> Search bar, Filters, History, Results with metadata</p>
+        </div>
+        
+        <div class="controls">
+            <select class="select" id="engine-select">
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+                <option value="duckduckgo">DuckDuckGo</option>
+                <option value="yahoo">Yahoo</option>
+                <option value="brave">Brave</option>
+                <option value="custom">Custom</option>
+            </select>
+            
+            <select class="select" id="result-type-select">
+                <option value="webpage">Webpage</option>
+                <option value="news">News</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="shopping">Shopping</option>
+                <option value="academic">Academic</option>
+                <option value="social">Social</option>
+            </select>
+            
+            <button class="btn" id="toggle-filters">Toggle Filters</button>
+            <button class="btn" id="toggle-history">Toggle History</button>
+            <button class="btn" id="clear-history">Clear History</button>
+            <button class="btn" id="simulate-search">Simulate Search</button>
+        </div>
+        
+        <div class="websearch-container" id="websearch-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Engine:</strong> Select search engine (Google, Bing, DuckDuckGo, etc.)</p>
+            <p><strong>Result Type:</strong> Choose type of results (webpage, news, image, etc.)</p>
+            <p><strong>Toggle Filters:</strong> Show/hide advanced search filters</p>
+            <p><strong>Toggle History:</strong> Show/hide search history</p>
+            <p><strong>Clear History:</strong> Clear all search history</p>
+            <p><strong>Simulate Search:</strong> Perform a mock search with sample results</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { WebSearchTool } from '@tui-kit-ai/ai';
+
+const webSearch = new WebSearchTool({
+  defaultEngine: 'google',
+  showFilters: true,
+  showHistory: true,
+  maxResults: 10,
+  onSearch: (query, results) => console.log('Search results:', results),
+  onResultClick: (result) => console.log('Result clicked:', result)
+});
+
+// Perform search
+webSearch.search('artificial intelligence', {
+  engine: 'google',
+  type: 'webpage',
+  filters: {
+    language: 'en',
+    region: 'us',
+    dateRange: 'past_year'
+  }
+});
+
+// Get search history
+const history = webSearch.getHistory();
+console.log('Search history:', history);</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock WebSearchTool component for demonstration
+        class MockWebSearchTool {
+            constructor(options = {}) {
+                this.options = {
+                    defaultEngine: 'google',
+                    showFilters: true,
+                    showHistory: true,
+                    maxResults: 10,
+                    onSearch: () => {},
+                    onResultClick: () => {},
+                    ...options
+                };
+                
+                this.currentEngine = this.options.defaultEngine;
+                this.currentResultType = 'webpage';
+                this.searchHistory = [];
+                this.currentResults = [];
+                this.isSearching = false;
+                this.showFilters = true;
+                this.showHistory = true;
+                this.filters = {
+                    language: 'en',
+                    region: 'us',
+                    dateRange: 'any',
+                    safeSearch: 'moderate'
+                };
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            setEngine(engine) {
+                this.currentEngine = engine;
+                this.render();
+            }
+            
+            setResultType(type) {
+                this.currentResultType = type;
+                this.render();
+            }
+            
+            toggleFilters() {
+                this.showFilters = !this.showFilters;
+                this.render();
+            }
+            
+            toggleHistory() {
+                this.showHistory = !this.showHistory;
+                this.render();
+            }
+            
+            clearHistory() {
+                this.searchHistory = [];
+                this.render();
+            }
+            
+            search(query, options = {}) {
+                if (!query.trim()) return;
+                
+                this.isSearching = true;
+                this.render();
+                
+                // Simulate search delay
+                setTimeout(() => {
+                    this.performSearch(query, options);
+                }, 1000);
+            }
+            
+            performSearch(query, options = {}) {
+                const engine = options.engine || this.currentEngine;
+                const type = options.type || this.currentResultType;
+                const filters = { ...this.filters, ...options.filters };
+                
+                // Add to history
+                this.searchHistory.unshift({
+                    query,
+                    engine,
+                    type,
+                    timestamp: Date.now(),
+                    resultCount: 0
+                });
+                
+                // Keep only last 20 searches
+                if (this.searchHistory.length > 20) {
+                    this.searchHistory = this.searchHistory.slice(0, 20);
+                }
+                
+                // Generate mock results
+                this.currentResults = this.generateMockResults(query, engine, type, filters);
+                
+                // Update history with result count
+                this.searchHistory[0].resultCount = this.currentResults.length;
+                
+                this.isSearching = false;
+                this.options.onSearch(query, this.currentResults);
+                this.render();
+            }
+            
+            generateMockResults(query, engine, type, filters) {
+                const results = [];
+                const baseResults = {
+                    webpage: [
+                        { title: `${query} - Wikipedia`, url: 'https://en.wikipedia.org/wiki/' + query.replace(/\s+/g, '_'), snippet: `Learn about ${query} on Wikipedia. Comprehensive information about ${query} including history, applications, and current developments.` },
+                        { title: `${query} Guide - Complete Tutorial`, url: 'https://example.com/' + query.replace(/\s+/g, '-'), snippet: `Complete guide to ${query}. Step-by-step tutorials, best practices, and expert tips for mastering ${query}.` },
+                        { title: `${query} News and Updates`, url: 'https://news.example.com/' + query.replace(/\s+/g, '-'), snippet: `Latest news and updates about ${query}. Stay informed with the most recent developments in ${query}.` },
+                        { title: `${query} Community Forum`, url: 'https://forum.example.com/' + query.replace(/\s+/g, '-'), snippet: `Join the ${query} community. Discuss, share, and learn from other ${query} enthusiasts.` },
+                        { title: `${query} Documentation`, url: 'https://docs.example.com/' + query.replace(/\s+/g, '-'), snippet: `Official documentation for ${query}. API reference, guides, and examples for developers.` }
+                    ],
+                    news: [
+                        { title: `Breaking: ${query} Makes Headlines`, url: 'https://news.example.com/breaking/' + query.replace(/\s+/g, '-'), snippet: `Breaking news about ${query}. Latest developments and expert analysis.`, date: '2024-01-15' },
+                        { title: `${query} Industry Report 2024`, url: 'https://reports.example.com/' + query.replace(/\s+/g, '-'), snippet: `Comprehensive industry report on ${query}. Market trends, growth projections, and key players.`, date: '2024-01-14' },
+                        { title: `Expert Opinion: ${query} Future`, url: 'https://opinion.example.com/' + query.replace(/\s+/g, '-'), snippet: `Industry experts weigh in on the future of ${query}. Predictions and insights from leading professionals.`, date: '2024-01-13' }
+                    ],
+                    image: [
+                        { title: `${query} High Quality Image`, url: 'https://images.example.com/' + query.replace(/\s+/g, '-') + '-1.jpg', thumbnail: 'https://via.placeholder.com/300x200?text=' + query.replace(/\s+/g, '+'), size: '1920x1080' },
+                        { title: `${query} Concept Art`, url: 'https://images.example.com/' + query.replace(/\s+/g, '-') + '-2.jpg', thumbnail: 'https://via.placeholder.com/300x200?text=' + query.replace(/\s+/g, '+'), size: '1600x900' },
+                        { title: `${query} Infographic`, url: 'https://images.example.com/' + query.replace(/\s+/g, '-') + '-3.jpg', thumbnail: 'https://via.placeholder.com/300x200?text=' + query.replace(/\s+/g, '+'), size: '1200x800' }
+                    ],
+                    video: [
+                        { title: `${query} Tutorial Video`, url: 'https://videos.example.com/' + query.replace(/\s+/g, '-') + '-tutorial', thumbnail: 'https://via.placeholder.com/300x200?text=' + query.replace(/\s+/g, '+'), duration: '15:30', views: '125K' },
+                        { title: `${query} Documentary`, url: 'https://videos.example.com/' + query.replace(/\s+/g, '-') + '-doc', thumbnail: 'https://via.placeholder.com/300x200?text=' + query.replace(/\s+/g, '+'), duration: '45:20', views: '2.1M' },
+                        { title: `${query} Live Stream`, url: 'https://videos.example.com/' + query.replace(/\s+/g, '-') + '-live', thumbnail: 'https://via.placeholder.com/300x200?text=' + query.replace(/\s+/g, '+'), duration: 'LIVE', views: '5.2K' }
+                    ]
+                };
+                
+                const typeResults = baseResults[type] || baseResults.webpage;
+                const count = Math.min(this.options.maxResults, typeResults.length);
+                
+                for (let i = 0; i < count; i++) {
+                    const result = { ...typeResults[i] };
+                    result.id = `result-${Date.now()}-${i}`;
+                    result.engine = engine;
+                    result.type = type;
+                    result.rank = i + 1;
+                    results.push(result);
+                }
+                
+                return results;
+            }
+            
+            clickResult(result) {
+                this.options.onResultClick(result);
+                // In a real implementation, this would open the URL
+                console.log('Opening URL:', result.url);
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="websearch">
+                        <div class="websearch-header">
+                            <div class="websearch-title">
+                                <span class="websearch-title-text">Web Search Tool</span>
+                                <span class="websearch-engine">${this.currentEngine}</span>
+                            </div>
+                            <div class="websearch-actions">
+                                <button class="websearch-action-btn" onclick="this.parentElement.parentElement.parentElement.websearch.toggleFilters()">
+                                    ${this.showFilters ? 'Hide' : 'Show'} Filters
+                                </button>
+                                <button class="websearch-action-btn" onclick="this.parentElement.parentElement.parentElement.websearch.toggleHistory()">
+                                    ${this.showHistory ? 'Hide' : 'Show'} History
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="websearch-search">
+                            <div class="websearch-search-bar">
+                                <input type="text" class="websearch-search-input" 
+                                       placeholder="Search the web..." 
+                                       onkeypress="if(event.key==='Enter') this.parentElement.parentElement.parentElement.websearch.search(this.value)">
+                                <button class="websearch-search-btn" onclick="this.parentElement.parentElement.parentElement.websearch.search(this.previousElementSibling.value)">
+                                    🔍 Search
+                                </button>
+                            </div>
+                            
+                            ${this.showFilters ? `
+                                <div class="websearch-filters">
+                                    <div class="websearch-filter-group">
+                                        <label class="websearch-filter-label">Language:</label>
+                                        <select class="websearch-filter-select" onchange="this.parentElement.parentElement.parentElement.parentElement.websearch.filters.language = this.value">
+                                            <option value="en" ${this.filters.language === 'en' ? 'selected' : ''}>English</option>
+                                            <option value="es" ${this.filters.language === 'es' ? 'selected' : ''}>Spanish</option>
+                                            <option value="fr" ${this.filters.language === 'fr' ? 'selected' : ''}>French</option>
+                                            <option value="de" ${this.filters.language === 'de' ? 'selected' : ''}>German</option>
+                                            <option value="it" ${this.filters.language === 'it' ? 'selected' : ''}>Italian</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="websearch-filter-group">
+                                        <label class="websearch-filter-label">Region:</label>
+                                        <select class="websearch-filter-select" onchange="this.parentElement.parentElement.parentElement.parentElement.websearch.filters.region = this.value">
+                                            <option value="us" ${this.filters.region === 'us' ? 'selected' : ''}>United States</option>
+                                            <option value="uk" ${this.filters.region === 'uk' ? 'selected' : ''}>United Kingdom</option>
+                                            <option value="ca" ${this.filters.region === 'ca' ? 'selected' : ''}>Canada</option>
+                                            <option value="au" ${this.filters.region === 'au' ? 'selected' : ''}>Australia</option>
+                                            <option value="de" ${this.filters.region === 'de' ? 'selected' : ''}>Germany</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="websearch-filter-group">
+                                        <label class="websearch-filter-label">Date Range:</label>
+                                        <select class="websearch-filter-select" onchange="this.parentElement.parentElement.parentElement.parentElement.websearch.filters.dateRange = this.value">
+                                            <option value="any" ${this.filters.dateRange === 'any' ? 'selected' : ''}>Any time</option>
+                                            <option value="past_hour" ${this.filters.dateRange === 'past_hour' ? 'selected' : ''}>Past hour</option>
+                                            <option value="past_day" ${this.filters.dateRange === 'past_day' ? 'selected' : ''}>Past day</option>
+                                            <option value="past_week" ${this.filters.dateRange === 'past_week' ? 'selected' : ''}>Past week</option>
+                                            <option value="past_month" ${this.filters.dateRange === 'past_month' ? 'selected' : ''}>Past month</option>
+                                            <option value="past_year" ${this.filters.dateRange === 'past_year' ? 'selected' : ''}>Past year</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="websearch-filter-group">
+                                        <label class="websearch-filter-label">Safe Search:</label>
+                                        <select class="websearch-filter-select" onchange="this.parentElement.parentElement.parentElement.parentElement.websearch.filters.safeSearch = this.value">
+                                            <option value="off" ${this.filters.safeSearch === 'off' ? 'selected' : ''}>Off</option>
+                                            <option value="moderate" ${this.filters.safeSearch === 'moderate' ? 'selected' : ''}>Moderate</option>
+                                            <option value="strict" ${this.filters.safeSearch === 'strict' ? 'selected' : ''}>Strict</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${this.showHistory && this.searchHistory.length > 0 ? `
+                            <div class="websearch-history">
+                                <div class="websearch-history-title">Search History</div>
+                                <div class="websearch-history-items">
+                                    ${this.searchHistory.slice(0, 5).map(item => `
+                                        <div class="websearch-history-item" onclick="this.parentElement.parentElement.parentElement.websearch.search('${item.query}')">
+                                            <div class="websearch-history-query">${item.query}</div>
+                                            <div class="websearch-history-meta">
+                                                <span class="websearch-history-engine">${item.engine}</span>
+                                                <span class="websearch-history-type">${item.type}</span>
+                                                <span class="websearch-history-results">${item.resultCount} results</span>
+                                                <span class="websearch-history-time">${new Date(item.timestamp).toLocaleTimeString()}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="websearch-results">
+                            ${this.isSearching ? `
+                                <div class="websearch-loading">
+                                    <div class="websearch-loading-spinner"></div>
+                                    <div class="websearch-loading-text">Searching...</div>
+                                </div>
+                            ` : this.currentResults.length > 0 ? `
+                                <div class="websearch-results-header">
+                                    <div class="websearch-results-count">${this.currentResults.length} results</div>
+                                    <div class="websearch-results-engine">via ${this.currentEngine}</div>
+                                </div>
+                                <div class="websearch-results-items">
+                                    ${this.currentResults.map(result => `
+                                        <div class="websearch-result" onclick="this.parentElement.parentElement.parentElement.websearch.clickResult('${result.id}')">
+                                            <div class="websearch-result-header">
+                                                <div class="websearch-result-title">${result.title}</div>
+                                                <div class="websearch-result-rank">#${result.rank}</div>
+                                            </div>
+                                            <div class="websearch-result-url">${result.url}</div>
+                                            <div class="websearch-result-snippet">${result.snippet}</div>
+                                            ${result.thumbnail ? `
+                                                <div class="websearch-result-thumbnail">
+                                                    <img src="${result.thumbnail}" alt="${result.title}" style="max-width: 200px; max-height: 150px;">
+                                                </div>
+                                            ` : ''}
+                                            ${result.date ? `
+                                                <div class="websearch-result-date">${result.date}</div>
+                                            ` : ''}
+                                            ${result.duration ? `
+                                                <div class="websearch-result-duration">Duration: ${result.duration}</div>
+                                            ` : ''}
+                                            ${result.views ? `
+                                                <div class="websearch-result-views">Views: ${result.views}</div>
+                                            ` : ''}
+                                            ${result.size ? `
+                                                <div class="websearch-result-size">Size: ${result.size}</div>
+                                            ` : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div class="websearch-no-results">
+                                    <div class="websearch-no-results-text">No results yet. Start searching!</div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+                
+                // Store reference for event handlers
+                this.container.querySelector('.websearch').websearch = this;
+                
+                // Add styles
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('websearch-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'websearch-styles';
+                    style.textContent = `
+                        .websearch {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .websearch-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .websearch-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .websearch-title-text {
+                            font-weight: bold;
+                            color: #00ff00;
+                            font-size: 1.1em;
+                        }
+                        
+                        .websearch-engine {
+                            color: #888;
+                            font-size: 0.9em;
+                            text-transform: uppercase;
+                        }
+                        
+                        .websearch-actions {
+                            display: flex;
+                            gap: 10px;
+                        }
+                        
+                        .websearch-action-btn {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.9em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .websearch-action-btn:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .websearch-search {
+                            padding: 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .websearch-search-bar {
+                            display: flex;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .websearch-search-input {
+                            flex: 1;
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 12px 16px;
+                            border-radius: 4px;
+                            font-family: inherit;
+                            font-size: 1em;
+                        }
+                        
+                        .websearch-search-input:focus {
+                            outline: none;
+                            border-color: #00ff00;
+                        }
+                        
+                        .websearch-search-btn {
+                            background: #00ff00;
+                            color: #000;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-family: inherit;
+                            font-weight: bold;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .websearch-search-btn:hover {
+                            background: #00cc00;
+                        }
+                        
+                        .websearch-filters {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 15px;
+                        }
+                        
+                        .websearch-filter-group {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                        }
+                        
+                        .websearch-filter-label {
+                            color: #00ff00;
+                            font-weight: bold;
+                            font-size: 0.9em;
+                        }
+                        
+                        .websearch-filter-select {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 12px;
+                            border-radius: 4px;
+                            font-family: inherit;
+                        }
+                        
+                        .websearch-history {
+                            padding: 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .websearch-history-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .websearch-history-items {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        
+                        .websearch-history-item {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 12px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .websearch-history-item:hover {
+                            border-color: #555;
+                            background: #333;
+                        }
+                        
+                        .websearch-history-query {
+                            color: #fff;
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .websearch-history-meta {
+                            display: flex;
+                            gap: 15px;
+                            font-size: 0.8em;
+                            color: #888;
+                        }
+                        
+                        .websearch-history-engine {
+                            color: #00ff00;
+                        }
+                        
+                        .websearch-history-type {
+                            color: #0088ff;
+                        }
+                        
+                        .websearch-history-results {
+                            color: #ffaa00;
+                        }
+                        
+                        .websearch-history-time {
+                            color: #666;
+                        }
+                        
+                        .websearch-results {
+                            padding: 20px;
+                        }
+                        
+                        .websearch-loading {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 15px;
+                            padding: 40px;
+                        }
+                        
+                        .websearch-loading-spinner {
+                            width: 40px;
+                            height: 40px;
+                            border: 3px solid #333;
+                            border-top: 3px solid #00ff00;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                        }
+                        
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                        
+                        .websearch-loading-text {
+                            color: #888;
+                            font-size: 1.1em;
+                        }
+                        
+                        .websearch-results-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 10px;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .websearch-results-count {
+                            color: #00ff00;
+                            font-weight: bold;
+                        }
+                        
+                        .websearch-results-engine {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .websearch-results-items {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 20px;
+                        }
+                        
+                        .websearch-result {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 20px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .websearch-result:hover {
+                            border-color: #555;
+                            background: #222;
+                        }
+                        
+                        .websearch-result-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .websearch-result-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            font-size: 1.1em;
+                        }
+                        
+                        .websearch-result-rank {
+                            color: #888;
+                            font-size: 0.8em;
+                        }
+                        
+                        .websearch-result-url {
+                            color: #0088ff;
+                            font-size: 0.9em;
+                            margin-bottom: 10px;
+                            word-break: break-all;
+                        }
+                        
+                        .websearch-result-snippet {
+                            color: #ccc;
+                            line-height: 1.5;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .websearch-result-thumbnail {
+                            margin-bottom: 15px;
+                        }
+                        
+                        .websearch-result-thumbnail img {
+                            border-radius: 4px;
+                            border: 1px solid #333;
+                        }
+                        
+                        .websearch-result-date,
+                        .websearch-result-duration,
+                        .websearch-result-views,
+                        .websearch-result-size {
+                            color: #888;
+                            font-size: 0.8em;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .websearch-no-results {
+                            text-align: center;
+                            padding: 40px;
+                        }
+                        
+                        .websearch-no-results-text {
+                            color: #888;
+                            font-size: 1.1em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+        
+        // Initialize the example
+        const webSearch = new MockWebSearchTool({
+            defaultEngine: 'google',
+            showFilters: true,
+            showHistory: true,
+            maxResults: 10,
+            onSearch: (query, results) => {
+                console.log('Search completed:', query, results);
+            },
+            onResultClick: (result) => {
+                console.log('Result clicked:', result);
+            }
+        });
+        
+        webSearch.mount(document.getElementById('websearch-container'));
+        
+        // Event handlers
+        document.getElementById('engine-select').addEventListener('change', (e) => {
+            webSearch.setEngine(e.target.value);
+        });
+        
+        document.getElementById('result-type-select').addEventListener('change', (e) => {
+            webSearch.setResultType(e.target.value);
+        });
+        
+        document.getElementById('toggle-filters').addEventListener('click', () => {
+            webSearch.toggleFilters();
+        });
+        
+        document.getElementById('toggle-history').addEventListener('click', () => {
+            webSearch.toggleHistory();
+        });
+        
+        document.getElementById('clear-history').addEventListener('click', () => {
+            webSearch.clearHistory();
+        });
+        
+        document.getElementById('simulate-search').addEventListener('click', () => {
+            const queries = [
+                'artificial intelligence',
+                'machine learning',
+                'neural networks',
+                'deep learning',
+                'natural language processing',
+                'computer vision',
+                'robotics',
+                'quantum computing'
+            ];
+            const randomQuery = queries[Math.floor(Math.random() * queries.length)];
+            webSearch.search(randomQuery);
+        });
+    </script>
+</body>
+</html>

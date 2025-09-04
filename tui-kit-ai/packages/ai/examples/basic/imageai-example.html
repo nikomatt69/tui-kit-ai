@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageAI Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .imageai-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 ImageAI Component Example</h1>
+            <p>AI image generation and analysis with multiple models</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Generation Models:</strong> DALL-E 2/3, Midjourney, Stable Diffusion, Imagen, Parti</p>
+            <p><strong>Analysis Models:</strong> GPT-4 Vision, Claude 3 Vision, Gemini Vision, LLaVA</p>
+            <p><strong>Features:</strong> Prompt editor, Image gallery, Generation history, Object analysis</p>
+        </div>
+        
+        <div class="controls">
+            <select class="select" id="mode-select">
+                <option value="generate">Generate Images</option>
+                <option value="analyze">Analyze Images</option>
+            </select>
+            
+            <select class="select" id="model-select">
+                <option value="dall-e-3">DALL-E 3</option>
+                <option value="dall-e-2">DALL-E 2</option>
+                <option value="midjourney">Midjourney</option>
+                <option value="stable-diffusion">Stable Diffusion</option>
+                <option value="imagen">Imagen</option>
+                <option value="parti">Parti</option>
+            </select>
+            
+            <button class="btn" id="generate-image">Generate Image</button>
+            <button class="btn" id="analyze-image">Analyze Image</button>
+            <button class="btn" id="clear-gallery">Clear Gallery</button>
+            <button class="btn" id="toggle-history">Toggle History</button>
+        </div>
+        
+        <div class="imageai-container" id="imageai-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Mode:</strong> Switch between image generation and analysis</p>
+            <p><strong>Model:</strong> Select AI model for generation or analysis</p>
+            <p><strong>Generate Image:</strong> Create a new image from text prompt</p>
+            <p><strong>Analyze Image:</strong> Analyze an uploaded or generated image</p>
+            <p><strong>Clear Gallery:</strong> Clear all images from the gallery</p>
+            <p><strong>Toggle History:</strong> Show/hide generation and analysis history</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { ImageAI } from '@tui-kit-ai/ai';
+
+const imageAI = new ImageAI({
+  defaultModel: 'dall-e-3',
+  showPromptEditor: true,
+  showGallery: true,
+  showHistory: true,
+  onImageGenerate: (image) => console.log('Image generated:', image),
+  onImageAnalyze: (analysis) => console.log('Image analyzed:', analysis)
+});
+
+// Generate image
+imageAI.generateImage('A futuristic cityscape at sunset', {
+  model: 'dall-e-3',
+  size: '1024x1024',
+  quality: 'hd'
+});
+
+// Analyze image
+imageAI.analyzeImage(imageUrl, {
+  model: 'gpt-4-vision',
+  detail: 'high'
+});
+
+// Get generation history
+const history = imageAI.getHistory();</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock ImageAI component for demonstration
+        class MockImageAI {
+            constructor(options = {}) {
+                this.options = {
+                    defaultModel: 'dall-e-3',
+                    showPromptEditor: true,
+                    showGallery: true,
+                    showHistory: true,
+                    onImageGenerate: () => {},
+                    onImageAnalyze: () => {},
+                    ...options
+                };
+                
+                this.mode = 'generate';
+                this.currentModel = this.options.defaultModel;
+                this.images = [];
+                this.history = [];
+                this.isGenerating = false;
+                this.isAnalyzing = false;
+                this.showHistory = true;
+                this.currentPrompt = '';
+                this.currentImage = null;
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            setMode(mode) {
+                this.mode = mode;
+                this.updateModelOptions();
+                this.render();
+            }
+            
+            setModel(model) {
+                this.currentModel = model;
+                this.render();
+            }
+            
+            updateModelOptions() {
+                const modelSelect = document.getElementById('model-select');
+                if (!modelSelect) return;
+                
+                const generationModels = [
+                    { value: 'dall-e-3', text: 'DALL-E 3' },
+                    { value: 'dall-e-2', text: 'DALL-E 2' },
+                    { value: 'midjourney', text: 'Midjourney' },
+                    { value: 'stable-diffusion', text: 'Stable Diffusion' },
+                    { value: 'imagen', text: 'Imagen' },
+                    { value: 'parti', text: 'Parti' }
+                ];
+                
+                const analysisModels = [
+                    { value: 'gpt-4-vision', text: 'GPT-4 Vision' },
+                    { value: 'claude-3-vision', text: 'Claude 3 Vision' },
+                    { value: 'gemini-vision', text: 'Gemini Vision' },
+                    { value: 'llava', text: 'LLaVA' }
+                ];
+                
+                const models = this.mode === 'generate' ? generationModels : analysisModels;
+                
+                modelSelect.innerHTML = models.map(model => 
+                    `<option value="${model.value}">${model.text}</option>`
+                ).join('');
+                
+                // Set default model
+                if (models.length > 0) {
+                    this.currentModel = models[0].value;
+                }
+            }
+            
+            generateImage(prompt, options = {}) {
+                if (!prompt.trim()) return;
+                
+                this.isGenerating = true;
+                this.render();
+                
+                // Simulate generation delay
+                setTimeout(() => {
+                    const image = this.createMockImage(prompt, options);
+                    this.images.unshift(image);
+                    this.history.unshift({
+                        type: 'generate',
+                        prompt,
+                        model: this.currentModel,
+                        image,
+                        timestamp: Date.now()
+                    });
+                    
+                    this.isGenerating = false;
+                    this.options.onImageGenerate(image);
+                    this.render();
+                }, 2000);
+            }
+            
+            analyzeImage(imageUrl, options = {}) {
+                if (!imageUrl) return;
+                
+                this.isAnalyzing = true;
+                this.render();
+                
+                // Simulate analysis delay
+                setTimeout(() => {
+                    const analysis = this.createMockAnalysis(imageUrl, options);
+                    this.history.unshift({
+                        type: 'analyze',
+                        imageUrl,
+                        model: this.currentModel,
+                        analysis,
+                        timestamp: Date.now()
+                    });
+                    
+                    this.isAnalyzing = false;
+                    this.options.onImageAnalyze(analysis);
+                    this.render();
+                }, 1500);
+            }
+            
+            createMockImage(prompt, options = {}) {
+                const id = 'img-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                const size = options.size || '1024x1024';
+                const quality = options.quality || 'standard';
+                
+                return {
+                    id,
+                    prompt,
+                    model: this.currentModel,
+                    size,
+                    quality,
+                    url: `https://via.placeholder.com/${size.replace('x', 'x')}?text=${encodeURIComponent(prompt.substring(0, 20))}`,
+                    timestamp: Date.now(),
+                    metadata: {
+                        dimensions: size,
+                        format: 'PNG',
+                        size: Math.floor(Math.random() * 2000) + 500 + ' KB',
+                        generationTime: Math.floor(Math.random() * 5) + 2 + 's'
+                    }
+                };
+            }
+            
+            createMockAnalysis(imageUrl, options = {}) {
+                const analyses = [
+                    {
+                        objects: [
+                            { name: 'person', confidence: 0.95, bbox: [100, 150, 200, 300] },
+                            { name: 'car', confidence: 0.87, bbox: [300, 200, 150, 100] },
+                            { name: 'building', confidence: 0.92, bbox: [50, 50, 400, 250] }
+                        ],
+                        description: 'A person standing next to a car in front of a modern building. The scene appears to be in an urban environment with good lighting.',
+                        tags: ['person', 'car', 'building', 'urban', 'outdoor', 'daylight'],
+                        colors: ['blue', 'white', 'gray', 'black'],
+                        mood: 'neutral',
+                        style: 'photographic'
+                    },
+                    {
+                        objects: [
+                            { name: 'cat', confidence: 0.98, bbox: [150, 100, 200, 250] },
+                            { name: 'window', confidence: 0.89, bbox: [50, 50, 300, 200] },
+                            { name: 'plant', confidence: 0.76, bbox: [350, 200, 100, 150] }
+                        ],
+                        description: 'A cat sitting by a window with a plant nearby. The image has a cozy, indoor atmosphere with natural lighting.',
+                        tags: ['cat', 'window', 'plant', 'indoor', 'cozy', 'natural light'],
+                        colors: ['green', 'brown', 'white', 'beige'],
+                        mood: 'peaceful',
+                        style: 'natural'
+                    },
+                    {
+                        objects: [
+                            { name: 'mountain', confidence: 0.94, bbox: [0, 0, 500, 300] },
+                            { name: 'lake', confidence: 0.91, bbox: [100, 200, 300, 100] },
+                            { name: 'tree', confidence: 0.83, bbox: [50, 150, 100, 150] }
+                        ],
+                        description: 'A scenic mountain landscape with a lake and trees. The image captures the beauty of nature with dramatic lighting.',
+                        tags: ['mountain', 'lake', 'tree', 'landscape', 'nature', 'scenic'],
+                        colors: ['blue', 'green', 'brown', 'gray'],
+                        mood: 'serene',
+                        style: 'landscape'
+                    }
+                ];
+                
+                return analyses[Math.floor(Math.random() * analyses.length)];
+            }
+            
+            clearGallery() {
+                this.images = [];
+                this.render();
+            }
+            
+            toggleHistory() {
+                this.showHistory = !this.showHistory;
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = `
+                    <div class="imageai">
+                        <div class="imageai-header">
+                            <div class="imageai-title">
+                                <span class="imageai-title-text">Image AI</span>
+                                <span class="imageai-mode">${this.mode}</span>
+                            </div>
+                            <div class="imageai-actions">
+                                <button class="imageai-action-btn" onclick="this.parentElement.parentElement.parentElement.imageai.toggleHistory()">
+                                    ${this.showHistory ? 'Hide' : 'Show'} History
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="imageai-content">
+                            <div class="imageai-main">
+                                ${this.options.showPromptEditor ? `
+                                    <div class="imageai-prompt-editor">
+                                        <div class="imageai-prompt-title">Prompt Editor</div>
+                                        <div class="imageai-prompt-input">
+                                            <textarea class="imageai-prompt-textarea" 
+                                                      placeholder="Enter your prompt here..." 
+                                                      oninput="this.parentElement.parentElement.parentElement.parentElement.imageai.currentPrompt = this.value">${this.currentPrompt}</textarea>
+                                        </div>
+                                        <div class="imageai-prompt-actions">
+                                            <button class="imageai-prompt-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.imageai.generateImage(this.parentElement.parentElement.querySelector('.imageai-prompt-textarea').value)">
+                                                🎨 Generate Image
+                                            </button>
+                                            <button class="imageai-prompt-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.imageai.analyzeImage(this.parentElement.parentElement.querySelector('.imageai-prompt-textarea').value)">
+                                                🔍 Analyze Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                ${this.options.showGallery ? `
+                                    <div class="imageai-gallery">
+                                        <div class="imageai-gallery-title">Image Gallery</div>
+                                        <div class="imageai-gallery-content">
+                                            ${this.isGenerating ? `
+                                                <div class="imageai-loading">
+                                                    <div class="imageai-loading-spinner"></div>
+                                                    <div class="imageai-loading-text">Generating image...</div>
+                                                </div>
+                                            ` : this.images.length > 0 ? `
+                                                <div class="imageai-gallery-grid">
+                                                    ${this.images.map(image => `
+                                                        <div class="imageai-gallery-item">
+                                                            <div class="imageai-gallery-image">
+                                                                <img src="${image.url}" alt="${image.prompt}" onclick="this.parentElement.parentElement.parentElement.parentElement.imageai.analyzeImage('${image.url}')">
+                                                            </div>
+                                                            <div class="imageai-gallery-info">
+                                                                <div class="imageai-gallery-prompt">${image.prompt}</div>
+                                                                <div class="imageai-gallery-meta">
+                                                                    <span class="imageai-gallery-model">${image.model}</span>
+                                                                    <span class="imageai-gallery-size">${image.size}</span>
+                                                                    <span class="imageai-gallery-time">${new Date(image.timestamp).toLocaleTimeString()}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            ` : `
+                                                <div class="imageai-no-images">
+                                                    <div class="imageai-no-images-text">No images generated yet. Create your first image!</div>
+                                                </div>
+                                            `}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${this.showHistory && this.history.length > 0 ? `
+                                <div class="imageai-history">
+                                    <div class="imageai-history-title">History</div>
+                                    <div class="imageai-history-content">
+                                        ${this.history.slice(0, 10).map(item => `
+                                            <div class="imageai-history-item">
+                                                <div class="imageai-history-header">
+                                                    <span class="imageai-history-type">${item.type}</span>
+                                                    <span class="imageai-history-model">${item.model}</span>
+                                                    <span class="imageai-history-time">${new Date(item.timestamp).toLocaleTimeString()}</span>
+                                                </div>
+                                                <div class="imageai-history-content">
+                                                    ${item.type === 'generate' ? `
+                                                        <div class="imageai-history-prompt">${item.prompt}</div>
+                                                        <div class="imageai-history-image">
+                                                            <img src="${item.image.url}" alt="${item.prompt}" style="max-width: 100px; max-height: 100px;">
+                                                        </div>
+                                                    ` : `
+                                                        <div class="imageai-history-analysis">
+                                                            <div class="imageai-history-description">${item.analysis.description}</div>
+                                                            <div class="imageai-history-tags">
+                                                                ${item.analysis.tags.map(tag => `<span class="imageai-history-tag">${tag}</span>`).join('')}
+                                                            </div>
+                                                        </div>
+                                                    `}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // Store reference for event handlers
+                this.container.querySelector('.imageai').imageai = this;
+                
+                // Add styles
+                this.addStyles();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('imageai-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'imageai-styles';
+                    style.textContent = `
+                        .imageai {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .imageai-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .imageai-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .imageai-title-text {
+                            font-weight: bold;
+                            color: #00ff00;
+                            font-size: 1.1em;
+                        }
+                        
+                        .imageai-mode {
+                            color: #888;
+                            font-size: 0.9em;
+                            text-transform: uppercase;
+                        }
+                        
+                        .imageai-actions {
+                            display: flex;
+                            gap: 10px;
+                        }
+                        
+                        .imageai-action-btn {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.9em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .imageai-action-btn:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .imageai-content {
+                            display: grid;
+                            grid-template-columns: 1fr 300px;
+                            gap: 20px;
+                            padding: 20px;
+                        }
+                        
+                        .imageai-main {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 20px;
+                        }
+                        
+                        .imageai-prompt-editor {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 20px;
+                        }
+                        
+                        .imageai-prompt-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .imageai-prompt-input {
+                            margin-bottom: 15px;
+                        }
+                        
+                        .imageai-prompt-textarea {
+                            width: 100%;
+                            height: 100px;
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            border-radius: 4px;
+                            padding: 12px;
+                            font-family: inherit;
+                            resize: vertical;
+                        }
+                        
+                        .imageai-prompt-textarea:focus {
+                            outline: none;
+                            border-color: #00ff00;
+                        }
+                        
+                        .imageai-prompt-actions {
+                            display: flex;
+                            gap: 10px;
+                        }
+                        
+                        .imageai-prompt-btn {
+                            background: #00ff00;
+                            color: #000;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-family: inherit;
+                            font-weight: bold;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .imageai-prompt-btn:hover {
+                            background: #00cc00;
+                        }
+                        
+                        .imageai-gallery {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 20px;
+                        }
+                        
+                        .imageai-gallery-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .imageai-gallery-content {
+                            min-height: 200px;
+                        }
+                        
+                        .imageai-loading {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 15px;
+                            padding: 40px;
+                        }
+                        
+                        .imageai-loading-spinner {
+                            width: 40px;
+                            height: 40px;
+                            border: 3px solid #333;
+                            border-top: 3px solid #00ff00;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                        }
+                        
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                        
+                        .imageai-loading-text {
+                            color: #888;
+                            font-size: 1.1em;
+                        }
+                        
+                        .imageai-gallery-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                            gap: 20px;
+                        }
+                        
+                        .imageai-gallery-item {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            overflow: hidden;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .imageai-gallery-item:hover {
+                            border-color: #555;
+                            transform: translateY(-2px);
+                        }
+                        
+                        .imageai-gallery-image {
+                            aspect-ratio: 1;
+                            overflow: hidden;
+                        }
+                        
+                        .imageai-gallery-image img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            cursor: pointer;
+                            transition: transform 0.2s ease;
+                        }
+                        
+                        .imageai-gallery-image img:hover {
+                            transform: scale(1.05);
+                        }
+                        
+                        .imageai-gallery-info {
+                            padding: 15px;
+                        }
+                        
+                        .imageai-gallery-prompt {
+                            color: #fff;
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                            line-height: 1.4;
+                        }
+                        
+                        .imageai-gallery-meta {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                            font-size: 0.8em;
+                            color: #888;
+                        }
+                        
+                        .imageai-gallery-model {
+                            color: #00ff00;
+                        }
+                        
+                        .imageai-gallery-size {
+                            color: #0088ff;
+                        }
+                        
+                        .imageai-gallery-time {
+                            color: #666;
+                        }
+                        
+                        .imageai-no-images {
+                            text-align: center;
+                            padding: 40px;
+                        }
+                        
+                        .imageai-no-images-text {
+                            color: #888;
+                            font-size: 1.1em;
+                        }
+                        
+                        .imageai-history {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 20px;
+                        }
+                        
+                        .imageai-history-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .imageai-history-content {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 15px;
+                            max-height: 400px;
+                            overflow-y: auto;
+                        }
+                        
+                        .imageai-history-item {
+                            background: #222;
+                            border: 1px solid #333;
+                            border-radius: 4px;
+                            padding: 15px;
+                        }
+                        
+                        .imageai-history-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .imageai-history-type {
+                            color: #00ff00;
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            font-size: 0.8em;
+                        }
+                        
+                        .imageai-history-model {
+                            color: #0088ff;
+                            font-size: 0.8em;
+                        }
+                        
+                        .imageai-history-time {
+                            color: #666;
+                            font-size: 0.8em;
+                        }
+                        
+                        .imageai-history-prompt {
+                            color: #fff;
+                            margin-bottom: 10px;
+                            line-height: 1.4;
+                        }
+                        
+                        .imageai-history-image img {
+                            border-radius: 4px;
+                            border: 1px solid #333;
+                        }
+                        
+                        .imageai-history-description {
+                            color: #ccc;
+                            margin-bottom: 10px;
+                            line-height: 1.4;
+                        }
+                        
+                        .imageai-history-tags {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 5px;
+                        }
+                        
+                        .imageai-history-tag {
+                            background: #333;
+                            color: #fff;
+                            padding: 2px 6px;
+                            border-radius: 3px;
+                            font-size: 0.7em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+        
+        // Initialize the example
+        const imageAI = new MockImageAI({
+            defaultModel: 'dall-e-3',
+            showPromptEditor: true,
+            showGallery: true,
+            showHistory: true,
+            onImageGenerate: (image) => {
+                console.log('Image generated:', image);
+            },
+            onImageAnalyze: (analysis) => {
+                console.log('Image analyzed:', analysis);
+            }
+        });
+        
+        imageAI.mount(document.getElementById('imageai-container'));
+        
+        // Event handlers
+        document.getElementById('mode-select').addEventListener('change', (e) => {
+            imageAI.setMode(e.target.value);
+        });
+        
+        document.getElementById('model-select').addEventListener('change', (e) => {
+            imageAI.setModel(e.target.value);
+        });
+        
+        document.getElementById('generate-image').addEventListener('click', () => {
+            const prompt = document.querySelector('.imageai-prompt-textarea')?.value || 'A beautiful landscape';
+            imageAI.generateImage(prompt);
+        });
+        
+        document.getElementById('analyze-image').addEventListener('click', () => {
+            const imageUrl = document.querySelector('.imageai-prompt-textarea')?.value || 'https://via.placeholder.com/300x200?text=Sample+Image';
+            imageAI.analyzeImage(imageUrl);
+        });
+        
+        document.getElementById('clear-gallery').addEventListener('click', () => {
+            imageAI.clearGallery();
+        });
+        
+        document.getElementById('toggle-history').addEventListener('click', () => {
+            imageAI.toggleHistory();
+        });
+    </script>
+</body>
+</html>
