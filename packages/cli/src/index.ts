@@ -2,10 +2,11 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { CreateCommand } from './commands/create';
-import { DevCommand } from './commands/dev';
-import { BuildCommand } from './commands/build';
-import { TestCommand } from './commands/test';
+import { initCommand } from './commands/init';
+import { addCommand } from './commands/add';
+import { listCommand } from './commands/list';
+import { removeCommand } from './commands/remove';
+import { updateCommand } from './commands/update';
 
 class TUIKitCLI {
   private program: Command;
@@ -18,24 +19,59 @@ class TUIKitCLI {
   private setupCLI() {
     this.program
       .name('tui-kit')
-      .description('TUI Kit AI - Terminal UI Kit for AI Applications')
+      .description('TUI Kit - Terminal UI Kit for blessed-based applications')
       .version('0.1.0');
 
-    // Add commands
-    this.program.addCommand(new CreateCommand().getCommand());
-    this.program.addCommand(new DevCommand().getCommand());
-    this.program.addCommand(new BuildCommand().getCommand());
-    this.program.addCommand(new TestCommand().getCommand());
+    // Add shadcn-ui-like commands
+    this.program
+      .command('init')
+      .description('Initialize a new TUI Kit project')
+      .option('-r, --renderer <renderer>', 'Renderer to use (blessed)', 'blessed')
+      .option('-f, --force', 'Force overwrite existing config')
+      .action(async (options) => {
+        await initCommand(options);
+      });
+
+    this.program
+      .command('add <components...>')
+      .description('Add TUI components to your project')
+      .option('-f, --force', 'Force overwrite existing components')
+      .option('-a, --all', 'Add all available components')
+      .action(async (components, options) => {
+        await addCommand(components, options);
+      });
+
+    this.program
+      .command('list')
+      .description('List all available TUI components')
+      .action(async () => {
+        await listCommand();
+      });
+
+    this.program
+      .command('remove <components...>')
+      .description('Remove TUI components from your project')
+      .option('-f, --force', 'Force removal without confirmation')
+      .action(async (components, options) => {
+        await removeCommand(components, options);
+      });
+
+    this.program
+      .command('update')
+      .description('Update TUI Kit components to latest versions')
+      .action(async () => {
+        await updateCommand();
+      });
 
     // Add help command
     this.program.addHelpText('after', `
 Examples:
-  $ tui-kit create component Button
-  $ tui-kit create app my-chat-app --template ai-chat
-  $ tui-kit create agent CodeAssistant
-  $ tui-kit dev
-  $ tui-kit build
-  $ tui-kit test
+  $ tui-kit init
+  $ tui-kit add button input text
+  $ tui-kit add --all
+  $ tui-kit list
+  $ tui-kit remove button
+  $ tui-kit update
 
 For more information, visit: https://github.com/nikomatt69/tui-kit-ai
     `);

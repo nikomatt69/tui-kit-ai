@@ -1,9 +1,11 @@
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
+import chalk from "chalk";
+import inquirer from "inquirer";
 
 interface InitOptions {
-  renderer?: "blessed" | "ink";
+  renderer?: "blessed";
   force?: boolean;
 }
 
@@ -12,23 +14,23 @@ export async function initCommand(options: InitOptions = {}) {
   const cwd = process.cwd();
   const configPath = path.join(cwd, "tui.config.ts");
 
-  console.log("🎯 Initializing TUI-Kit-AI project...");
+  console.log(chalk.blue("🎯 Initializing TUI Kit project..."));
 
   // Check if config already exists
   if (fs.existsSync(configPath) && !force) {
-    console.error("❌ tui.config.ts already exists. Use --force to overwrite.");
+    console.error(chalk.red("❌ tui.config.ts already exists. Use --force to overwrite."));
     process.exit(1);
   }
 
   // Create tui.config.ts
   const configTemplate = generateConfigTemplate(renderer);
   fs.writeFileSync(configPath, configTemplate, "utf8");
-  console.log("✅ Created tui.config.ts");
+  console.log(chalk.green("✅ Created tui.config.ts"));
 
   // Create components directory
   const componentsDir = path.join(cwd, "src", "components", "ui");
   fs.mkdirSync(componentsDir, { recursive: true });
-  console.log("✅ Created components/ui directory");
+  console.log(chalk.green("✅ Created components/ui directory"));
 
   // Create lib directory with utils
   const libDir = path.join(cwd, "src", "lib");
@@ -36,10 +38,18 @@ export async function initCommand(options: InitOptions = {}) {
 
   const utilsTemplate = generateUtilsTemplate();
   fs.writeFileSync(path.join(libDir, "utils.ts"), utilsTemplate, "utf8");
-  console.log("✅ Created lib/utils.ts");
+  console.log(chalk.green("✅ Created lib/utils.ts"));
+
+  // Create types directory
+  const typesDir = path.join(cwd, "src", "types");
+  fs.mkdirSync(typesDir, { recursive: true });
+
+  const typesTemplate = generateTypesTemplate();
+  fs.writeFileSync(path.join(typesDir, "index.ts"), typesTemplate, "utf8");
+  console.log(chalk.green("✅ Created types/index.ts"));
 
   // Install dependencies
-  console.log("📦 Installing dependencies...");
+  console.log(chalk.blue("📦 Installing dependencies..."));
   try {
     const packageJsonPath = path.join(cwd, "package.json");
     let packageJson: any = {};
@@ -58,23 +68,13 @@ export async function initCommand(options: InitOptions = {}) {
       };
     }
 
-    // Add dependencies based on renderer
+    // Add dependencies for blessed-based TUI
     const dependencies = {
-      zod: "^3.22.4",
-      "class-variance-authority": "^0.7.0",
-      clsx: "^2.0.0",
-      "tailwind-merge": "^2.0.0", // For utility merging patterns
+      blessed: "^0.1.81",
+      "@types/blessed": "^0.1.25",
       tsx: "^4.17.0",
       typescript: "^5.5.4",
     };
-    if (renderer === "blessed") {
-      (dependencies as any)["blessed"] = "^0.1.81";
-      (dependencies as any)["@types/blessed"] = "^0.1.25";
-    } else {
-      (dependencies as any)["ink"] = "^4.4.1";
-      (dependencies as any)["react"] = "^18.2.0";
-      (dependencies as any)["@types/react"] = "^18.2.0";
-    }
 
     packageJson.dependencies = { ...packageJson.dependencies, ...dependencies };
 
@@ -90,95 +90,110 @@ export async function initCommand(options: InitOptions = {}) {
       execSync("npm install", { stdio: "inherit" });
     }
 
-    console.log("✅ Dependencies installed");
+    console.log(chalk.green("✅ Dependencies installed"));
   } catch (error) {
     console.warn(
-      "⚠️ Could not install dependencies automatically. Please run:"
+      chalk.yellow("⚠️ Could not install dependencies automatically. Please run:")
     );
     console.warn(
-      renderer === "blessed"
-        ? "yarn add blessed @types/blessed zod class-variance-authority clsx tsx typescript"
-        : "yarn add ink react @types/react zod class-variance-authority clsx tsx typescript"
+      chalk.gray("yarn add blessed @types/blessed tsx typescript")
     );
   }
 
-  console.log("\\n🎉 TUI-Kit-AI initialized successfully!");
-  console.log("\\nNext steps:");
-  console.log("  tui add button        # Add a button component");
-  console.log("  tui add input         # Add an input component");
-  console.log("  tui preset add minimal # Add minimal component preset");
-  console.log(
-    "\\n📚 Check out examples at: https://github.com/tui-kit-ai/examples"
-  );
+  console.log(chalk.green("\n🎉 TUI Kit initialized successfully!"));
+  console.log(chalk.gray("\nNext steps:"));
+  console.log(chalk.gray("  • Add components: tui-kit add button input text"));
+  console.log(chalk.gray("  • List available components: tui-kit list"));
+  console.log(chalk.gray("  • Start building your TUI app!"));
 }
 
-function generateConfigTemplate(renderer: "blessed" | "ink"): string {
-  return `import { defineConfig } from '@tui-kit-ai/core';
-import type { TuiConfig } from '@tui-kit-ai/core';
+function generateConfigTemplate(renderer: "blessed"): string {
+  return `import type { TuiConfig } from '@tui-kit-ai/cli';
 
-export default defineConfig({
-  renderer: ${renderer}
+export default {
+  renderer: "${renderer}",
+  components: {
+    path: "./src/components/ui",
+  },
+  utils: {
+    path: "./src/lib/utils.ts",
+  },
+  types: {
+    path: "./src/types/index.ts",
+  },
+} satisfies TuiConfig;
 `;
 }
 
 function generateUtilsTemplate(): string {
-  return `import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+  return `/**
+ * Utility functions for TUI Kit components
+ */
 
 /**
- * Utility function to merge class names (adapted for terminal styling)
+ * Merge multiple style objects
  */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+export function mergeStyles(...styles: Record<string, any>[]): Record<string, any> {
+  return Object.assign({}, ...styles);
 }
 
 /**
- * Resolve a token path like 'colors.accent.500' to actual value
+ * Create a style object with focus state
  */
-export function resolveToken(path: string, tokens: any): any {
-  return path.split('.').reduce((obj, key) => obj?.[key], tokens);
+export function createFocusableStyle(baseStyle: Record<string, any>, focusStyle: Record<string, any>) {
+  return {
+    ...baseStyle,
+    focus: focusStyle,
+  };
 }
 
 /**
- * Apply variant styles from config
+ * Convert color names to blessed-compatible values
  */
-export function applyVariants(
-  baseStyles: Record<string, any>,
-  variants: Record<string, any>,
-  props: Record<string, any>
-) {
-  let styles = { ...baseStyles };
+export function resolveColor(color: string): string {
+  const colorMap: Record<string, string> = {
+    black: 'black',
+    red: 'red',
+    green: 'green',
+    yellow: 'yellow',
+    blue: 'blue',
+    magenta: 'magenta',
+    cyan: 'cyan',
+    white: 'white',
+    gray: 'gray',
+    lightred: 'lightred',
+    lightgreen: 'lightgreen',
+    lightyellow: 'lightyellow',
+    lightblue: 'lightblue',
+    lightmagenta: 'lightmagenta',
+    lightcyan: 'lightcyan',
+    lightgray: 'lightgray',
+  };
   
-  Object.keys(variants).forEach(key => {
-    const propValue = props[key];
-    if (propValue && variants[key][propValue]) {
-      styles = { ...styles, ...variants[key][propValue] };
-    }
-  });
-  
-  return styles;
+  return colorMap[color] || color;
 }
 
 /**
- * Convert semantic colors to blessed-compatible values
+ * Create border style object
  */
-export function resolveBlessedColor(color: string, tokens: any): string {
-  if (color.startsWith('#')) return color;
-  
-  const resolved = resolveToken(color, tokens);
-  return resolved || color;
+export function createBorder(type: 'line' | 'bg' = 'line', fg?: string, bg?: string) {
+  return {
+    type,
+    ...(fg && { fg }),
+    ...(bg && { bg }),
+  };
 }
 
 /**
- * Animation frame helper for terminal animations
+ * Animation helper for terminal animations
  */
-export class TerminalAnimation {
+export class Animation {
   private frames: string[];
   private currentFrame = 0;
   private interval?: NodeJS.Timeout;
   
-  constructor(frames: string | string[], speed = 100) {
-    this.frames = Array.isArray(frames) ? frames : frames.split('');
+  constructor(frames: string[], speed = 100) {
+    this.frames = frames;
   }
   
   start(callback: (frame: string) => void) {
@@ -195,5 +210,68 @@ export class TerminalAnimation {
     }
   }
 }
+`;
+}
+
+function generateTypesTemplate(): string {
+  return `/**
+ * Common types for TUI Kit components
+ */
+
+export interface ComponentProps {
+  parent?: any;
+  children?: any[];
+  top?: string | number;
+  left?: string | number;
+  width?: string | number;
+  height?: string | number;
+  right?: string | number;
+  bottom?: string | number;
+  content?: string;
+  label?: string;
+  style?: Record<string, any>;
+  border?: any;
+  padding?: number | { top?: number; right?: number; bottom?: number; left?: number };
+  margin?: number | { top?: number; right?: number; bottom?: number; left?: number };
+  hidden?: boolean;
+  focusable?: boolean;
+  scrollable?: boolean;
+  mouse?: boolean;
+  keys?: boolean;
+  vi?: boolean;
+}
+
+export interface StyleProps {
+  fg?: string;
+  bg?: string;
+  bold?: boolean;
+  underline?: boolean;
+  blink?: boolean;
+  inverse?: boolean;
+  invisible?: boolean;
+  focus?: {
+    fg?: string;
+    bg?: string;
+    bold?: boolean;
+    underline?: boolean;
+    blink?: boolean;
+    inverse?: boolean;
+    invisible?: boolean;
+  };
+}
+
+export interface BorderProps {
+  type?: 'line' | 'bg';
+  fg?: string;
+  bg?: string;
+  ch?: string;
+}
+
+export type Color = 
+  | 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white'
+  | 'gray' | 'lightred' | 'lightgreen' | 'lightyellow' | 'lightblue' 
+  | 'lightmagenta' | 'lightcyan' | 'lightgray';
+
+export type BorderType = 'line' | 'bg';
 `;
 }
