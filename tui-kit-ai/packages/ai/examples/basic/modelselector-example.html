@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModelSelector Component Example</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00ff00;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #888;
+            margin: 10px 0 0 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .modelselector-container {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info h3 {
+            color: #00ff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .code {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00ff00;
+            overflow-x: auto;
+        }
+        
+        .code pre {
+            margin: 0;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ModelSelector Component Example</h1>
+            <p>AI model selection and comparison with advanced filters</p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Component Information</h3>
+            <p><strong>Providers:</strong> OpenAI, Anthropic, Google, Meta, Microsoft, Amazon, Cohere, HuggingFace</p>
+            <p><strong>Capabilities:</strong> Text generation, Code generation, Image generation, Function calling, Tool use, Multimodal</p>
+            <p><strong>Filters:</strong> Provider, Capabilities, Performance, Cost, Availability</p>
+        </div>
+        
+        <div class="controls">
+            <select class="select" id="provider-filter">
+                <option value="">All Providers</option>
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="google">Google</option>
+                <option value="meta">Meta</option>
+                <option value="microsoft">Microsoft</option>
+                <option value="amazon">Amazon</option>
+                <option value="cohere">Cohere</option>
+                <option value="huggingface">HuggingFace</option>
+            </select>
+            
+            <select class="select" id="capability-filter">
+                <option value="">All Capabilities</option>
+                <option value="text-generation">Text Generation</option>
+                <option value="code-generation">Code Generation</option>
+                <option value="image-generation">Image Generation</option>
+                <option value="function-calling">Function Calling</option>
+                <option value="tool-use">Tool Use</option>
+                <option value="multimodal">Multimodal</option>
+            </select>
+            
+            <select class="select" id="sort-by">
+                <option value="name">Sort by Name</option>
+                <option value="provider">Sort by Provider</option>
+                <option value="cost">Sort by Cost</option>
+                <option value="performance">Sort by Performance</option>
+                <option value="context">Sort by Context</option>
+            </select>
+            
+            <button class="btn" id="toggle-filters">Toggle Filters</button>
+            <button class="btn" id="toggle-comparison">Toggle Comparison</button>
+            <button class="btn" id="reset-filters">Reset Filters</button>
+        </div>
+        
+        <div class="modelselector-container" id="modelselector-container"></div>
+        
+        <div class="info">
+            <h3>🎮 Controls</h3>
+            <p><strong>Provider Filter:</strong> Filter models by provider (OpenAI, Anthropic, etc.)</p>
+            <p><strong>Capability Filter:</strong> Filter models by capabilities (text, code, image, etc.)</p>
+            <p><strong>Sort By:</strong> Sort models by different criteria</p>
+            <p><strong>Toggle Filters:</strong> Show/hide advanced filter options</p>
+            <p><strong>Toggle Comparison:</strong> Enable/disable model comparison mode</p>
+            <p><strong>Reset Filters:</strong> Clear all filters and show all models</p>
+        </div>
+        
+        <div class="code">
+            <h3>💻 Usage Example</h3>
+            <pre><code>import { ModelSelector } from '@tui-kit-ai/ai';
+
+const modelSelector = new ModelSelector({
+  showProvider: true,
+  showCapabilities: true,
+  showPerformance: true,
+  showCost: true,
+  showFilters: true,
+  comparisonMode: false,
+  onModelSelect: (model) => console.log('Selected:', model),
+  onModelCompare: (models) => console.log('Comparing:', models)
+});
+
+// Set filters
+modelSelector.setFilters({
+  provider: 'openai',
+  capabilities: ['text-generation', 'function-calling'],
+  maxCost: 0.01
+});
+
+// Get selected model
+const selected = modelSelector.getSelectedModel();
+console.log('Selected model:', selected);</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock ModelSelector component for demonstration
+        class MockModelSelector {
+            constructor(options = {}) {
+                this.options = {
+                    showProvider: true,
+                    showCapabilities: true,
+                    showPerformance: true,
+                    showCost: true,
+                    showFilters: true,
+                    comparisonMode: false,
+                    onModelSelect: () => {},
+                    onModelCompare: () => {},
+                    ...options
+                };
+                
+                this.models = this.getAvailableModels();
+                this.selectedModel = null;
+                this.comparisonModels = [];
+                this.filters = {
+                    provider: '',
+                    capabilities: [],
+                    maxCost: null,
+                    minPerformance: null
+                };
+                this.sortBy = 'name';
+                this.showFilters = true;
+            }
+            
+            mount(container) {
+                this.container = container;
+                this.render();
+            }
+            
+            setFilters(filters) {
+                this.filters = { ...this.filters, ...filters };
+                this.render();
+            }
+            
+            setSortBy(sortBy) {
+                this.sortBy = sortBy;
+                this.render();
+            }
+            
+            toggleFilters() {
+                this.showFilters = !this.showFilters;
+                this.render();
+            }
+            
+            toggleComparison() {
+                this.options.comparisonMode = !this.options.comparisonMode;
+                this.render();
+            }
+            
+            selectModel(model) {
+                this.selectedModel = model;
+                this.options.onModelSelect(model);
+                this.render();
+            }
+            
+            compareModel(model) {
+                if (this.comparisonModels.includes(model)) {
+                    this.comparisonModels = this.comparisonModels.filter(m => m !== model);
+                } else if (this.comparisonModels.length < 3) {
+                    this.comparisonModels.push(model);
+                }
+                this.options.onModelCompare(this.comparisonModels);
+                this.render();
+            }
+            
+            resetFilters() {
+                this.filters = {
+                    provider: '',
+                    capabilities: [],
+                    maxCost: null,
+                    minPerformance: null
+                };
+                this.sortBy = 'name';
+                this.render();
+            }
+            
+            getAvailableModels() {
+                return [
+                    {
+                        id: 'gpt-4',
+                        name: 'GPT-4',
+                        provider: 'openai',
+                        context: 8192,
+                        pricing: { input: 0.03, output: 0.06 },
+                        capabilities: ['text-generation', 'function-calling', 'multimodal'],
+                        performance: 95,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'gpt-3.5-turbo',
+                        name: 'GPT-3.5 Turbo',
+                        provider: 'openai',
+                        context: 4096,
+                        pricing: { input: 0.001, output: 0.002 },
+                        capabilities: ['text-generation', 'function-calling'],
+                        performance: 85,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'claude-3-opus',
+                        name: 'Claude-3 Opus',
+                        provider: 'anthropic',
+                        context: 200000,
+                        pricing: { input: 0.015, output: 0.075 },
+                        capabilities: ['text-generation', 'multimodal', 'tool-use'],
+                        performance: 98,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'claude-3-sonnet',
+                        name: 'Claude-3 Sonnet',
+                        provider: 'anthropic',
+                        context: 200000,
+                        pricing: { input: 0.003, output: 0.015 },
+                        capabilities: ['text-generation', 'multimodal', 'tool-use'],
+                        performance: 92,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'claude-3-haiku',
+                        name: 'Claude-3 Haiku',
+                        provider: 'anthropic',
+                        context: 200000,
+                        pricing: { input: 0.00025, output: 0.00125 },
+                        capabilities: ['text-generation', 'multimodal', 'tool-use'],
+                        performance: 88,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'gemini-pro',
+                        name: 'Gemini Pro',
+                        provider: 'google',
+                        context: 32768,
+                        pricing: { input: 0.0005, output: 0.0015 },
+                        capabilities: ['text-generation', 'multimodal'],
+                        performance: 90,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'llama-2-70b',
+                        name: 'LLaMA-2 70B',
+                        provider: 'meta',
+                        context: 4096,
+                        pricing: { input: 0.0007, output: 0.0009 },
+                        capabilities: ['text-generation'],
+                        performance: 82,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'llama-2-13b',
+                        name: 'LLaMA-2 13B',
+                        provider: 'meta',
+                        context: 4096,
+                        pricing: { input: 0.0002, output: 0.0002 },
+                        capabilities: ['text-generation'],
+                        performance: 75,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'codellama-34b',
+                        name: 'CodeLlama 34B',
+                        provider: 'meta',
+                        context: 16384,
+                        pricing: { input: 0.0005, output: 0.0005 },
+                        capabilities: ['text-generation', 'code-generation'],
+                        performance: 88,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'dall-e-3',
+                        name: 'DALL-E 3',
+                        provider: 'openai',
+                        context: 0,
+                        pricing: { input: 0.04, output: 0.08 },
+                        capabilities: ['image-generation'],
+                        performance: 95,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'midjourney-v6',
+                        name: 'Midjourney v6',
+                        provider: 'midjourney',
+                        context: 0,
+                        pricing: { input: 0.05, output: 0.1 },
+                        capabilities: ['image-generation'],
+                        performance: 98,
+                        availability: 'available'
+                    },
+                    {
+                        id: 'stable-diffusion-xl',
+                        name: 'Stable Diffusion XL',
+                        provider: 'stability',
+                        context: 0,
+                        pricing: { input: 0.02, output: 0.04 },
+                        capabilities: ['image-generation'],
+                        performance: 85,
+                        availability: 'available'
+                    }
+                ];
+            }
+            
+            getFilteredModels() {
+                let filtered = [...this.models];
+                
+                // Apply provider filter
+                if (this.filters.provider) {
+                    filtered = filtered.filter(model => model.provider === this.filters.provider);
+                }
+                
+                // Apply capabilities filter
+                if (this.filters.capabilities.length > 0) {
+                    filtered = filtered.filter(model => 
+                        this.filters.capabilities.every(cap => model.capabilities.includes(cap))
+                    );
+                }
+                
+                // Apply cost filter
+                if (this.filters.maxCost !== null) {
+                    filtered = filtered.filter(model => 
+                        model.pricing.input <= this.filters.maxCost && 
+                        model.pricing.output <= this.filters.maxCost
+                    );
+                }
+                
+                // Apply performance filter
+                if (this.filters.minPerformance !== null) {
+                    filtered = filtered.filter(model => model.performance >= this.filters.minPerformance);
+                }
+                
+                // Sort models
+                filtered.sort((a, b) => {
+                    switch (this.sortBy) {
+                        case 'name':
+                            return a.name.localeCompare(b.name);
+                        case 'provider':
+                            return a.provider.localeCompare(b.provider);
+                        case 'cost':
+                            return (a.pricing.input + a.pricing.output) - (b.pricing.input + b.pricing.output);
+                        case 'performance':
+                            return b.performance - a.performance;
+                        case 'context':
+                            return b.context - a.context;
+                        default:
+                            return 0;
+                    }
+                });
+                
+                return filtered;
+            }
+            
+            render() {
+                const filteredModels = this.getFilteredModels();
+                
+                this.container.innerHTML = `
+                    <div class="modelselector">
+                        <div class="modelselector-header">
+                            <div class="modelselector-title">
+                                <span class="modelselector-title-text">AI Model Selector</span>
+                                <span class="modelselector-count">${filteredModels.length} models</span>
+                            </div>
+                            <div class="modelselector-actions">
+                                <button class="modelselector-action-btn" onclick="this.parentElement.parentElement.parentElement.modelselector.toggleFilters()">
+                                    ${this.showFilters ? 'Hide' : 'Show'} Filters
+                                </button>
+                                <button class="modelselector-action-btn" onclick="this.parentElement.parentElement.parentElement.modelselector.toggleComparison()">
+                                    ${this.options.comparisonMode ? 'Exit' : 'Enter'} Comparison
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${this.showFilters ? `
+                            <div class="modelselector-filters">
+                                <div class="modelselector-filter-group">
+                                    <label class="modelselector-filter-label">Provider:</label>
+                                    <select class="modelselector-filter-select" onchange="this.parentElement.parentElement.parentElement.parentElement.modelselector.setFilters({provider: this.value})">
+                                        <option value="">All Providers</option>
+                                        <option value="openai" ${this.filters.provider === 'openai' ? 'selected' : ''}>OpenAI</option>
+                                        <option value="anthropic" ${this.filters.provider === 'anthropic' ? 'selected' : ''}>Anthropic</option>
+                                        <option value="google" ${this.filters.provider === 'google' ? 'selected' : ''}>Google</option>
+                                        <option value="meta" ${this.filters.provider === 'meta' ? 'selected' : ''}>Meta</option>
+                                        <option value="microsoft" ${this.filters.provider === 'microsoft' ? 'selected' : ''}>Microsoft</option>
+                                        <option value="amazon" ${this.filters.provider === 'amazon' ? 'selected' : ''}>Amazon</option>
+                                        <option value="cohere" ${this.filters.provider === 'cohere' ? 'selected' : ''}>Cohere</option>
+                                        <option value="huggingface" ${this.filters.provider === 'huggingface' ? 'selected' : ''}>HuggingFace</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="modelselector-filter-group">
+                                    <label class="modelselector-filter-label">Capabilities:</label>
+                                    <div class="modelselector-filter-checkboxes">
+                                        ${['text-generation', 'code-generation', 'image-generation', 'function-calling', 'tool-use', 'multimodal'].map(cap => `
+                                            <label class="modelselector-filter-checkbox">
+                                                <input type="checkbox" value="${cap}" 
+                                                       ${this.filters.capabilities.includes(cap) ? 'checked' : ''}
+                                                       onchange="this.parentElement.parentElement.parentElement.parentElement.parentElement.modelselector.toggleCapability('${cap}')">
+                                                <span>${cap.replace('-', ' ')}</span>
+                                            </label>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="modelselector-filter-group">
+                                    <label class="modelselector-filter-label">Max Cost (per 1K tokens):</label>
+                                    <input type="number" class="modelselector-filter-input" 
+                                           value="${this.filters.maxCost || ''}" 
+                                           step="0.001" 
+                                           onchange="this.parentElement.parentElement.parentElement.parentElement.modelselector.setFilters({maxCost: parseFloat(this.value) || null})">
+                                </div>
+                                
+                                <div class="modelselector-filter-group">
+                                    <label class="modelselector-filter-label">Min Performance:</label>
+                                    <input type="range" class="modelselector-filter-range" 
+                                           min="0" max="100" 
+                                           value="${this.filters.minPerformance || 0}" 
+                                           onchange="this.parentElement.parentElement.parentElement.parentElement.modelselector.setFilters({minPerformance: parseInt(this.value) || null})">
+                                    <span class="modelselector-filter-range-value">${this.filters.minPerformance || 0}%</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="modelselector-models">
+                            ${filteredModels.map(model => `
+                                <div class="modelselector-model ${this.selectedModel?.id === model.id ? 'selected' : ''} ${this.comparisonModels.includes(model) ? 'comparing' : ''}">
+                                    <div class="modelselector-model-header">
+                                        <div class="modelselector-model-title">
+                                            <span class="modelselector-model-name">${model.name}</span>
+                                            <span class="modelselector-model-provider">${model.provider}</span>
+                                        </div>
+                                        <div class="modelselector-model-actions">
+                                            ${this.options.comparisonMode ? `
+                                                <button class="modelselector-model-action" onclick="this.parentElement.parentElement.parentElement.parentElement.modelselector.compareModel('${model.id}')">
+                                                    ${this.comparisonModels.includes(model) ? 'Remove from Comparison' : 'Add to Comparison'}
+                                                </button>
+                                            ` : `
+                                                <button class="modelselector-model-action" onclick="this.parentElement.parentElement.parentElement.parentElement.modelselector.selectModel('${model.id}')">
+                                                    ${this.selectedModel?.id === model.id ? 'Selected' : 'Select'}
+                                                </button>
+                                            `}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="modelselector-model-details">
+                                        <div class="modelselector-model-detail">
+                                            <span class="modelselector-model-detail-label">Context:</span>
+                                            <span class="modelselector-model-detail-value">${model.context.toLocaleString()} tokens</span>
+                                        </div>
+                                        <div class="modelselector-model-detail">
+                                            <span class="modelselector-model-detail-label">Performance:</span>
+                                            <span class="modelselector-model-detail-value">${model.performance}%</span>
+                                        </div>
+                                        <div class="modelselector-model-detail">
+                                            <span class="modelselector-model-detail-label">Cost:</span>
+                                            <span class="modelselector-model-detail-value">$${model.pricing.input}/$${model.pricing.output} per 1K</span>
+                                        </div>
+                                        <div class="modelselector-model-detail">
+                                            <span class="modelselector-model-detail-label">Availability:</span>
+                                            <span class="modelselector-model-detail-value">${model.availability}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="modelselector-model-capabilities">
+                                        ${model.capabilities.map(cap => `
+                                            <span class="modelselector-model-capability">${cap.replace('-', ' ')}</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        ${this.options.comparisonMode && this.comparisonModels.length > 0 ? `
+                            <div class="modelselector-comparison">
+                                <div class="modelselector-comparison-title">Model Comparison</div>
+                                <div class="modelselector-comparison-table">
+                                    <div class="modelselector-comparison-header">
+                                        <div class="modelselector-comparison-cell">Model</div>
+                                        <div class="modelselector-comparison-cell">Provider</div>
+                                        <div class="modelselector-comparison-cell">Context</div>
+                                        <div class="modelselector-comparison-cell">Performance</div>
+                                        <div class="modelselector-comparison-cell">Cost (Input/Output)</div>
+                                        <div class="modelselector-comparison-cell">Capabilities</div>
+                                    </div>
+                                    ${this.comparisonModels.map(model => `
+                                        <div class="modelselector-comparison-row">
+                                            <div class="modelselector-comparison-cell">${model.name}</div>
+                                            <div class="modelselector-comparison-cell">${model.provider}</div>
+                                            <div class="modelselector-comparison-cell">${model.context.toLocaleString()}</div>
+                                            <div class="modelselector-comparison-cell">${model.performance}%</div>
+                                            <div class="modelselector-comparison-cell">$${model.pricing.input}/$${model.pricing.output}</div>
+                                            <div class="modelselector-comparison-cell">${model.capabilities.join(', ')}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Store reference for event handlers
+                this.container.querySelector('.modelselector').modelselector = this;
+                
+                // Add styles
+                this.addStyles();
+            }
+            
+            toggleCapability(capability) {
+                if (this.filters.capabilities.includes(capability)) {
+                    this.filters.capabilities = this.filters.capabilities.filter(cap => cap !== capability);
+                } else {
+                    this.filters.capabilities.push(capability);
+                }
+                this.render();
+            }
+            
+            addStyles() {
+                if (!document.getElementById('modelselector-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'modelselector-styles';
+                    style.textContent = `
+                        .modelselector {
+                            background: #000;
+                            color: #fff;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            font-family: 'JetBrains Mono', monospace;
+                            overflow: hidden;
+                        }
+                        
+                        .modelselector-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 15px 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .modelselector-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .modelselector-title-text {
+                            font-weight: bold;
+                            color: #00ff00;
+                            font-size: 1.1em;
+                        }
+                        
+                        .modelselector-count {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .modelselector-actions {
+                            display: flex;
+                            gap: 10px;
+                        }
+                        
+                        .modelselector-action-btn {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.9em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .modelselector-action-btn:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .modelselector-filters {
+                            padding: 20px;
+                            background: #111;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .modelselector-filter-group {
+                            margin-bottom: 15px;
+                        }
+                        
+                        .modelselector-filter-label {
+                            display: block;
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .modelselector-filter-select,
+                        .modelselector-filter-input {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 8px 12px;
+                            border-radius: 4px;
+                            font-family: inherit;
+                            width: 200px;
+                        }
+                        
+                        .modelselector-filter-checkboxes {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 10px;
+                        }
+                        
+                        .modelselector-filter-checkbox {
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            cursor: pointer;
+                        }
+                        
+                        .modelselector-filter-checkbox input[type="checkbox"] {
+                            accent-color: #00ff00;
+                        }
+                        
+                        .modelselector-filter-range {
+                            width: 200px;
+                            margin-right: 10px;
+                        }
+                        
+                        .modelselector-filter-range-value {
+                            color: #00ff00;
+                            font-weight: bold;
+                        }
+                        
+                        .modelselector-models {
+                            padding: 20px;
+                        }
+                        
+                        .modelselector-model {
+                            background: #111;
+                            border: 1px solid #333;
+                            border-radius: 6px;
+                            padding: 15px;
+                            margin-bottom: 15px;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .modelselector-model:hover {
+                            border-color: #555;
+                        }
+                        
+                        .modelselector-model.selected {
+                            border-color: #00ff00;
+                            background: #001100;
+                        }
+                        
+                        .modelselector-model.comparing {
+                            border-color: #0088ff;
+                            background: #000011;
+                        }
+                        
+                        .modelselector-model-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .modelselector-model-title {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+                        
+                        .modelselector-model-name {
+                            font-weight: bold;
+                            color: #00ff00;
+                            font-size: 1.1em;
+                        }
+                        
+                        .modelselector-model-provider {
+                            color: #888;
+                            font-size: 0.9em;
+                            text-transform: uppercase;
+                        }
+                        
+                        .modelselector-model-actions {
+                            display: flex;
+                            gap: 10px;
+                        }
+                        
+                        .modelselector-model-action {
+                            background: #333;
+                            color: #fff;
+                            border: 1px solid #555;
+                            padding: 6px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 0.8em;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .modelselector-model-action:hover {
+                            background: #00ff00;
+                            color: #000;
+                        }
+                        
+                        .modelselector-model-details {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 10px;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .modelselector-model-detail {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 8px 12px;
+                            background: #222;
+                            border-radius: 4px;
+                        }
+                        
+                        .modelselector-model-detail-label {
+                            color: #888;
+                            font-size: 0.9em;
+                        }
+                        
+                        .modelselector-model-detail-value {
+                            color: #fff;
+                            font-weight: bold;
+                        }
+                        
+                        .modelselector-model-capabilities {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 8px;
+                        }
+                        
+                        .modelselector-model-capability {
+                            background: #333;
+                            color: #fff;
+                            padding: 4px 8px;
+                            border-radius: 3px;
+                            font-size: 0.8em;
+                        }
+                        
+                        .modelselector-comparison {
+                            padding: 20px;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        .modelselector-comparison-title {
+                            color: #00ff00;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                        }
+                        
+                        .modelselector-comparison-table {
+                            background: #111;
+                            border-radius: 6px;
+                            overflow: hidden;
+                        }
+                        
+                        .modelselector-comparison-header {
+                            display: grid;
+                            grid-template-columns: repeat(6, 1fr);
+                            background: #222;
+                            padding: 15px;
+                            font-weight: bold;
+                            color: #00ff00;
+                        }
+                        
+                        .modelselector-comparison-row {
+                            display: grid;
+                            grid-template-columns: repeat(6, 1fr);
+                            padding: 15px;
+                            border-bottom: 1px solid #333;
+                        }
+                        
+                        .modelselector-comparison-row:last-child {
+                            border-bottom: none;
+                        }
+                        
+                        .modelselector-comparison-cell {
+                            padding: 5px;
+                            font-size: 0.9em;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+        
+        // Initialize the example
+        const modelSelector = new MockModelSelector({
+            showProvider: true,
+            showCapabilities: true,
+            showPerformance: true,
+            showCost: true,
+            showFilters: true,
+            comparisonMode: false,
+            onModelSelect: (model) => {
+                console.log('Model selected:', model);
+            },
+            onModelCompare: (models) => {
+                console.log('Models for comparison:', models);
+            }
+        });
+        
+        modelSelector.mount(document.getElementById('modelselector-container'));
+        
+        // Event handlers
+        document.getElementById('provider-filter').addEventListener('change', (e) => {
+            modelSelector.setFilters({ provider: e.target.value });
+        });
+        
+        document.getElementById('capability-filter').addEventListener('change', (e) => {
+            if (e.target.value) {
+                modelSelector.toggleCapability(e.target.value);
+            }
+        });
+        
+        document.getElementById('sort-by').addEventListener('change', (e) => {
+            modelSelector.setSortBy(e.target.value);
+        });
+        
+        document.getElementById('toggle-filters').addEventListener('click', () => {
+            modelSelector.toggleFilters();
+        });
+        
+        document.getElementById('toggle-comparison').addEventListener('click', () => {
+            modelSelector.toggleComparison();
+        });
+        
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            modelSelector.resetFilters();
+        });
+    </script>
+</body>
+</html>
