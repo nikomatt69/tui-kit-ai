@@ -1,18 +1,25 @@
+import blessed from 'blessed';
 import { StreamProps, StreamChunk, StreamState, StreamStats, StreamProgress, StreamEvents, StreamMethods } from './Stream.types';
-import { generateStreamStyles, getStreamVariantClass, getStreamStateClass, getChunkTypeClass } from './Stream.styles';
 
 export class Stream implements StreamMethods {
+  private screen: blessed.Widgets.Screen;
+  private container: blessed.Widgets.BoxElement;
+  private header: blessed.Widgets.BoxElement;
+  private progressBar: blessed.Widgets.ProgressBarElement | null = null;
+  private content: blessed.Widgets.Log;
+  private stats: blessed.Widgets.BoxElement | null = null;
+  private footer: blessed.Widgets.BoxElement;
+  
   private props: StreamProps;
-  private element: HTMLElement | null = null;
   private events: StreamEvents;
-  private stats: StreamStats;
+  private statsData: StreamStats;
   private progress: StreamProgress;
   private isActive: boolean = false;
   private isPaused: boolean = false;
   private retryCount: number = 0;
   private lastChunkTime: number = 0;
   private chunkBuffer: StreamChunk[] = [];
-  private animationFrame: number | null = null;
+  private interval: NodeJS.Timeout | null = null;
 
   constructor(props: Partial<StreamProps> = {}) {
     this.props = {
@@ -53,7 +60,7 @@ export class Stream implements StreamMethods {
       complete: props.onComplete || (() => {})
     };
 
-    this.stats = {
+    this.statsData = {
       totalChunks: 0,
       totalBytes: 0,
       chunksPerSecond: 0,
@@ -72,233 +79,259 @@ export class Stream implements StreamMethods {
   }
 
   private initialize(): void {
-    this.createElement();
-    this.attachEventListeners();
-    this.updateStyles();
-    this.render();
+    this.createScreen();
+    this.createContainer();
+    this.createHeader();
+    this.createProgressBar();
+    this.createContent();
+    this.createStats();
+    this.createFooter();
+    this.setupEventHandlers();
   }
 
-  private createElement(): void {
-    this.element = document.createElement('div');
-    this.element.className = `stream-container ${getStreamVariantClass(this.props.variant)} ${getStreamStateClass(this.props.state)}`;
-    this.element.setAttribute('data-stream-id', this.generateId());
+  private createScreen(): void {
+    this.screen = blessed.screen({
+      smartCSR: true,
+      title: 'Stream Component',
+      fullUnicode: true
+    });
   }
 
-  private attachEventListeners(): void {
-    if (!this.element) return;
-
-    // Focus events
-    this.element.addEventListener('focus', () => {
-      this.setState('focused');
-    });
-
-    this.element.addEventListener('blur', () => {
-      if (this.props.state === 'focused') {
-        this.setState('idle');
-      }
-    });
-
-    // Click events for interaction
-    this.element.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.handleClick(event);
-    });
-
-    // Keyboard events
-    this.element.addEventListener('keydown', (event) => {
-      this.handleKeydown(event);
-    });
-
-    // Make element focusable
-    this.element.setAttribute('tabindex', '0');
-  }
-
-  private handleClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    
-    if (target.classList.contains('stream-chunk')) {
-      this.handleChunkClick(target);
-    } else if (target.classList.contains('stream-progress-bar')) {
-      this.handleProgressClick(event);
-    }
-  }
-
-  private handleKeydown(event: KeyboardEvent): void {
-    switch (event.key) {
-      case ' ':
-        event.preventDefault();
-        this.togglePause();
-        break;
-      case 'Escape':
-        this.stop();
-        break;
-      case 'r':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          this.start();
+  private createContainer(): void {
+    this.container = blessed.box({
+      parent: this.screen,
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
         }
-        break;
-    }
-  }
-
-  private handleChunkClick(chunkElement: HTMLElement): void {
-    const chunkId = chunkElement.getAttribute('data-chunk-id');
-    if (chunkId) {
-      const chunk = this.props.chunks.find(c => c.id === chunkId);
-      if (chunk) {
-        this.events.chunk(chunk);
       }
-    }
+    });
   }
 
-  private handleProgressClick(event: MouseEvent): void {
-    const progressBar = event.currentTarget as HTMLElement;
-    const rect = progressBar.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const percentage = (clickX / rect.width) * 100;
+  private createHeader(): void {
+    this.header = blessed.box({
+      parent: this.container,
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: 3,
+      content: `Stream ${this.props.variant} - ${this.props.state}`,
+      tags: true,
+      style: {
+        bg: 'blue',
+        fg: 'white'
+      }
+    });
+  }
+
+  private createProgressBar(): void {
+    if (!this.props.config?.showProgress) return;
     
-    if (this.progress.total) {
-      this.progress.current = Math.round((percentage / 100) * this.progress.total);
-      this.progress.percentage = percentage;
-      this.events.progress(this.progress);
-      this.render();
-    }
+    this.progressBar = blessed.progressbar({
+      parent: this.container,
+      top: 3,
+      left: 0,
+      width: '100%',
+      height: 1,
+      border: {
+        type: 'line'
+      },
+      style: {
+        bar: {
+          bg: this.getThemeColor('success')
+        },
+        border: {
+          fg: this.getThemeColor('border')
+        }
+      },
+      filled: 0
+    });
   }
 
-  private generateId(): string {
-    return `stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  private createContent(): void {
+    this.content = blessed.log({
+      parent: this.container,
+      top: this.props.config?.showProgress ? 4 : 3,
+      left: 0,
+      width: '100%',
+      height: this.props.config?.showStats ? '70%' : '80%',
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
+        }
+      },
+      scrollable: true,
+      alwaysScroll: true,
+      mouse: true,
+      keys: true,
+      vi: true
+    });
   }
 
-  private updateStyles(): void {
-    if (!this.element) return;
+  private createStats(): void {
+    if (!this.props.config?.showStats) return;
+    
+    this.stats = blessed.box({
+      parent: this.container,
+      top: this.props.config?.showProgress ? '75%' : '85%',
+      left: 0,
+      width: '100%',
+      height: 5,
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
+        }
+      }
+    });
+  }
 
-    const styleConfig = {
-      variant: this.props.variant,
-      state: this.props.state,
-      width: this.props.width,
-      height: this.props.height,
-      theme: this.props.theme
+  private createFooter(): void {
+    this.footer = blessed.box({
+      parent: this.container,
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      height: 1,
+      content: 'Press q to quit, SPACE to pause/resume, r to reset, s to start',
+      style: {
+        bg: 'black',
+        fg: 'white'
+      }
+    });
+  }
+
+  private setupEventHandlers(): void {
+    this.screen.key(['q', 'C-c'], () => {
+      this.stop();
+      process.exit(0);
+    });
+    
+    this.screen.key(['space'], () => {
+      if (this.isActive) {
+        if (this.isPaused) {
+          this.resume();
+        } else {
+          this.pause();
+        }
+      }
+    });
+    
+    this.screen.key(['r'], () => {
+      this.clear();
+    });
+    
+    this.screen.key(['s'], () => {
+      if (!this.isActive) {
+        this.start();
+      }
+    });
+  }
+
+  private getThemeColor(color: keyof StreamProps['theme']): string {
+    const colorMap = {
+      primary: 'green',
+      secondary: 'blue',
+      success: 'green',
+      warning: 'yellow',
+      error: 'red',
+      background: 'black',
+      foreground: 'white',
+      border: 'white'
     };
-
-    const styles = generateStreamStyles(styleConfig);
-    
-    // Remove existing styles
-    const existingStyle = this.element.querySelector('style');
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-
-    // Add new styles
-    const styleElement = document.createElement('style');
-    styleElement.textContent = styles;
-    this.element.appendChild(styleElement);
+    return colorMap[color] || 'white';
   }
 
-  private render(): void {
-    if (!this.element) return;
-
-    const { variant, state, chunks, config, showProgress, showStats, showTimestamps } = this.props;
-    
-    this.element.className = `stream-container ${getStreamVariantClass(variant)} ${getStreamStateClass(state)}`;
-    
-    this.element.innerHTML = `
-      <div class="stream-header">
-        <div class="stream-title">Stream ${variant}</div>
-        <div class="stream-status">${state}</div>
-      </div>
-      
-      ${showProgress ? this.renderProgress() : ''}
-      
-      <div class="stream-content">
-        ${this.renderChunks()}
-      </div>
-      
-      ${showStats ? this.renderStats() : ''}
-      
-      <div class="stream-footer">
-        ${this.renderFooter()}
-      </div>
-    `;
+  private updateHeader(): void {
+    const stateColor = this.getStateColor(this.props.state);
+    this.header.setContent(
+      `{white-fg}Stream {cyan-fg}${this.props.variant} {white-fg}- {${stateColor}-fg}${this.props.state}`
+    );
   }
 
-  private renderProgress(): string {
-    const { current, total, percentage } = this.progress;
-    const progressWidth = total ? (current / total) * 100 : 0;
-    
-    return `
-      <div class="stream-progress">
-        <div class="stream-progress-bar" style="width: ${progressWidth}%"></div>
-      </div>
-      <div class="stream-progress-info">
-        ${current}${total ? ` / ${total}` : ''} ${percentage ? `(${percentage.toFixed(1)}%)` : ''}
-      </div>
-    `;
+  private getStateColor(state: StreamState): string {
+    const colors = {
+      idle: 'white',
+      connecting: 'yellow',
+      streaming: 'green',
+      paused: 'yellow',
+      completed: 'green',
+      error: 'red',
+      focused: 'cyan'
+    };
+    return colors[state] || 'white';
   }
 
-  private renderChunks(): string {
-    return this.props.chunks.map(chunk => {
+  private updateContent(): void {
+    const recentChunks = this.props.chunks.slice(-20); // Show last 20 chunks
+    const content = recentChunks.map(chunk => {
       const timestamp = this.props.config?.showTimestamps ? 
         new Date(chunk.timestamp).toLocaleTimeString() : '';
-      
-      return `
-        <div class="stream-chunk ${getChunkTypeClass(chunk.type)}" data-chunk-id="${chunk.id}">
-          <div class="stream-chunk-content">
-            <span class="stream-chunk-${chunk.type}">${this.escapeHtml(chunk.content)}</span>
-            ${chunk.metadata ? `<div class="stream-chunk-metadata">${JSON.stringify(chunk.metadata)}</div>` : ''}
-          </div>
-          ${timestamp ? `<div class="stream-chunk-timestamp">${timestamp}</div>` : ''}
-        </div>
-      `;
-    }).join('');
-  }
-
-  private renderStats(): string {
-    const { totalChunks, totalBytes, chunksPerSecond, bytesPerSecond, averageChunkSize } = this.stats;
+      const typeColor = this.getChunkTypeColor(chunk.type);
+      const timeStr = timestamp ? `[${timestamp}] ` : '';
+      return `{${typeColor}-fg}${timeStr}{white-fg}${chunk.content}`;
+    }).join('\n');
     
-    return `
-      <div class="stream-stats">
-        <div class="stream-stat">
-          <div class="stream-stat-value">${totalChunks}</div>
-          <div class="stream-stat-label">Chunks</div>
-        </div>
-        <div class="stream-stat">
-          <div class="stream-stat-value">${this.formatBytes(totalBytes)}</div>
-          <div class="stream-stat-label">Bytes</div>
-        </div>
-        <div class="stream-stat">
-          <div class="stream-stat-value">${chunksPerSecond.toFixed(1)}</div>
-          <div class="stream-stat-label">Chunks/s</div>
-        </div>
-        <div class="stream-stat">
-          <div class="stream-stat-value">${this.formatBytes(bytesPerSecond)}/s</div>
-          <div class="stream-stat-label">Speed</div>
-        </div>
-        <div class="stream-stat">
-          <div class="stream-stat-value">${this.formatBytes(averageChunkSize)}</div>
-          <div class="stream-stat-label">Avg Size</div>
-        </div>
-      </div>
-    `;
+    this.content.setContent(content);
+    this.content.setScrollPerc(100);
   }
 
-  private renderFooter(): string {
-    const { state } = this.props;
-    const duration = this.stats.duration ? `${(this.stats.duration / 1000).toFixed(1)}s` : '';
+  private getChunkTypeColor(type: string): string {
+    const colors = {
+      text: 'white',
+      code: 'blue',
+      data: 'green',
+      error: 'red',
+      warning: 'yellow',
+      info: 'cyan'
+    };
+    return colors[type] || 'white';
+  }
+
+  private updateStats(): void {
+    const now = Date.now();
+    const duration = now - this.statsData.startTime;
     
-    return `
-      <div class="stream-footer-content">
-        ${state === 'streaming' ? 'Streaming...' : ''}
-        ${state === 'paused' ? 'Paused - Press SPACE to resume' : ''}
-        ${state === 'completed' ? `Completed in ${duration}` : ''}
-        ${state === 'error' ? 'Error occurred - Press R to retry' : ''}
-      </div>
-    `;
+    this.statsData.totalChunks = this.props.chunks.length;
+    this.statsData.totalBytes = this.props.chunks.reduce((sum, chunk) => sum + chunk.content.length, 0);
+    this.statsData.chunksPerSecond = duration > 0 ? (this.statsData.totalChunks / duration) * 1000 : 0;
+    this.statsData.bytesPerSecond = duration > 0 ? (this.statsData.totalBytes / duration) * 1000 : 0;
+    this.statsData.averageChunkSize = this.statsData.totalChunks > 0 ? this.statsData.totalBytes / this.statsData.totalChunks : 0;
+    
+    if (this.stats) {
+      this.stats.setContent(
+        `{green-fg}Chunks: {white-fg}${this.statsData.totalChunks} | ` +
+        `{blue-fg}Bytes: {white-fg}${this.formatBytes(this.statsData.totalBytes)} | ` +
+        `{yellow-fg}Speed: {white-fg}${this.statsData.chunksPerSecond.toFixed(1)} chunks/s | ` +
+        `{cyan-fg}${this.formatBytes(this.statsData.bytesPerSecond)}/s`
+      );
+    }
+    
+    this.events.stats(this.statsData);
   }
 
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+  private updateProgress(): void {
+    if (this.progress.total) {
+      this.progress.percentage = (this.progress.current / this.progress.total) * 100;
+    }
+    
+    if (this.progressBar) {
+      this.progressBar.setProgress(this.progress.percentage);
+    }
+    
+    this.events.progress(this.progress);
   }
 
   private formatBytes(bytes: number): string {
@@ -309,44 +342,11 @@ export class Stream implements StreamMethods {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 
-  private updateStats(): void {
-    const now = Date.now();
-    const duration = now - this.stats.startTime;
-    
-    this.stats.totalChunks = this.props.chunks.length;
-    this.stats.totalBytes = this.props.chunks.reduce((sum, chunk) => sum + chunk.content.length, 0);
-    this.stats.chunksPerSecond = duration > 0 ? (this.stats.totalChunks / duration) * 1000 : 0;
-    this.stats.bytesPerSecond = duration > 0 ? (this.stats.totalBytes / duration) * 1000 : 0;
-    this.stats.averageChunkSize = this.stats.totalChunks > 0 ? this.stats.totalBytes / this.stats.totalChunks : 0;
-    this.stats.duration = duration;
-    
-    this.events.stats(this.stats);
-  }
-
-  private updateProgress(): void {
-    if (this.progress.total) {
-      this.progress.percentage = (this.progress.current / this.progress.total) * 100;
-    }
-    
-    this.events.progress(this.progress);
-  }
-
   private setState(newState: StreamState): void {
     if (this.props.state !== newState) {
       this.props.state = newState;
       this.events.stateChange(newState);
-      this.updateStyles();
-      this.render();
-    }
-  }
-
-  private togglePause(): void {
-    if (this.isActive) {
-      if (this.isPaused) {
-        this.resume();
-      } else {
-        this.pause();
-      }
+      this.updateHeader();
     }
   }
 
@@ -355,15 +355,68 @@ export class Stream implements StreamMethods {
     this.isActive = true;
     this.isPaused = false;
     this.retryCount = 0;
-    this.stats.startTime = Date.now();
+    this.statsData.startTime = Date.now();
     this.setState('connecting');
     
     // Simulate connection delay
     setTimeout(() => {
       if (this.isActive) {
         this.setState('streaming');
+        this.startMockStreaming();
       }
     }, 500);
+  }
+
+  private startMockStreaming(): void {
+    this.interval = setInterval(() => {
+      if (this.isActive && !this.isPaused) {
+        this.addMockChunk();
+      }
+    }, 1000);
+  }
+
+  private addMockChunk(): void {
+    const types = ['text', 'code', 'data'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    const chunks = {
+      text: [
+        'Processing user request...',
+        'Analyzing data patterns...',
+        'Generating response...',
+        'Validating results...',
+        'Finalizing output...'
+      ],
+      code: [
+        'function processData(data) { return data.map(x => x * 2); }',
+        'const result = await api.call(endpoint, params);',
+        'if (condition) { return success; } else { return error; }',
+        'for (let i = 0; i < items.length; i++) { process(items[i]); }'
+      ],
+      data: [
+        '{"status": "processing", "progress": 45}',
+        '{"items": [1, 2, 3], "total": 3}',
+        '{"error": null, "result": "success"}',
+        `{"timestamp": "${new Date().toISOString()}"}`
+      ]
+    };
+    
+    const content = chunks[type][Math.floor(Math.random() * chunks[type].length)];
+    
+    this.addChunk({
+      type,
+      content,
+      metadata: { source: 'mock', timestamp: Date.now() }
+    });
+    
+    // Update progress
+    this.progress.current = Math.min(this.progress.current + 5, this.progress.total || 100);
+    this.updateProgress();
+    
+    // Check if completed
+    if (this.progress.current >= (this.progress.total || 100)) {
+      this.stop();
+    }
   }
 
   public pause(): void {
@@ -383,14 +436,17 @@ export class Stream implements StreamMethods {
   public stop(): void {
     this.isActive = false;
     this.isPaused = false;
-    this.stats.endTime = Date.now();
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
     this.setState('completed');
-    this.events.complete(this.stats);
+    this.events.complete(this.statsData);
   }
 
   public clear(): void {
     this.props.chunks = [];
-    this.stats = {
+    this.statsData = {
       totalChunks: 0,
       totalBytes: 0,
       chunksPerSecond: 0,
@@ -403,7 +459,10 @@ export class Stream implements StreamMethods {
       total: 0,
       percentage: 0
     };
-    this.render();
+    this.setState('idle');
+    this.updateContent();
+    this.updateStats();
+    this.updateProgress();
   }
 
   public addChunk(chunk: Omit<StreamChunk, 'id' | 'timestamp'>): void {
@@ -423,12 +482,16 @@ export class Stream implements StreamMethods {
 
     this.updateStats();
     this.updateProgress();
+    this.updateContent();
     this.events.chunk(newChunk);
-    this.render();
+  }
+
+  private generateId(): string {
+    return `chunk-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   public getStats(): StreamStats {
-    return { ...this.stats };
+    return { ...this.statsData };
   }
 
   public getProgress(): StreamProgress {
@@ -451,32 +514,22 @@ export class Stream implements StreamMethods {
     return this.props.state === 'error';
   }
 
-  // DOM Methods
-  public mount(container: HTMLElement): void {
-    if (this.element && container) {
-      container.appendChild(this.element);
-    }
-  }
-
-  public unmount(): void {
-    if (this.element && this.element.parentNode) {
-      this.element.parentNode.removeChild(this.element);
-    }
-  }
-
   public updateProps(newProps: Partial<StreamProps>): void {
     this.props = { ...this.props, ...newProps };
-    this.updateStyles();
-    this.render();
+    this.updateHeader();
+    this.updateContent();
+    this.updateStats();
   }
 
-  public getElement(): HTMLElement | null {
-    return this.element;
+  public render(): void {
+    this.screen.render();
   }
 
   public destroy(): void {
     this.stop();
-    this.unmount();
-    this.element = null;
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
   }
 }

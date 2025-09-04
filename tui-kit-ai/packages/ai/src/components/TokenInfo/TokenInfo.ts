@@ -1,27 +1,29 @@
-import { TokenInfoProps, TokenStats, CostInfo, TokenLimits, TokenBreakdown, TokenUsage, TokenType, TokenInfoEvents, TokenInfoMethods } from './TokenInfo.types';
-import { generateTokenInfoStyles, getTokenInfoVariantClass, getTokenInfoStateClass } from './TokenInfo.styles';
+import blessed from 'blessed';
+import { TokenInfoProps, TokenInfoEvents, TokenInfoMethods } from './TokenInfo.types';
 
 export class TokenInfo implements TokenInfoMethods {
+  private screen: blessed.Widgets.Screen;
+  private container: blessed.Widgets.BoxElement;
+  private header: blessed.Widgets.BoxElement;
+  private stats: blessed.Widgets.BoxElement;
+  private breakdown: blessed.Widgets.BoxElement | null = null;
+  private cost: blessed.Widgets.BoxElement | null = null;
+  private footer: blessed.Widgets.BoxElement;
+  
   private props: TokenInfoProps;
-  private element: HTMLElement | null = null;
   private events: TokenInfoEvents;
-  private stats: TokenStats;
-  private costInfo: CostInfo;
-  private limits: TokenLimits;
-  private breakdown: TokenBreakdown;
+  private tokens: TokenInfoProps['tokens'];
+  private cost: TokenInfoProps['cost'];
+  private modelInfo: TokenInfoProps['modelInfo'];
 
   constructor(props: Partial<TokenInfoProps> = {}) {
     this.props = {
-      variant: 'default',
-      state: 'default',
-      width: 80,
-      height: 20,
+      model: 'gpt-4',
       showCost: true,
       showBreakdown: true,
-      showLimits: true,
-      showTrends: false,
       showProgress: true,
-      showDetails: false,
+      width: 80,
+      height: 20,
       theme: {
         primary: '#00ff00',
         secondary: '#0088ff',
@@ -30,9 +32,29 @@ export class TokenInfo implements TokenInfoMethods {
         error: '#ff0000',
         background: '#000000',
         foreground: '#ffffff',
-        border: '#333333',
-        accent: '#ff6b6b',
-        info: '#4ecdc4'
+        border: '#333333'
+      },
+      tokens: {
+        input: 0,
+        output: 0,
+        total: 0,
+        prompt: 0,
+        completion: 0,
+        system: 0,
+        user: 0,
+        assistant: 0
+      },
+      cost: {
+        input: 0,
+        output: 0,
+        total: 0
+      },
+      modelInfo: {
+        name: 'GPT-4',
+        provider: 'OpenAI',
+        context: 8192,
+        pricing: { input: 0.03, output: 0.06 },
+        capabilities: ['text-generation', 'function-calling', 'multimodal']
       },
       ...props
     };
@@ -40,677 +62,406 @@ export class TokenInfo implements TokenInfoMethods {
     this.events = {
       tokenUpdate: props.onTokenUpdate || (() => {}),
       costUpdate: props.onCostUpdate || (() => {}),
-      limitReached: props.onLimitReached || (() => {}),
-      breakdownChange: props.onBreakdownChange || (() => {}),
-      trendUpdate: props.onTrendUpdate || (() => {}),
-      refresh: () => {},
-      export: () => {}
+      modelChange: props.onModelChange || (() => {})
     };
 
-    this.stats = {
-      totalTokens: 0,
-      inputTokens: 0,
-      outputTokens: 0,
-      promptTokens: 0,
-      completionTokens: 0,
-      systemTokens: 0,
-      userTokens: 0,
-      assistantTokens: 0,
-      contextTokens: 0,
-      responseTokens: 0,
-      customTokens: 0,
-      totalCost: 0,
-      averageCostPerToken: 0,
-      tokensPerSecond: 0,
-      startTime: Date.now(),
-      ...props.stats
-    };
-
-    this.costInfo = {
-      model: '',
-      inputCostPer1K: 0,
-      outputCostPer1K: 0,
-      currency: 'USD',
-      totalCost: 0,
-      breakdown: {
-        input: 0,
-        output: 0,
-        system: 0,
-        custom: 0
-      },
-      ...props.costInfo
-    };
-
-    this.limits = {
-      maxTokens: 4096,
-      maxInputTokens: 2048,
-      maxOutputTokens: 2048,
-      maxContextTokens: 4096,
-      currentUsage: 0,
-      remainingTokens: 4096,
-      usagePercentage: 0,
-      ...props.limits
-    };
-
-    this.breakdown = {
-      byType: [],
-      byModel: [],
-      byTime: [],
-      trends: {
-        hourly: [],
-        daily: [],
-        weekly: []
-      },
-      ...props.breakdown
-    };
+    this.tokens = { ...this.props.tokens };
+    this.cost = { ...this.props.cost };
+    this.modelInfo = { ...this.props.modelInfo };
 
     this.initialize();
   }
 
   private initialize(): void {
-    this.createElement();
-    this.attachEventListeners();
-    this.updateStyles();
-    this.render();
+    this.createScreen();
+    this.createContainer();
+    this.createHeader();
+    this.createStats();
+    this.createBreakdown();
+    this.createCost();
+    this.createFooter();
+    this.setupEventHandlers();
   }
 
-  private createElement(): void {
-    this.element = document.createElement('div');
-    this.element.className = `tokeninfo-container ${getTokenInfoVariantClass(this.props.variant)} ${getTokenInfoStateClass(this.props.state)}`;
-    this.element.setAttribute('data-tokeninfo-id', this.generateId());
-  }
-
-  private attachEventListeners(): void {
-    if (!this.element) return;
-
-    // Focus events
-    this.element.addEventListener('focus', () => {
-      this.setState('focused');
+  private createScreen(): void {
+    this.screen = blessed.screen({
+      smartCSR: true,
+      title: 'TokenInfo Component',
+      fullUnicode: true
     });
+  }
 
-    this.element.addEventListener('blur', () => {
-      if (this.props.state === 'focused') {
-        this.setState('default');
+  private createContainer(): void {
+    this.container = blessed.box({
+      parent: this.screen,
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
+        }
       }
     });
-
-    // Click events
-    this.element.addEventListener('click', (event) => {
-      this.handleClick(event);
-    });
-
-    // Keyboard events
-    this.element.addEventListener('keydown', (event) => {
-      this.handleKeydown(event);
-    });
-
-    // Make element focusable
-    this.element.setAttribute('tabindex', '0');
   }
 
-  private handleClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
+  private createHeader(): void {
+    this.header = blessed.box({
+      parent: this.container,
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: 3,
+      content: `{green-fg}${this.modelInfo.name}{white-fg} - ${this.modelInfo.provider} | Context: ${this.modelInfo.context.toLocaleString()} tokens`,
+      tags: true,
+      style: {
+        bg: 'blue',
+        fg: 'white'
+      }
+    });
+  }
+
+  private createStats(): void {
+    this.stats = blessed.box({
+      parent: this.container,
+      top: 3,
+      left: 0,
+      width: '100%',
+      height: 6,
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
+        }
+      }
+    });
+  }
+
+  private createBreakdown(): void {
+    if (!this.props.showBreakdown) return;
     
-    if (target.classList.contains('tokeninfo-action')) {
-      const actionId = target.getAttribute('data-action-id');
-      if (actionId) {
-        this.handleAction(actionId);
+    this.breakdown = blessed.box({
+      parent: this.container,
+      top: 9,
+      left: 0,
+      width: '50%',
+      height: 8,
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
+        }
       }
-    }
+    });
   }
 
-  private handleKeydown(event: KeyboardEvent): void {
-    switch (event.key) {
-      case 'r':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          this.refreshData();
+  private createCost(): void {
+    if (!this.props.showCost) return;
+    
+    this.cost = blessed.box({
+      parent: this.container,
+      top: 9,
+      left: '50%',
+      width: '50%',
+      height: 8,
+      border: {
+        type: 'line'
+      },
+      style: {
+        border: {
+          fg: this.getThemeColor('border')
         }
-        break;
-      case 'e':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          this.exportData('json');
-        }
-        break;
-      case 'Escape':
-        this.setState('default');
-        break;
-    }
+      }
+    });
   }
 
-  private handleAction(actionId: string): void {
-    switch (actionId) {
-      case 'refresh':
-        this.refreshData();
-        break;
-      case 'export':
-        this.exportData('json');
-        break;
-      case 'reset':
-        this.resetStats();
-        break;
-      case 'toggle-breakdown':
-        this.props.showBreakdown = !this.props.showBreakdown;
-        this.render();
-        break;
-      case 'toggle-trends':
-        this.props.showTrends = !this.props.showTrends;
-        this.render();
-        break;
-      case 'toggle-details':
-        this.props.showDetails = !this.props.showDetails;
-        this.render();
-        break;
-    }
+  private createFooter(): void {
+    this.footer = blessed.box({
+      parent: this.container,
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      height: 1,
+      content: 'Press q to quit, r to reset, + to add tokens, - to subtract tokens',
+      style: {
+        bg: 'black',
+        fg: 'white'
+      }
+    });
   }
 
-  private generateId(): string {
-    return `tokeninfo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  private setupEventHandlers(): void {
+    this.screen.key(['q', 'C-c'], () => {
+      process.exit(0);
+    });
+    
+    this.screen.key(['r'], () => {
+      this.reset();
+    });
+    
+    this.screen.key(['+'], () => {
+      this.addMockTokens();
+    });
+    
+    this.screen.key(['-'], () => {
+      this.subtractTokens();
+    });
   }
 
-  private updateStyles(): void {
-    if (!this.element) return;
-
-    const styleConfig = {
-      variant: this.props.variant,
-      state: this.props.state,
-      width: this.props.width,
-      height: this.props.height,
-      theme: this.props.theme
+  private getThemeColor(color: keyof TokenInfoProps['theme']): string {
+    const colorMap = {
+      primary: 'green',
+      secondary: 'blue',
+      success: 'green',
+      warning: 'yellow',
+      error: 'red',
+      background: 'black',
+      foreground: 'white',
+      border: 'white'
     };
+    return colorMap[color] || 'white';
+  }
 
-    const styles = generateTokenInfoStyles(styleConfig);
+  private updateStats(): void {
+    const statsContent = `
+{green-fg}Total Tokens: {white-fg}${this.tokens.total.toLocaleString()}
+{blue-fg}Input Tokens: {white-fg}${this.tokens.input.toLocaleString()}
+{yellow-fg}Output Tokens: {white-fg}${this.tokens.output.toLocaleString()}
+{cyan-fg}Prompt Tokens: {white-fg}${this.tokens.prompt.toLocaleString()}
+{magenta-fg}Completion Tokens: {white-fg}${this.tokens.completion.toLocaleString()}
+    `.trim();
     
-    // Remove existing styles
-    const existingStyle = this.element.querySelector('style');
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-
-    // Add new styles
-    const styleElement = document.createElement('style');
-    styleElement.textContent = styles;
-    this.element.appendChild(styleElement);
-  }
-
-  private render(): void {
-    if (!this.element) return;
-
-    const { variant, state, showCost, showBreakdown, showLimits, showTrends, showProgress, showDetails } = this.props;
-    
-    this.element.className = `tokeninfo-container ${getTokenInfoVariantClass(variant)} ${getTokenInfoStateClass(state)}`;
-    
-    this.element.innerHTML = `
-      <div class="tokeninfo-header">
-        <div class="tokeninfo-title">
-          <span class="tokeninfo-model">${this.costInfo.model || 'AI Model'}</span>
-          <span>Token Usage</span>
-        </div>
-        <div class="tokeninfo-actions">
-          <button class="tokeninfo-action" data-action-id="refresh" title="Refresh (Ctrl+R)">🔄</button>
-          <button class="tokeninfo-action" data-action-id="export" title="Export (Ctrl+E)">📊</button>
-          <button class="tokeninfo-action" data-action-id="reset" title="Reset Stats">🔄</button>
-          ${showBreakdown ? `<button class="tokeninfo-action" data-action-id="toggle-breakdown" title="Toggle Breakdown">📈</button>` : ''}
-          ${showTrends ? `<button class="tokeninfo-action" data-action-id="toggle-trends" title="Toggle Trends">📊</button>` : ''}
-          ${showDetails ? `<button class="tokeninfo-action" data-action-id="toggle-details" title="Toggle Details">ℹ️</button>` : ''}
-        </div>
-      </div>
-      
-      <div class="tokeninfo-content">
-        ${this.renderStats()}
-        ${showProgress ? this.renderProgress() : ''}
-        ${showBreakdown ? this.renderBreakdown() : ''}
-        ${showTrends ? this.renderTrends() : ''}
-        ${showDetails ? this.renderDetails() : ''}
-      </div>
-      
-      <div class="tokeninfo-footer">
-        <div class="tokeninfo-footer-info">
-          <div class="tokeninfo-footer-info-item">
-            <span>⏱️</span>
-            <span>${this.formatDuration(this.stats.duration || 0)}</span>
-          </div>
-          <div class="tokeninfo-footer-info-item">
-            <span>💰</span>
-            <span>${this.formatCost(this.stats.totalCost, this.costInfo.currency)}</span>
-          </div>
-          <div class="tokeninfo-footer-info-item">
-            <span>📊</span>
-            <span>${this.limits.usagePercentage.toFixed(1)}% used</span>
-          </div>
-        </div>
-        <div class="tokeninfo-footer-actions">
-          <span class="tokeninfo-status">${state}</span>
-        </div>
-      </div>
-    `;
-  }
-
-  private renderStats(): string {
-    const { totalTokens, inputTokens, outputTokens, totalCost, tokensPerSecond } = this.stats;
-    
-    return `
-      <div class="tokeninfo-stats">
-        <div class="tokeninfo-stat">
-          <div class="tokeninfo-stat-value">${this.formatTokens(totalTokens)}</div>
-          <div class="tokeninfo-stat-label">Total Tokens</div>
-          ${showCost ? `<div class="tokeninfo-stat-cost">${this.formatCost(totalCost, this.costInfo.currency)}</div>` : ''}
-        </div>
-        <div class="tokeninfo-stat">
-          <div class="tokeninfo-stat-value">${this.formatTokens(inputTokens)}</div>
-          <div class="tokeninfo-stat-label">Input Tokens</div>
-          <div class="tokeninfo-stat-percentage">${this.getPercentage(inputTokens, totalTokens)}%</div>
-        </div>
-        <div class="tokeninfo-stat">
-          <div class="tokeninfo-stat-value">${this.formatTokens(outputTokens)}</div>
-          <div class="tokeninfo-stat-label">Output Tokens</div>
-          <div class="tokeninfo-stat-percentage">${this.getPercentage(outputTokens, totalTokens)}%</div>
-        </div>
-        <div class="tokeninfo-stat">
-          <div class="tokeninfo-stat-value">${tokensPerSecond.toFixed(1)}</div>
-          <div class="tokeninfo-stat-label">Tokens/sec</div>
-          <div class="tokeninfo-stat-percentage">Speed</div>
-        </div>
-        ${this.props.showLimits ? `
-          <div class="tokeninfo-stat">
-            <div class="tokeninfo-stat-value">${this.formatTokens(this.limits.remainingTokens)}</div>
-            <div class="tokeninfo-stat-label">Remaining</div>
-            <div class="tokeninfo-stat-percentage">${this.limits.usagePercentage.toFixed(1)}% used</div>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
-  private renderProgress(): string {
-    const { currentUsage, maxTokens, usagePercentage } = this.limits;
-    
-    return `
-      <div class="tokeninfo-progress">
-        <div class="tokeninfo-progress-label">
-          <span>Token Usage</span>
-          <span>${this.formatTokens(currentUsage)} / ${this.formatTokens(maxTokens)}</span>
-        </div>
-        <div class="tokeninfo-progress-bar" style="width: ${usagePercentage}%"></div>
-      </div>
-    `;
-  }
-
-  private renderBreakdown(): string {
-    if (!this.props.showBreakdown || this.breakdown.byType.length === 0) {
-      return '';
-    }
-    
-    return `
-      <div class="tokeninfo-breakdown">
-        <div class="tokeninfo-breakdown-title">Token Breakdown</div>
-        <div class="tokeninfo-breakdown-list">
-          ${this.breakdown.byType.map(item => `
-            <div class="tokeninfo-breakdown-item">
-              <span class="tokeninfo-breakdown-item-type">${item.type}</span>
-              <span class="tokeninfo-breakdown-item-count">${this.formatTokens(item.count)}</span>
-              <span class="tokeninfo-breakdown-item-percentage">${item.percentage.toFixed(1)}%</span>
-              ${item.cost ? `<span class="tokeninfo-breakdown-item-cost">${this.formatCost(item.cost, this.costInfo.currency)}</span>` : ''}
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  private renderTrends(): string {
-    if (!this.props.showTrends || !this.breakdown.trends) {
-      return '';
-    }
-    
-    const { hourly, daily, weekly } = this.breakdown.trends;
-    const maxValue = Math.max(...hourly, ...daily, ...weekly, 1);
-    
-    return `
-      <div class="tokeninfo-trends">
-        <div class="tokeninfo-trends-title">Usage Trends</div>
-        <div class="tokeninfo-trends-chart">
-          <div class="tokeninfo-trends-line"></div>
-          <div class="tokeninfo-trends-points">
-            ${hourly.map((value, index) => `
-              <div class="tokeninfo-trends-point" style="left: ${(index / (hourly.length - 1)) * 100}%; bottom: ${(value / maxValue) * 100}%;"></div>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  private renderDetails(): string {
-    if (!this.props.showDetails) {
-      return '';
-    }
-    
-    return `
-      <div class="tokeninfo-details">
-        <div class="tokeninfo-details-title">Detailed Information</div>
-        <div class="tokeninfo-details-grid">
-          <div class="tokeninfo-details-item">
-            <div class="tokeninfo-details-item-label">Model</div>
-            <div class="tokeninfo-details-item-value">${this.costInfo.model || 'Unknown'}</div>
-          </div>
-          <div class="tokeninfo-details-item">
-            <div class="tokeninfo-details-item-label">Input Cost/1K</div>
-            <div class="tokeninfo-details-item-value">${this.formatCost(this.costInfo.inputCostPer1K, this.costInfo.currency)}</div>
-          </div>
-          <div class="tokeninfo-details-item">
-            <div class="tokeninfo-details-item-label">Output Cost/1K</div>
-            <div class="tokeninfo-details-item-value">${this.formatCost(this.costInfo.outputCostPer1K, this.costInfo.currency)}</div>
-          </div>
-          <div class="tokeninfo-details-item">
-            <div class="tokeninfo-details-item-label">Average Cost/Token</div>
-            <div class="tokeninfo-details-item-value">${this.formatCost(this.stats.averageCostPerToken, this.costInfo.currency)}</div>
-          </div>
-          <div class="tokeninfo-details-item">
-            <div class="tokeninfo-details-item-label">Start Time</div>
-            <div class="tokeninfo-details-item-value">${new Date(this.stats.startTime).toLocaleTimeString()}</div>
-          </div>
-          <div class="tokeninfo-details-item">
-            <div class="tokeninfo-details-item-label">Duration</div>
-            <div class="tokeninfo-details-item-value">${this.formatDuration(this.stats.duration || 0)}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  private formatTokens(count: number): string {
-    if (count === 0) return '0';
-    if (count < 1000) return count.toString();
-    if (count < 1000000) return (count / 1000).toFixed(1) + 'K';
-    return (count / 1000000).toFixed(1) + 'M';
-  }
-
-  private formatCost(cost: number, currency: string = 'USD'): string {
-    if (cost === 0) return `$0.00`;
-    if (cost < 0.01) return `$${cost.toFixed(4)}`;
-    return `$${cost.toFixed(2)}`;
-  }
-
-  private formatPercentage(percentage: number): string {
-    return `${percentage.toFixed(1)}%`;
-  }
-
-  private formatDuration(duration: number): string {
-    if (duration === 0) return '0s';
-    if (duration < 1000) return `${duration}ms`;
-    if (duration < 60000) return `${(duration / 1000).toFixed(1)}s`;
-    if (duration < 3600000) return `${(duration / 60000).toFixed(1)}m`;
-    return `${(duration / 3600000).toFixed(1)}h`;
-  }
-
-  private getPercentage(value: number, total: number): number {
-    if (total === 0) return 0;
-    return (value / total) * 100;
-  }
-
-  private setState(newState: string): void {
-    if (this.props.state !== newState) {
-      this.props.state = newState as any;
-      this.updateStyles();
-      this.render();
-    }
+    this.stats.setContent(statsContent);
   }
 
   private updateBreakdown(): void {
-    const { inputTokens, outputTokens, systemTokens, customTokens, totalTokens } = this.stats;
+    if (!this.breakdown) return;
     
-    this.breakdown.byType = [
-      { type: 'input', count: inputTokens, percentage: this.getPercentage(inputTokens, totalTokens), cost: this.calculateCost(inputTokens, 'input') },
-      { type: 'output', count: outputTokens, percentage: this.getPercentage(outputTokens, totalTokens), cost: this.calculateCost(outputTokens, 'output') },
-      { type: 'system', count: systemTokens, percentage: this.getPercentage(systemTokens, totalTokens), cost: this.calculateCost(systemTokens, 'input') },
-      { type: 'custom', count: customTokens, percentage: this.getPercentage(customTokens, totalTokens), cost: this.calculateCost(customTokens, 'input') }
-    ].filter(item => item.count > 0);
+    const breakdownContent = `
+{green-fg}Token Breakdown:
+{white-fg}System: ${this.tokens.system.toLocaleString()}
+{white-fg}User: ${this.tokens.user.toLocaleString()}
+{white-fg}Assistant: ${this.tokens.assistant.toLocaleString()}
+{white-fg}Prompt: ${this.tokens.prompt.toLocaleString()}
+{white-fg}Completion: ${this.tokens.completion.toLocaleString()}
+    `.trim();
     
-    this.events.breakdownChange(this.breakdown);
+    this.breakdown.setContent(breakdownContent);
   }
 
-  private updateLimits(): void {
-    this.limits.currentUsage = this.stats.totalTokens;
-    this.limits.remainingTokens = Math.max(0, this.limits.maxTokens - this.limits.currentUsage);
-    this.limits.usagePercentage = (this.limits.currentUsage / this.limits.maxTokens) * 100;
+  private updateCost(): void {
+    if (!this.cost) return;
     
-    if (this.limits.usagePercentage >= 90) {
-      this.setState('warning');
-    }
-    if (this.limits.usagePercentage >= 100) {
-      this.setState('critical');
-      this.events.limitReached(this.limits);
-    }
+    const costContent = `
+{green-fg}Cost Breakdown:
+{white-fg}Input Cost: $${this.cost.input.toFixed(4)}
+{white-fg}Output Cost: $${this.cost.output.toFixed(4)}
+{green-fg}Total Cost: $${this.cost.total.toFixed(4)}
+
+{yellow-fg}Pricing:
+{white-fg}Input: $${this.modelInfo.pricing.input}/1K tokens
+{white-fg}Output: $${this.modelInfo.pricing.output}/1K tokens
+    `.trim();
+    
+    this.cost.setContent(costContent);
+  }
+
+  private updateCosts(): void {
+    this.cost.input = (this.tokens.input / 1000) * this.modelInfo.pricing.input;
+    this.cost.output = (this.tokens.output / 1000) * this.modelInfo.pricing.output;
+    this.cost.total = this.cost.input + this.cost.output;
+  }
+
+  private updateTotals(): void {
+    this.tokens.total = this.tokens.input + this.tokens.output;
+    this.tokens.prompt = this.tokens.system + this.tokens.user;
+    this.tokens.completion = this.tokens.assistant;
+  }
+
+  private addMockTokens(): void {
+    const randomTokens = {
+      input: Math.floor(Math.random() * 100) + 50,
+      output: Math.floor(Math.random() * 50) + 25,
+      system: Math.floor(Math.random() * 20) + 10,
+      user: Math.floor(Math.random() * 80) + 40,
+      assistant: Math.floor(Math.random() * 50) + 25
+    };
+    
+    this.addTokens(randomTokens);
+  }
+
+  private subtractTokens(): void {
+    const subtractAmount = {
+      input: Math.min(50, this.tokens.input),
+      output: Math.min(25, this.tokens.output),
+      system: Math.min(10, this.tokens.system),
+      user: Math.min(40, this.tokens.user),
+      assistant: Math.min(25, this.tokens.assistant)
+    };
+    
+    this.tokens.input = Math.max(0, this.tokens.input - subtractAmount.input);
+    this.tokens.output = Math.max(0, this.tokens.output - subtractAmount.output);
+    this.tokens.system = Math.max(0, this.tokens.system - subtractAmount.system);
+    this.tokens.user = Math.max(0, this.tokens.user - subtractAmount.user);
+    this.tokens.assistant = Math.max(0, this.tokens.assistant - subtractAmount.assistant);
+    
+    this.updateTotals();
+    this.updateCosts();
+    this.updateStats();
+    this.updateBreakdown();
+    this.updateCost();
+    this.events.tokenUpdate(this.tokens);
+    this.events.costUpdate(this.cost);
   }
 
   // Public Methods
-  public updateStats(stats: Partial<TokenStats>): void {
-    this.stats = { ...this.stats, ...stats };
-    this.updateBreakdown();
-    this.updateLimits();
-    this.events.tokenUpdate(this.stats);
-    this.render();
-  }
-
-  public getStats(): TokenStats {
-    return { ...this.stats };
-  }
-
-  public updateCostInfo(costInfo: Partial<CostInfo>): void {
-    this.costInfo = { ...this.costInfo, ...costInfo };
-    this.events.costUpdate(this.costInfo);
-    this.render();
-  }
-
-  public getCostInfo(): CostInfo {
-    return { ...this.costInfo };
-  }
-
-  public updateLimits(limits: Partial<TokenLimits>): void {
-    this.limits = { ...this.limits, ...limits };
-    this.updateLimits();
-    this.render();
-  }
-
-  public getLimits(): TokenLimits {
-    return { ...this.limits };
-  }
-
-  public updateBreakdown(breakdown: Partial<TokenBreakdown>): void {
-    this.breakdown = { ...this.breakdown, ...breakdown };
-    this.events.breakdownChange(this.breakdown);
-    this.render();
-  }
-
-  public getBreakdown(): TokenBreakdown {
-    return { ...this.breakdown };
-  }
-
-  public addTokenUsage(type: TokenType, count: number, cost?: number): void {
-    const now = Date.now();
-    
-    // Update stats
-    this.stats.totalTokens += count;
-    this.stats[`${type}Tokens` as keyof TokenStats] = (this.stats[`${type}Tokens` as keyof TokenStats] as number) + count;
-    
-    if (cost) {
-      this.stats.totalCost += cost;
-    }
-    
-    // Update timing
-    if (this.stats.startTime === 0) {
-      this.stats.startTime = now;
-    }
-    this.stats.endTime = now;
-    this.stats.duration = now - this.stats.startTime;
-    this.stats.tokensPerSecond = this.stats.duration > 0 ? (this.stats.totalTokens / this.stats.duration) * 1000 : 0;
-    this.stats.averageCostPerToken = this.stats.totalTokens > 0 ? this.stats.totalCost / this.stats.totalTokens : 0;
-    
-    // Update breakdown
-    this.updateBreakdown();
-    this.updateLimits();
-    
-    // Add to time series
-    this.breakdown.byTime.push({
-      timestamp: now,
-      tokens: count,
-      cost: cost || 0
+  public addTokens(tokens: Partial<TokenInfoProps['tokens']>): void {
+    Object.keys(tokens).forEach(key => {
+      if (this.tokens.hasOwnProperty(key)) {
+        this.tokens[key] += tokens[key];
+      }
     });
     
-    // Keep only last 100 entries
-    if (this.breakdown.byTime.length > 100) {
-      this.breakdown.byTime.shift();
-    }
-    
-    this.events.tokenUpdate(this.stats);
-    this.render();
-  }
-
-  public resetStats(): void {
-    this.stats = {
-      totalTokens: 0,
-      inputTokens: 0,
-      outputTokens: 0,
-      promptTokens: 0,
-      completionTokens: 0,
-      systemTokens: 0,
-      userTokens: 0,
-      assistantTokens: 0,
-      contextTokens: 0,
-      responseTokens: 0,
-      customTokens: 0,
-      totalCost: 0,
-      averageCostPerToken: 0,
-      tokensPerSecond: 0,
-      startTime: Date.now()
-    };
-    
-    this.breakdown.byType = [];
-    this.breakdown.byTime = [];
-    
-    this.updateLimits();
-    this.events.tokenUpdate(this.stats);
-    this.render();
-  }
-
-  public calculateCost(tokens: number, type: 'input' | 'output'): number {
-    const costPer1K = type === 'input' ? this.costInfo.inputCostPer1K : this.costInfo.outputCostPer1K;
-    return (tokens / 1000) * costPer1K;
-  }
-
-  public getUsagePercentage(): number {
-    return this.limits.usagePercentage;
-  }
-
-  public isLimitReached(): boolean {
-    return this.limits.usagePercentage >= 100;
-  }
-
-  public getRemainingTokens(): number {
-    return this.limits.remainingTokens;
-  }
-
-  public exportData(format: 'json' | 'csv' | 'txt'): string {
-    const data = {
-      stats: this.stats,
-      costInfo: this.costInfo,
-      limits: this.limits,
-      breakdown: this.breakdown,
-      timestamp: new Date().toISOString()
-    };
-    
-    switch (format) {
-      case 'json':
-        return JSON.stringify(data, null, 2);
-      case 'csv':
-        return this.convertToCSV(data);
-      case 'txt':
-        return this.convertToText(data);
-      default:
-        return JSON.stringify(data, null, 2);
-    }
-  }
-
-  private convertToCSV(data: any): string {
-    const headers = ['Metric', 'Value', 'Unit'];
-    const rows = [
-      ['Total Tokens', data.stats.totalTokens, 'tokens'],
-      ['Input Tokens', data.stats.inputTokens, 'tokens'],
-      ['Output Tokens', data.stats.outputTokens, 'tokens'],
-      ['Total Cost', data.stats.totalCost, data.costInfo.currency],
-      ['Usage Percentage', data.limits.usagePercentage, '%'],
-      ['Remaining Tokens', data.limits.remainingTokens, 'tokens']
-    ];
-    
-    return [headers, ...rows].map(row => row.join(',')).join('\n');
-  }
-
-  private convertToText(data: any): string {
-    return `
-Token Usage Report
-==================
-
-Total Tokens: ${data.stats.totalTokens}
-Input Tokens: ${data.stats.inputTokens}
-Output Tokens: ${data.stats.outputTokens}
-Total Cost: ${this.formatCost(data.stats.totalCost, data.costInfo.currency)}
-Usage: ${data.limits.usagePercentage.toFixed(1)}%
-Remaining: ${data.limits.remainingTokens} tokens
-
-Generated: ${new Date().toLocaleString()}
-    `.trim();
-  }
-
-  public refreshData(): void {
-    this.events.refresh();
-    this.render();
+    this.updateTotals();
+    this.updateCosts();
+    this.updateStats();
+    this.updateBreakdown();
+    this.updateCost();
+    this.events.tokenUpdate(this.tokens);
+    this.events.costUpdate(this.cost);
   }
 
   public setModel(model: string): void {
-    this.costInfo.model = model;
-    this.render();
+    this.props.model = model;
+    this.modelInfo = this.getModelInfo(model);
+    this.updateCosts();
+    this.updateStats();
+    this.updateBreakdown();
+    this.updateCost();
+    this.updateHeader();
+    this.events.modelChange(model);
   }
 
-  public getModel(): string {
-    return this.costInfo.model;
+  private getModelInfo(model: string): TokenInfoProps['modelInfo'] {
+    const models = {
+      'gpt-4': {
+        name: 'GPT-4',
+        provider: 'OpenAI',
+        context: 8192,
+        pricing: { input: 0.03, output: 0.06 },
+        capabilities: ['text-generation', 'function-calling', 'multimodal']
+      },
+      'gpt-3.5-turbo': {
+        name: 'GPT-3.5 Turbo',
+        provider: 'OpenAI',
+        context: 4096,
+        pricing: { input: 0.001, output: 0.002 },
+        capabilities: ['text-generation', 'function-calling']
+      },
+      'claude-3-opus': {
+        name: 'Claude-3 Opus',
+        provider: 'Anthropic',
+        context: 200000,
+        pricing: { input: 0.015, output: 0.075 },
+        capabilities: ['text-generation', 'multimodal', 'tool-use']
+      },
+      'claude-3-sonnet': {
+        name: 'Claude-3 Sonnet',
+        provider: 'Anthropic',
+        context: 200000,
+        pricing: { input: 0.003, output: 0.015 },
+        capabilities: ['text-generation', 'multimodal', 'tool-use']
+      },
+      'claude-3-haiku': {
+        name: 'Claude-3 Haiku',
+        provider: 'Anthropic',
+        context: 200000,
+        pricing: { input: 0.00025, output: 0.00125 },
+        capabilities: ['text-generation', 'multimodal', 'tool-use']
+      },
+      'gemini-pro': {
+        name: 'Gemini Pro',
+        provider: 'Google',
+        context: 32768,
+        pricing: { input: 0.0005, output: 0.0015 },
+        capabilities: ['text-generation', 'multimodal']
+      },
+      'llama-2-70b': {
+        name: 'LLaMA-2 70B',
+        provider: 'Meta',
+        context: 4096,
+        pricing: { input: 0.0007, output: 0.0009 },
+        capabilities: ['text-generation']
+      },
+      'llama-2-13b': {
+        name: 'LLaMA-2 13B',
+        provider: 'Meta',
+        context: 4096,
+        pricing: { input: 0.0002, output: 0.0002 },
+        capabilities: ['text-generation']
+      }
+    };
+    
+    return models[model] || models['gpt-4'];
   }
 
-  public setCurrency(currency: string): void {
-    this.costInfo.currency = currency;
-    this.render();
+  private updateHeader(): void {
+    this.header.setContent(
+      `{green-fg}${this.modelInfo.name}{white-fg} - ${this.modelInfo.provider} | Context: ${this.modelInfo.context.toLocaleString()} tokens`
+    );
   }
 
-  public getCurrency(): string {
-    return this.costInfo.currency;
+  public reset(): void {
+    this.tokens = {
+      input: 0,
+      output: 0,
+      total: 0,
+      prompt: 0,
+      completion: 0,
+      system: 0,
+      user: 0,
+      assistant: 0
+    };
+    this.cost = {
+      input: 0,
+      output: 0,
+      total: 0
+    };
+    this.updateStats();
+    this.updateBreakdown();
+    this.updateCost();
+    this.events.tokenUpdate(this.tokens);
+    this.events.costUpdate(this.cost);
   }
 
-  // DOM Methods
-  public mount(container: HTMLElement): void {
-    if (this.element && container) {
-      container.appendChild(this.element);
-    }
-  }
-
-  public unmount(): void {
-    if (this.element && this.element.parentNode) {
-      this.element.parentNode.removeChild(this.element);
-    }
+  public getStats(): { tokens: TokenInfoProps['tokens']; cost: TokenInfoProps['cost']; model: TokenInfoProps['modelInfo'] } {
+    return {
+      tokens: { ...this.tokens },
+      cost: { ...this.cost },
+      model: { ...this.modelInfo }
+    };
   }
 
   public updateProps(newProps: Partial<TokenInfoProps>): void {
     this.props = { ...this.props, ...newProps };
-    this.updateStyles();
-    this.render();
+    this.updateStats();
+    this.updateBreakdown();
+    this.updateCost();
   }
 
-  public getElement(): HTMLElement | null {
-    return this.element;
+  public render(): void {
+    this.screen.render();
   }
 
   public destroy(): void {
-    this.unmount();
-    this.element = null;
+    // Cleanup if needed
   }
 }

@@ -1,0 +1,35 @@
+{
+  "name": "@tui-kit-ai/blessed-examples",
+  "version": "1.0.0",
+  "description": "Blessed examples for AI components",
+  "main": "index.js",
+  "scripts": {
+    "stream": "ts-node stream-example.ts",
+    "codeblock": "ts-node codeblock-example.ts",
+    "tokeninfo": "ts-node tokeninfo-example.ts",
+    "all": "npm run stream && npm run codeblock && npm run tokeninfo"
+  },
+  "keywords": [
+    "ai",
+    "components",
+    "blessed",
+    "terminal",
+    "tui",
+    "examples"
+  ],
+  "author": "TUI Kit Team",
+  "license": "MIT",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "@tui-kit-ai/ai": "file:../.."
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.21",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
