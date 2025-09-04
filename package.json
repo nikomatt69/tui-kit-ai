@@ -18,14 +18,25 @@
     "dev": "echo 'Run dev from examples/*'",
     "generate": "node scripts/generate.js",
     "tui": "npm run -w @tui-kit-ai/cli tui",
+    "tui-kit": "npm run -w @tui-kit-ai/cli tui-kit",
     "build:packages": "npm run build -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli",
     "build:examples": "npm run build -w examples/todo-agent -w examples/code-assistant -w examples/multi-agent",
     "clean:packages": "npm run clean -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli",
     "clean:examples": "npm run clean -w examples/todo-agent -w examples/code-assistant -w examples/multi-agent",
-    "test:packages": "npm run test -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli"
+    "test:packages": "npm run test -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli",
+    "cli:build": "npm run build -w @tui-kit-ai/cli",
+    "cli:dev": "npm run dev -w @tui-kit-ai/cli",
+    "cli:test": "npm run test -w @tui-kit-ai/cli"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "tsx": "^4.17.0"
+    "tsx": "^4.17.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

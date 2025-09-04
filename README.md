@@ -1,158 +1,299 @@
-# TUI-Kit-AI
+# TUI Kit AI 🚀
 
-A comprehensive Terminal User Interface (TUI) component library for building AI-powered CLI applications and agents. Built with TypeScript, designed for modern AI copilots like Claude Code.
+**shadcn/ui per Terminali** - Un UI Kit completo per terminali con integrazione AI, ispirato a shadcn/ui ma progettato per applicazioni CLI e TUI.
 
-## 🚀 Features
+## ✨ Caratteristiche Principali
 
-- **Rich TUI Components**: Pre-built terminal components (boxes, inputs, spinners, etc.)
-- **AI Integration**: Seamless integration with AI providers (OpenAI, Anthropic, etc.)
-- **Agent System**: Modular agent architecture for specialized AI tasks
-- **Streaming Support**: Real-time AI response streaming with visual feedback
-- **CLI Framework**: Quick setup for professional CLI applications
-- **TypeScript First**: Full type safety and excellent developer experience
-- **Modular Architecture**: Use only what you need, when you need it
+- **🎨 Componenti TUI Predefiniti**: 40+ componenti terminal pronti all'uso
+- **🤖 Integrazione AI**: Supporto nativo per OpenAI, Anthropic, Ollama e altri provider
+- **🔧 Sistema di Varianti**: Design system moderno con class-variance-authority
+- **📱 Responsive**: Componenti che si adattano alle dimensioni del terminale
+- **🎯 CLI Generator**: Crea nuovi componenti, app e agenti con un comando
+- **📦 Architettura Modulare**: Usa solo quello che ti serve
+- **🔒 TypeScript First**: Tipizzazione completa e IntelliSense
+- **🎭 Sistema di Theming**: Temi personalizzabili e design tokens
 
-## 📦 Packages
+## 🚀 Quick Start
 
-|Package                |Description                         |
-|-----------------------|------------------------------------|
-|`@tui-kit-ai/core`     |Core TUI components and primitives  |
-|`@tui-kit-ai/ai`       |AI-specific components and streaming|
-|`@tui-kit-ai/agents`   |Agent system and specialized agents |
-|`@tui-kit-ai/providers`|AI provider implementations         |
-|`@tui-kit-ai/cli`      |CLI framework and bootstrapping     |
-
-## 🔧 Quick Start
-
-### Installation
+### Installazione
 
 ```bash
-npm i @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+# Clona la repository
+git clone https://github.com/nikomatt69/tui-kit-ai.git
+cd tui-kit-ai
+
+# Installa le dipendenze
+npm install
+
+# Build del CLI
+npm run cli:build
+
+# Crea la tua prima app
+npm run tui-kit create app my-app --template basic-app
+
+# Avvia l'app
+cd examples/my-app
+npm install
+npm run dev
 ```
 
-### Basic Chat Application
+### Uso Base
 
 ```typescript
-import { useTerminal, Box, TextInput } from '@tui-kit-ai/core';
-import { ChatContainer, AIService } from '@tui-kit-ai/ai';
+import blessed from 'blessed';
+import { Box, Text, Button, Flex } from '@tui-kit-ai/core';
+
+// Crea lo schermo
+const screen = blessed.screen({ smartCSR: true });
+
+// Crea componenti
+const container = new Box({
+  parent: screen,
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  bg: 'blue',
+  fg: 'white',
+});
+
+const button = new Button({
+  parent: container,
+  label: 'Click me!',
+  variant: 'primary',
+  size: 'lg',
+  onClick: () => console.log('Clicked!'),
+});
+
+screen.render();
+```
+
+## 📦 Pacchetti
+
+| Pacchetto | Descrizione | Status |
+|------------|-------------|---------|
+| `@tui-kit-ai/core` | Componenti TUI base e primitivi | ✅ Ready |
+| `@tui-kit-ai/ai` | Componenti AI e streaming | 🚧 In sviluppo |
+| `@tui-kit-ai/agents` | Sistema di agenti AI | 🚧 In sviluppo |
+| `@tui-kit-ai/providers` | Integrazioni AI provider | 🚧 In sviluppo |
+| `@tui-kit-ai/cli` | CLI generator e tools | ✅ Ready |
+
+## 🎨 Componenti Disponibili
+
+### Layout
+- `Box` - Container base con styling
+- `Flex` - Layout flexbox
+- `Grid` - Layout a griglia
+- `Panel` - Pannelli organizzati
+- `Card` - Card con ombre e bordi
+
+### Input
+- `Button` - Pulsanti con varianti
+- `TextInput` - Input di testo
+- `Select` - Menu a tendina
+- `Checkbox` - Checkbox
+- `RadioGroup` - Gruppi di radio button
+- `SearchBox` - Ricerca con filtri
+
+### Display
+- `Text` - Testo stilizzato
+- `Heading` - Titoli multi-livello
+- `Badge` - Badge e tag
+- `Avatar` - Avatar utente
+- `ProgressBar` - Barre di progresso
+- `Spinner` - Indicatori di caricamento
+
+### Navigation
+- `Menu` - Menu di navigazione
+- `Tabs` - Tab organizzati
+- `Breadcrumb` - Breadcrumb
+- `Tree` - Alberi gerarchici
+- `Table` - Tabelle dati
+
+### AI Components
+- `ChatInterface` - Interfaccia chat completa
+- `MessageList` - Lista messaggi
+- `PromptEditor` - Editor prompt
+- `StreamingText` - Testo in streaming
+- `CodeBlock` - Blocchi codice
+
+## 🎯 CLI Commands
+
+### Creare Componenti
+
+```bash
+# Crea un nuovo componente
+tui-kit create component MyComponent
+
+# Crea un componente in un pacchetto specifico
+tui-kit create component MyComponent --package ai
+
+# Crea un agente AI
+tui-kit create agent CodeAssistant
+
+# Crea un hook personalizzato
+tui-kit create hook useAI
+
+# Crea un provider AI
+tui-kit create provider CustomAI
+```
+
+### Creare App
+
+```bash
+# App base
+tui-kit create app my-app --template basic-app
+
+# App con chat AI
+tui-kit create app my-chat --template ai-chat
+
+# Sistema multi-agente
+tui-kit create app my-agents --template agent-system
+```
+
+### Sviluppo
+
+```bash
+# Build tutti i pacchetti
+tui-kit build
+
+# Build specifico pacchetto
+tui-kit build --package core
+
+# Test
+tui-kit test
+
+# Avvia esempi
+tui-kit dev --example todo-agent
+```
+
+## 🎨 Sistema di Varianti
+
+Ogni componente supporta varianti, dimensioni e stati:
+
+```typescript
+const button = new Button({
+  label: 'Click me',
+  variant: 'primary',     // default, destructive, outline, secondary, ghost, link
+  size: 'lg',            // sm, default, lg, icon
+  state: 'default',      // default, disabled, loading, active
+});
+```
+
+### Design Tokens
+
+```typescript
+import { tokens } from '@tui-kit-ai/core';
+
+// Colori
+tokens.colors.primary[500]    // #3b82f6
+tokens.colors.success[500]    // #22c55e
+tokens.colors.error[500]      // #ef4444
+
+// Spacing
+tokens.spacing[4]             // 4
+tokens.spacing[16]            // 16
+
+// Border radius
+tokens.borderRadius.lg        // 8
+tokens.borderRadius.full      // 9999
+```
+
+## 🤖 Integrazione AI
+
+### Chat Interface
+
+```typescript
+import { ChatInterface, AIService } from '@tui-kit-ai/ai';
 
 const aiService = new AIService({
   provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
   model: 'gpt-4',
-  apiKey: process.env.OPENAI_API_KEY
 });
 
-const { screen } = useTerminal();
-
-const chatContainer = new ChatContainer({
+const chat = new ChatInterface({
   parent: screen,
-  messages: [],
+  aiService,
   onMessageSubmit: async (content) => {
-    const result = await aiService.streamCompletion([
-      { role: 'user', content }
-    ]);
-    
-    for await (const chunk of result.textStream) {
-      // Handle streaming response
-    }
-  }
+    const response = await aiService.generateText(content);
+    return response.text;
+  },
 });
 ```
 
-### Agent-Based Application
+### Streaming Support
 
 ```typescript
-import { AgentManager, TodoAgent } from '@tui-kit-ai/agents';
+const stream = await aiService.streamCompletion([
+  { role: 'user', content: 'Explain TypeScript' }
+]);
 
-const agentManager = new AgentManager();
-
-const todoAgent = new TodoAgent({
-  name: 'todo-agent',
-  description: 'Manages development tasks',
-});
-
-agentManager.registerAgent(todoAgent);
-await agentManager.startAllAgents();
-
-// Add a task to the todo agent
-await todoAgent.addTask({
-  type: 'create',
-  data: { title: 'Implement user authentication' }
-});
+for await (const chunk of stream.textStream) {
+  // Aggiorna l'interfaccia in tempo reale
+  chat.updateMessage(chunk);
+}
 ```
 
-## 🏗️ Architecture
+## 🏗️ Architettura
 
-### Core Components
+```
+tui-kit-ai/
+├── packages/
+│   ├── core/           # Componenti base TUI
+│   ├── ai/             # Componenti AI
+│   ├── agents/         # Sistema agenti
+│   ├── providers/      # AI providers
+│   └── cli/            # CLI generator
+├── examples/            # App di esempio
+├── templates/           # Template per nuove app
+├── docs/               # Documentazione
+└── tools/              # Strumenti di sviluppo
+```
 
-- **Layout**: `Box`, `Flex`, `Grid`, `Panel`
-- **Input**: `TextInput`, `Select`, `Checkbox`, `MultiSelect`, `Button`, `RadioGroup`, `Prompt`, `SearchBox`
-- **Display**: `Text`, `Heading`, `Paragraph`, `Badge`, `Avatar`, `Divider`
-- **Feedback**: `Spinner`, `ProgressBar`, `Gauge`, `StatusIndicator`, `Toast`, `Notification`, `ProgressSpinner`, `ProgressDots`, `ProgressList`, `StatusBar`
-- **Navigation**: `Menu`, `Tabs`, `Breadcrumb`, `Tree`, `Table`
-- **Containers**: `Scrollable`, `Modal`, `HelpOverlay`, `Tooltip`, `Collapsible`, `LogViewer`, `Stepper`
-
-### AI Components
-
-- **Chat**: `ChatContainer`
-- **Streaming**: `AIService` with provider injection
-
-### Agent System
-
-- **Base**: `BaseAgent`, `AgentManager`
-- **Specialized**: `TodoAgent`
-
-## 📋 Examples
-
-### Simple Todo CLI
+## 🧪 Testing
 
 ```bash
-cd examples/todo-agent
-npm install
-npm run dev
+# Test tutti i pacchetti
+npm run test
+
+# Test specifico pacchetto
+npm run test --workspace=@tui-kit-ai/core
+
+# Test con coverage
+npm run test -- --coverage
+
+# Test in watch mode
+npm run test -- --watch
 ```
 
-### Code Assistant
-
-```bash
-cd examples/code-assistant
-npm install
-npm run dev
-```
-
-### Multi-Agent System
-
-```bash
-cd examples/multi-agent
-npm install
-npm run dev
-```
-
-## 🛠️ Development
-
-```bash
-# Install root deps
-npm install
-
-# Build all packages
-npm run build
-```
-
-## 📚 Documentation
+## 📚 Documentazione
 
 - [Getting Started](./docs/getting-started.md)
+- [Componenti](./docs/components/)
+- [Theming](./docs/theming.md)
+- [AI Integration](./docs/ai-integration.md)
+- [Examples](./docs/examples.md)
 
-## 🔌 AI Provider Support
+## 🤝 Contribuire
 
-- **OpenAI**: via `OpenAIProvider`
-- **Anthropic**: via `AnthropicProvider`
-- **Local Models**: via `OllamaProvider`
-
-## 🎨 Theming
-
-Use `darkTheme` or `lightTheme` and override any token via `theme` prop on components.
+1. Fork la repository
+2. Crea un branch per la feature (`git checkout -b feature/amazing-feature`)
+3. Commit le modifiche (`git commit -m 'Add amazing feature'`)
+4. Push al branch (`git push origin feature/amazing-feature`)
+5. Apri una Pull Request
 
 ## 📄 License
 
-MIT
+MIT License - vedi [LICENSE](LICENSE) per i dettagli.
+
+## 🙏 Ringraziamenti
+
+- [shadcn/ui](https://github.com/shadcn-ui/ui) per l'ispirazione
+- [Blessed](https://github.com/chjj/blessed) per il rendering TUI
+- [Vercel AI SDK](https://github.com/vercel/ai) per l'integrazione AI
+
+---
+
+**TUI Kit AI** - Porta la bellezza di shadcn/ui nei tuoi terminali! 🎨✨
 

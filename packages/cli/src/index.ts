@@ -1,169 +1,60 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { initCommand } from './commands/init';
-import { addCommand } from './commands/add';
-import { presetCommand } from './commands/preset';
-import { updateCommand } from './commands/update';
-import fs from 'fs';
-import path from 'path';
-import { TEMPLATE } from './templates/ai-app';
+import chalk from 'chalk';
+import { CreateCommand } from './commands/create';
+import { DevCommand } from './commands/dev';
+import { BuildCommand } from './commands/build';
+import { TestCommand } from './commands/test';
 
-const program = new Command();
+class TUIKitCLI {
+  private program: Command;
 
-program
-  .name('tui')
-  .description('TUI-Kit-AI - shadcn/ui for Terminal with Vercel AI SDK')
-  .version('0.1.0');
-
-// Initialize project (shadcn-like)
-program
-  .command('init')
-  .description('Initialize a new TUI-Kit-AI project with configuration')
-  .option('--renderer <type>', 'Renderer to use (blessed|ink)', 'blessed')
-  .option('--force', 'Overwrite existing configuration', false)
-  .action(async (options) => {
-    await initCommand(options);
-  });
-
-// Add components (shadcn-like)  
-program
-  .command('add')
-  .description('Add components to your project')
-  .argument('[components...]', 'Components to add')
-  .option('--force', 'Overwrite existing components', false)
-  .option('--all', 'Add all available components', false)
-  .action(async (components, options) => {
-    if (components.length === 0 && !options.all) {
-      console.log('Available components:');
-      console.log('');
-      console.log('Layout:');
-      console.log('  box           Container with styling and layout');
-      console.log('  stack         Flexbox-like layout container');
-      console.log('');
-      console.log('Input:');
-      console.log('  button        Clickable button with variants');
-      console.log('  input         Text input field');  
-      console.log('  textarea      Multi-line text input');
-      console.log('');
-      console.log('Display:');
-      console.log('  text          Styled text component');
-      console.log('  heading       Multi-level headings');
-      console.log('  badge         Status and info badges');
-      console.log('');
-      console.log('Feedback:');
-      console.log('  spinner       Loading spinner animations');
-      console.log('  progress      Progress bars and indicators');
-      console.log('');
-      console.log('AI:');
-      console.log('  chat-layout   Complete chat interface');
-      console.log('  message-list  Message history display');  
-      console.log('  prompt-editor Input editor for prompts');
-      console.log('');
-      console.log('Usage:');
-      console.log('  tui add button input        Add specific components');
-      console.log('  tui add --all               Add all components');
-      process.exit(0);
-    }
-    
-    await addCommand(components, options);
-  });
-
-// Component presets
-program
-  .command('preset')
-  .description('Manage component presets')
-  .argument('<action>', 'Action to perform (list|add)')
-  .argument('[name]', 'Preset name')
-  .option('--force', 'Overwrite existing components', false)
-  .action(async (action, name, options) => {
-    await presetCommand(action, name, options);
-  });
-
-// Update components
-program
-  .command('update')  
-  .description('Update components to latest versions')
-  .argument('[components...]', 'Components to update (default: all)')
-  .option('--force', 'Force update even with user modifications', false)
-  .option('--check', 'Only check for updates without applying', false)
-  .action(async (components, options) => {
-    await updateCommand(components, options);
-  });
-
-// Legacy generate command (for compatibility)
-program
-  .command('generate')
-  .description('Generate components, agents, or CLI templates (legacy)')
-  .option('--type <type>', 'Type to generate: component|agent|cli')
-  .option('--name <name>', 'Name')
-  .action((opts) => {
-    console.log('⚠️ The "generate" command is deprecated. Use the new commands:');
-    console.log('');
-    console.log('Instead of:');
-    console.log('  tui generate --type=cli --name=my-app');
-    console.log('');
-    console.log('Use:');
-    console.log('  mkdir my-app && cd my-app');
-    console.log('  tui init');
-    console.log('  tui preset add minimal');
-    console.log('');
-    
-    if (opts.type === 'cli') {
-      // Provide legacy support
-      const targetDir = path.resolve(process.cwd(), opts.name || 'ai-cli-app');
-      fs.mkdirSync(targetDir, { recursive: true });
-      const srcDir = path.join(targetDir, 'src');
-      fs.mkdirSync(srcDir, { recursive: true });
-      fs.writeFileSync(path.join(srcDir, 'index.ts'), TEMPLATE, 'utf8');
-      fs.writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify({ 
-        name: opts.name || 'ai-cli-app', 
-        private: true, 
-        scripts: { dev: 'tsx src/index.ts' }, 
-        dependencies: { 
-          '@tui-kit-ai/core': '*', 
-          '@tui-kit-ai/ai': '*', 
-          blessed: '^0.1.81', 
-          tsx: '^4.17.0' 
-        } 
-      }, null, 2));
-      console.log('✅ Created legacy AI CLI at', targetDir);
-      console.log('💡 Consider using the new workflow for better experience!');
-      return;
-    }
-    
-    console.log('Generate invoked with options', opts);
-  });
-
-// Hidden dev commands
-program
-  .command('dev', { hidden: true })
-  .description('Development utilities')
-  .argument('<action>', 'Dev action')
-  .action((action) => {
-    console.log(`🔧 Dev action: ${action}`);
-    // Add development utilities here
-  });
-
-// Error handling
-program.configureOutput({
-  outputError: (str, write) => {
-    // Add some color and formatting to errors
-    write(`❌ ${str}`);
+  constructor() {
+    this.program = new Command();
+    this.setupCLI();
   }
-});
 
-// Show help if no command provided
-program.on('command:*', () => {
-  console.error('❌ Invalid command: %s\\n', program.args.join(' '));
-  program.help();
-});
+  private setupCLI() {
+    this.program
+      .name('tui-kit')
+      .description('TUI Kit AI - Terminal UI Kit for AI Applications')
+      .version('0.1.0');
 
-// Parse CLI arguments
-program.parse();
+    // Add commands
+    this.program.addCommand(new CreateCommand().getCommand());
+    this.program.addCommand(new DevCommand().getCommand());
+    this.program.addCommand(new BuildCommand().getCommand());
+    this.program.addCommand(new TestCommand().getCommand());
 
-// Show help if no arguments
-if (!process.argv.slice(2).length) {
-  console.log('🎯 TUI-Kit-AI - Terminal UI Components with AI Integration\\n');
-  program.help();
+    // Add help command
+    this.program.addHelpText('after', `
+Examples:
+  $ tui-kit create component Button
+  $ tui-kit create app my-chat-app --template ai-chat
+  $ tui-kit create agent CodeAssistant
+  $ tui-kit dev
+  $ tui-kit build
+  $ tui-kit test
+
+For more information, visit: https://github.com/nikomatt69/tui-kit-ai
+    `);
+  }
+
+  async run() {
+    try {
+      await this.program.parseAsync();
+    } catch (error) {
+      console.error(chalk.red('❌ Error:'), error.message);
+      process.exit(1);
+    }
+  }
 }
+
+// Run CLI if this file is executed directly
+if (require.main === module) {
+  const cli = new TUIKitCLI();
+  cli.run();
+}
+
+export { TUIKitCLI };
