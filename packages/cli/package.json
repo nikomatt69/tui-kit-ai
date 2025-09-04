@@ -1,36 +1,48 @@
 {
   "name": "@tui-kit-ai/cli",
   "version": "0.1.0",
-  "description": "shadcn/ui-style CLI for TUI components",
+  "description": "CLI tool for TUI Kit AI - Create, manage and develop TUI applications",
   "license": "MIT",
-  "bin": {
-    "tui": "dist/index.js"
-  },
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "bin": {
+    "tui-kit": "./dist/index.js"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
-    "dev": "tsx src/index.ts",
-    "tui": "tsx src/index.ts",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "validate:tsc": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "commander": "^11.1.0",
-    "fs-extra": "^11.2.0",
+    "commander": "^11.0.0",
     "chalk": "^5.3.0",
-    "ora": "^6.3.1",
-    "prompts": "^2.4.2"
+    "fs-extra": "^11.1.1",
+    "inquirer": "^9.2.12",
+    "ora": "^7.0.1",
+    "boxen": "^7.1.1"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
     "rimraf": "^6.0.1",
-    "tsx": "^4.17.0",
     "@types/fs-extra": "^11.0.4",
-    "@types/prompts": "^2.4.9"
+    "@types/inquirer": "^9.0.7",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8"
   },
   "files": [
     "dist",
-    "templates"
+    "README.md"
+  ],
+  "keywords": [
+    "tui",
+    "terminal",
+    "ui",
+    "cli",
+    "generator",
+    "blessed",
+    "typescript",
+    "shadcn"
   ]
 }
