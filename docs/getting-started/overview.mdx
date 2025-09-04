@@ -1,0 +1,303 @@
+---
+title: 'Overview'
+description: 'Understanding TUI-Kit-AI architecture and core concepts'
+---
+
+## What You'll Learn
+
+This section provides a comprehensive understanding of TUI-Kit-AI's architecture, core concepts, and development patterns. By the end, you'll understand how to build sophisticated AI-powered terminal applications.
+
+<CardGroup cols={2}>
+  <Card
+    title="Architecture"
+    icon="building"
+    href="/getting-started/architecture"
+  >
+    Learn about the modular design and component structure
+  </Card>
+  <Card
+    title="Installation"
+    icon="download"
+    href="/getting-started/installation"
+  >
+    Set up your development environment properly
+  </Card>
+  <Card
+    title="First Application"
+    icon="code"
+    href="/getting-started/first-app"
+  >
+    Build your first AI-powered TUI application
+  </Card>
+  <Card
+    title="Best Practices"
+    icon="star"
+    href="/getting-started/best-practices"
+  >
+    Follow proven patterns for production applications
+  </Card>
+</CardGroup>
+
+## Core Concepts
+
+Understanding these fundamental concepts will help you build better TUI-Kit-AI applications:
+
+### Terminal User Interface (TUI)
+
+TUI applications run in the terminal but provide rich, interactive user interfaces similar to desktop applications. TUI-Kit-AI leverages this approach for AI applications:
+
+<Tabs>
+  <Tab title="Benefits">
+    - **Universal**: Works on any system with a terminal
+    - **Efficient**: Low resource usage, fast rendering
+    - **Accessible**: Screen reader compatible
+    - **Remote-friendly**: Works over SSH and remote connections
+    - **Developer-focused**: Perfect for CLI tools and development workflows
+  </Tab>
+  <Tab title="Use Cases">
+    - AI-powered CLI tools and assistants
+    - Development and system administration tools
+    - Data processing and analysis applications
+    - Interactive command-line interfaces
+    - Remote server management tools
+  </Tab>
+</Tabs>
+
+### Component-Based Architecture
+
+TUI-Kit-AI uses a component-based approach similar to React, but optimized for terminal interfaces:
+
+```typescript
+import { Box, Text, Button } from '@tui-kit-ai/core';
+
+// Create a container component
+const container = new Box({
+  parent: screen,
+  border: { type: 'line' },
+  label: ' My Application '
+});
+
+// Add child components
+const title = new Text({
+  parent: container.el,
+  content: 'Welcome to TUI-Kit-AI',
+  style: { fg: 'cyan' }
+});
+
+const button = new Button({
+  parent: container.el,
+  content: 'Click me!',
+  onPress: () => console.log('Button clicked!')
+});
+```
+
+### AI-First Design
+
+Unlike traditional TUI libraries, TUI-Kit-AI is built specifically for AI applications:
+
+<AccordionGroup>
+  <Accordion title="Streaming Support">
+    Built-in components handle real-time AI responses:
+    
+    ```typescript
+    const chat = new ChatContainer({
+      onMessageSubmit: async (content) => {
+        const stream = await aiService.streamCompletion([
+          { role: 'user', content }
+        ]);
+        
+        for await (const chunk of stream.textStream) {
+          chat.appendToLastMessage(chunk);
+          screen.render();
+        }
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Provider Abstraction">
+    Switch between AI providers seamlessly:
+    
+    ```typescript
+    // OpenAI
+    const openai = new AIService({
+      provider: 'openai',
+      model: 'gpt-4'
+    });
+    
+    // Anthropic Claude
+    const claude = new AIService({
+      provider: 'anthropic',
+      model: 'claude-3-sonnet-20240229'
+    });
+    
+    // Local Ollama
+    const local = new AIService({
+      provider: 'ollama',
+      model: 'llama2'
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Agent System">
+    Build complex multi-agent systems:
+    
+    ```typescript
+    const manager = new AgentManager();
+    
+    const todoAgent = new TodoAgent({
+      name: 'todo-manager',
+      description: 'Manages tasks and todos'
+    });
+    
+    const codeAgent = new CodeAgent({
+      name: 'code-assistant',
+      description: 'Helps with coding tasks'
+    });
+    
+    manager.registerAgent(todoAgent);
+    manager.registerAgent(codeAgent);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Development Workflow
+
+The typical TUI-Kit-AI development workflow:
+
+<Steps>
+  <Step title="Setup Project">
+    Install packages and configure TypeScript:
+    ```bash
+    npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    ```
+  </Step>
+  <Step title="Initialize Terminal">
+    Set up the terminal screen and basic layout:
+    ```typescript
+    import { useTerminal } from '@tui-kit-ai/core';
+    
+    const { screen } = useTerminal();
+    ```
+  </Step>
+  <Step title="Build UI Components">
+    Create your interface using TUI-Kit-AI components:
+    ```typescript
+    const mainContainer = new Box({ parent: screen, ... });
+    const input = new TextInput({ parent: mainContainer.el, ... });
+    ```
+  </Step>
+  <Step title="Integrate AI">
+    Add AI services and streaming support:
+    ```typescript
+    const aiService = new AIService({ provider: 'openai', ... });
+    ```
+  </Step>
+  <Step title="Add Agents (Optional)">
+    For complex applications, add specialized agents:
+    ```typescript
+    const agent = new TodoAgent({ ... });
+    ```
+  </Step>
+  <Step title="Handle Events">
+    Set up event handlers and user interaction:
+    ```typescript
+    screen.key(['escape', 'q'], () => process.exit(0));
+    ```
+  </Step>
+</Steps>
+
+## Package Architecture
+
+TUI-Kit-AI follows a modular architecture where each package serves a specific purpose:
+
+```mermaid
+graph TB
+    A[Your Application] --> B[@tui-kit-ai/core]
+    A --> C[@tui-kit-ai/ai]
+    A --> D[@tui-kit-ai/agents]
+    
+    B --> E[blessed.js]
+    B --> F[Component System]
+    B --> G[Theme Engine]
+    
+    C --> H[AI Service]
+    C --> I[Streaming Components]
+    C --> J[@tui-kit-ai/providers]
+    
+    D --> K[Agent Manager]
+    D --> L[Base Agent]
+    D --> M[Specialized Agents]
+    
+    J --> N[OpenAI Provider]
+    J --> O[Anthropic Provider]
+    J --> P[Ollama Provider]
+```
+
+### Dependency Flow
+
+- **@tui-kit-ai/core**: Foundation layer, no dependencies on other TUI-Kit-AI packages
+- **@tui-kit-ai/providers**: AI provider implementations, depends on provider SDKs
+- **@tui-kit-ai/ai**: AI integration layer, depends on core and providers
+- **@tui-kit-ai/agents**: Agent system, depends on ai package
+- **Your App**: Uses any combination of the above packages
+
+## Performance Considerations
+
+TUI applications have unique performance characteristics:
+
+<Tabs>
+  <Tab title="Rendering">
+    - Terminal rendering is inherently fast
+    - Minimize unnecessary screen.render() calls
+    - Use efficient text updates for streaming
+    - Batch multiple updates when possible
+  </Tab>
+  <Tab title="Memory">
+    - TUI components are lightweight
+    - AI responses can be memory-intensive
+    - Implement message history limits
+    - Clear unused component references
+  </Tab>
+  <Tab title="Responsiveness">
+    - Use async/await for AI calls
+    - Show loading indicators during AI processing
+    - Handle user input while AI is processing
+    - Implement proper error handling
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+Ready to dive deeper? Continue with these guides:
+
+<CardGroup cols={2}>
+  <Card
+    title="Installation Guide"
+    icon="download"
+    href="/getting-started/installation"
+  >
+    Set up your development environment with all dependencies
+  </Card>
+  <Card
+    title="First Application"
+    icon="play"
+    href="/getting-started/first-app"
+  >
+    Build a complete AI chat application step by step
+  </Card>
+  <Card
+    title="Architecture Deep Dive"
+    icon="building"
+    href="/getting-started/architecture"
+  >
+    Understand the internal architecture and design decisions
+  </Card>
+  <Card
+    title="Component Library"
+    icon="palette"
+    href="/components/overview"
+  >
+    Explore all available components with live examples
+  </Card>
+</CardGroup>

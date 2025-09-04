@@ -1,0 +1,676 @@
+---
+title: 'Architecture'
+description: 'Deep dive into TUI-Kit-AI architecture, design patterns, and core concepts'
+---
+
+## Overview
+
+TUI-Kit-AI follows a **layered, modular architecture** designed specifically for building AI-powered terminal applications. Understanding this architecture will help you build more robust and maintainable applications.
+
+<Frame>
+  <img src="/images/architecture-diagram.png" alt="TUI-Kit-AI Architecture" />
+</Frame>
+
+## Architecture Layers
+
+The architecture consists of four main layers, each with specific responsibilities:
+
+```mermaid
+graph TD
+    A[Application Layer] --> B[AI Integration Layer]
+    A --> C[Component Layer]
+    B --> C
+    C --> D[Foundation Layer]
+    
+    A --> |Your App Code| A1[Custom Components]
+    A --> A2[Business Logic]
+    A --> A3[Event Handling]
+    
+    B --> |@tui-kit-ai/ai| B1[AI Service]
+    B --> B2[Streaming]
+    B --> B3[Chat Components]
+    
+    C --> |@tui-kit-ai/core| C1[UI Components]
+    C --> C2[Layout System]
+    C --> C3[Event System]
+    
+    D --> |blessed.js| D1[Terminal Control]
+    D --> D2[Screen Rendering]
+    D --> D3[Input Handling]
+```
+
+### Foundation Layer (blessed.js)
+
+The foundation is built on **blessed.js**, a mature terminal interface library:
+
+<AccordionGroup>
+  <Accordion title="Terminal Abstraction">
+    Blessed provides low-level terminal control:
+    - ANSI escape sequence management
+    - Cross-platform terminal compatibility
+    - Screen buffer management
+    - Keyboard and mouse input handling
+  </Accordion>
+  
+  <Accordion title="Rendering Engine">
+    Efficient terminal rendering:
+    - Virtual screen buffer with diff-based updates
+    - Smart CSR (Change Scroll Region) optimization
+    - Unicode and color support
+    - Responsive layout calculations
+  </Accordion>
+  
+  <Accordion title="Event System">
+    Comprehensive event handling:
+    - Keyboard events with modifier support
+    - Mouse events (click, drag, scroll)
+    - Focus and blur events
+    - Resize events for responsive layouts
+  </Accordion>
+</AccordionGroup>
+
+### Component Layer (@tui-kit-ai/core)
+
+The component layer provides reusable UI building blocks:
+
+#### Component Architecture
+
+All components follow a consistent pattern:
+
+```typescript
+interface Component<T extends Widgets.Node> {
+  el: T;                    // Blessed.js element
+  theme: ThemeConfig;       // Theme configuration  
+  destroy: () => void;      // Cleanup method
+}
+
+interface BaseProps {
+  parent: Widgets.Node;     // Parent element
+  theme?: ThemeConfig;      // Optional theme override
+  // Position and size props
+  top?: string | number;
+  left?: string | number;
+  width?: string | number;
+  height?: string | number;
+  // Additional blessed.js props...
+}
+```
+
+#### Component Categories
+
+<Tabs>
+  <Tab title="Layout Components">
+    **Container components for structuring interfaces:**
+    
+    ```typescript
+    // Box - Basic container
+    const container = new Box({
+      parent: screen,
+      border: { type: 'line' },
+      label: ' My Container '
+    });
+    
+    // Flex - Flexible layout
+    const flexBox = new Flex({
+      parent: screen,
+      direction: 'row',
+      justify: 'space-between'
+    });
+    
+    // Grid - Grid layout system
+    const grid = new Grid({
+      parent: screen,
+      rows: 2,
+      cols: 3
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Input Components">
+    **Interactive elements for user input:**
+    
+    ```typescript
+    // TextInput - Text entry
+    const input = new TextInput({
+      parent: container.el,
+      placeholder: 'Enter text...',
+      onSubmit: (value) => handleInput(value)
+    });
+    
+    // Select - Dropdown selection
+    const select = new Select({
+      parent: container.el,
+      items: ['Option 1', 'Option 2', 'Option 3'],
+      onSelect: (item) => handleSelection(item)
+    });
+    
+    // Button - Clickable button
+    const button = new Button({
+      parent: container.el,
+      content: 'Click me!',
+      onPress: () => handleClick()
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Display Components">
+    **Components for showing information:**
+    
+    ```typescript
+    // Text - Formatted text display
+    const text = new Text({
+      parent: container.el,
+      content: 'Hello, world!',
+      style: { fg: 'cyan', bold: true }
+    });
+    
+    // Table - Tabular data
+    const table = new Table({
+      parent: container.el,
+      headers: ['Name', 'Age', 'Email'],
+      data: [
+        ['John Doe', '30', 'john@example.com'],
+        ['Jane Smith', '25', 'jane@example.com']
+      ]
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### Theme System
+
+TUI-Kit-AI includes a powerful theming system:
+
+```typescript
+import { darkTheme, lightTheme, createCustomTheme } from '@tui-kit-ai/core';
+
+// Use built-in themes
+const component = new Box({
+  parent: screen,
+  theme: darkTheme
+});
+
+// Create custom themes
+const customTheme = createCustomTheme({
+  colors: {
+    primary: '#00ff00',
+    secondary: '#ff00ff',
+    background: '#1a1a1a'
+  },
+  borders: {
+    style: 'double',
+    color: 'primary'
+  }
+});
+```
+
+### AI Integration Layer (@tui-kit-ai/ai)
+
+The AI layer provides specialized components and services for AI applications:
+
+#### AI Service Architecture
+
+```typescript
+class AIService {
+  constructor(config: AIServiceConfig) {
+    this.provider = createProvider(config.provider, config);
+    this.streamingManager = new StreamingManager();
+    this.contextManager = new ContextManager();
+  }
+
+  async streamCompletion(messages: Message[]): Promise<CompletionStream> {
+    // Provider-agnostic streaming implementation
+  }
+}
+```
+
+#### Provider Abstraction
+
+Multiple AI providers with unified interface:
+
+<AccordionGroup>
+  <Accordion title="OpenAI Provider">
+    ```typescript
+    const openaiService = new AIService({
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY,
+      model: 'gpt-4',
+      temperature: 0.7
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Anthropic Provider">
+    ```typescript
+    const claudeService = new AIService({
+      provider: 'anthropic',
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      model: 'claude-3-sonnet-20240229'
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Ollama Provider">
+    ```typescript
+    const localService = new AIService({
+      provider: 'ollama',
+      baseURL: 'http://localhost:11434',
+      model: 'llama2'
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Streaming Components
+
+Specialized components for real-time AI responses:
+
+```typescript
+// StreamingText - Real-time text updates
+const streamingText = new StreamingText({
+  parent: container.el,
+  onChunk: (chunk) => {
+    // Handle streaming text chunks
+  }
+});
+
+// ChatContainer - Full conversation interface
+const chat = new ChatContainer({
+  parent: screen,
+  messages: [],
+  onMessageSubmit: async (content) => {
+    const stream = await aiService.streamCompletion([
+      { role: 'user', content }
+    ]);
+    
+    for await (const chunk of stream.textStream) {
+      chat.appendToLastMessage(chunk);
+    }
+  }
+});
+```
+
+### Agent Layer (@tui-kit-ai/agents)
+
+The agent layer provides a framework for building intelligent, autonomous agents:
+
+#### Agent Architecture
+
+```typescript
+abstract class BaseAgent extends EventEmitter {
+  abstract async start(): Promise<void>;
+  abstract async stop(): Promise<void>;
+  abstract async processTask(task: Task): Promise<TaskResult>;
+  
+  // Event handling
+  protected emit(event: string, data: any): void;
+  protected on(event: string, handler: Function): void;
+}
+
+class AgentManager {
+  private agents: Map<string, BaseAgent> = new Map();
+  
+  registerAgent(agent: BaseAgent): void;
+  unregisterAgent(agentId: string): void;
+  distributeTask(task: Task): Promise<TaskResult>;
+}
+```
+
+#### Communication Patterns
+
+Agents communicate through various patterns:
+
+<Tabs>
+  <Tab title="Event-Driven">
+    ```typescript
+    // Agent publishes events
+    class TodoAgent extends BaseAgent {
+      async addTask(task: Task) {
+        await this.taskStore.add(task);
+        this.emit('task.added', { task });
+      }
+    }
+    
+    // Other agents subscribe
+    todoAgent.on('task.added', (data) => {
+      notificationAgent.showNotification(`Task added: ${data.task.title}`);
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Message Passing">
+    ```typescript
+    // Direct agent communication
+    const message: AgentMessage = {
+      from: 'todo-agent',
+      to: 'code-agent',
+      type: 'generate.code',
+      payload: { specification: taskSpec }
+    };
+    
+    await agentManager.sendMessage(message);
+    ```
+  </Tab>
+  
+  <Tab title="Shared State">
+    ```typescript
+    // Shared context across agents
+    const sharedContext = new SharedContext();
+    
+    sharedContext.set('current.project', projectInfo);
+    sharedContext.set('user.preferences', userPrefs);
+    
+    // Agents access shared state
+    const project = sharedContext.get('current.project');
+    ```
+  </Tab>
+</Tabs>
+
+## Design Patterns
+
+TUI-Kit-AI implements several key design patterns:
+
+### Component Pattern
+
+Similar to React components, but optimized for terminals:
+
+```typescript
+class CustomComponent {
+  private container: Box;
+  private title: Text;
+  private content: Text;
+
+  constructor(props: CustomComponentProps) {
+    this.container = new Box({
+      parent: props.parent,
+      border: { type: 'line' },
+      label: props.label
+    });
+
+    this.title = new Text({
+      parent: this.container.el,
+      content: props.title,
+      style: { bold: true }
+    });
+
+    this.content = new Text({
+      parent: this.container.el,
+      top: 2,
+      content: props.content
+    });
+  }
+
+  updateContent(newContent: string) {
+    this.content.setContent(newContent);
+  }
+
+  destroy() {
+    this.container.destroy();
+  }
+}
+```
+
+### Observer Pattern
+
+For event handling and state management:
+
+```typescript
+class StateManager extends EventEmitter {
+  private state: any = {};
+
+  setState(key: string, value: any) {
+    const oldValue = this.state[key];
+    this.state[key] = value;
+    this.emit('state.changed', { key, oldValue, newValue: value });
+  }
+
+  getState(key: string) {
+    return this.state[key];
+  }
+}
+
+// Components subscribe to state changes
+stateManager.on('state.changed', ({ key, newValue }) => {
+  if (key === 'messages') {
+    chatComponent.updateMessages(newValue);
+  }
+});
+```
+
+### Strategy Pattern
+
+For AI provider abstraction:
+
+```typescript
+interface AIProvider {
+  complete(messages: Message[]): Promise<string>;
+  stream(messages: Message[]): AsyncIterable<string>;
+}
+
+class OpenAIProvider implements AIProvider {
+  async complete(messages: Message[]): Promise<string> {
+    // OpenAI-specific implementation
+  }
+}
+
+class AnthropicProvider implements AIProvider {
+  async complete(messages: Message[]): Promise<string> {
+    // Anthropic-specific implementation
+  }
+}
+
+class AIService {
+  constructor(private provider: AIProvider) {}
+  
+  async getResponse(messages: Message[]) {
+    return await this.provider.complete(messages);
+  }
+}
+```
+
+## Performance Considerations
+
+### Rendering Optimization
+
+TUI applications require careful performance optimization:
+
+<AccordionGroup>
+  <Accordion title="Screen Rendering">
+    ```typescript
+    class OptimizedApp {
+      private renderScheduled = false;
+      
+      scheduleRender() {
+        if (!this.renderScheduled) {
+          this.renderScheduled = true;
+          process.nextTick(() => {
+            this.screen.render();
+            this.renderScheduled = false;
+          });
+        }
+      }
+      
+      // Batch updates
+      updateMultipleComponents() {
+        component1.update();
+        component2.update();
+        component3.update();
+        this.scheduleRender(); // Single render call
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Memory Management">
+    ```typescript
+    class ComponentManager {
+      private components: Set<Component> = new Set();
+      
+      addComponent(component: Component) {
+        this.components.add(component);
+      }
+      
+      removeComponent(component: Component) {
+        component.destroy(); // Clean up blessed elements
+        this.components.delete(component);
+      }
+      
+      cleanup() {
+        for (const component of this.components) {
+          component.destroy();
+        }
+        this.components.clear();
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="AI Response Handling">
+    ```typescript
+    class StreamingOptimizer {
+      private updateQueue: string[] = [];
+      private updateTimer: NodeJS.Timeout | null = null;
+      
+      queueUpdate(chunk: string) {
+        this.updateQueue.push(chunk);
+        
+        if (!this.updateTimer) {
+          this.updateTimer = setTimeout(() => {
+            const combined = this.updateQueue.join('');
+            this.updateComponent(combined);
+            this.updateQueue = [];
+            this.updateTimer = null;
+          }, 16); // ~60fps
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+Robust error handling is crucial for terminal applications:
+
+```typescript
+class ErrorHandler {
+  static handle(error: Error, context: string) {
+    console.error(`[${context}] Error:`, error.message);
+    
+    // Log to file
+    this.logError(error, context);
+    
+    // Show user-friendly message
+    this.showErrorToUser(error.message);
+    
+    // Attempt recovery
+    this.attemptRecovery(error, context);
+  }
+  
+  static showErrorToUser(message: string) {
+    const errorModal = new Modal({
+      parent: screen,
+      title: 'Error',
+      content: message,
+      buttons: ['OK']
+    });
+    errorModal.show();
+  }
+}
+
+// Usage in components
+try {
+  const response = await aiService.complete(messages);
+} catch (error) {
+  ErrorHandler.handle(error, 'AI_COMPLETION');
+}
+```
+
+## Security Considerations
+
+When building AI-powered applications:
+
+<AccordionGroup>
+  <Accordion title="API Key Protection">
+    ```typescript
+    // Never log or expose API keys
+    class SecureConfig {
+      private static apiKey: string;
+      
+      static setApiKey(key: string) {
+        this.apiKey = key;
+      }
+      
+      static getApiKey(): string {
+        if (!this.apiKey) {
+          throw new Error('API key not configured');
+        }
+        return this.apiKey;
+      }
+      
+      // Redact sensitive data from logs
+      static sanitizeForLog(data: any) {
+        return JSON.stringify(data).replace(/api[_-]?key['"]\s*:\s*['"][^'"]+['"]/gi, 'api_key": "[REDACTED]"');
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Input Validation">
+    ```typescript
+    class InputValidator {
+      static validateUserMessage(content: string): boolean {
+        // Check length
+        if (content.length > 10000) {
+          throw new Error('Message too long');
+        }
+        
+        // Check for harmful content patterns
+        const harmfulPatterns = [/system\s*prompt/i, /ignore\s*previous/i];
+        for (const pattern of harmfulPatterns) {
+          if (pattern.test(content)) {
+            throw new Error('Invalid message content');
+          }
+        }
+        
+        return true;
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that you understand the architecture, explore these topics:
+
+<CardGroup cols={2}>
+  <Card
+    title="Component Development"
+    icon="puzzle-piece"
+    href="/components/overview"
+  >
+    Learn to build custom components
+  </Card>
+  <Card
+    title="AI Integration"
+    icon="brain"
+    href="/ai/overview"
+  >
+    Master AI service integration
+  </Card>
+  <Card
+    title="Agent Development"
+    icon="robot"
+    href="/agents/introduction"
+  >
+    Build intelligent agents
+  </Card>
+  <Card
+    title="Example Applications"
+    icon="code"
+    href="/examples/overview"
+  >
+    Study complete implementations
+  </Card>
+</CardGroup>

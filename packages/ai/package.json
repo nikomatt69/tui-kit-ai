@@ -1,0 +1,39 @@
+{
+  "name": "@tui-kit-ai/ai",
+  "version": "0.1.0",
+  "description": "AI-specific components and streaming for TUI applications",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "echo 'Tests not implemented yet'",
+    "validate:tsc": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "ai": "^3.4.33",
+    "blessed": "^0.1.81",
+    "@tui-kit-ai/core": "^0.1.0",
+    "@tui-kit-ai/providers": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "rimraf": "^6.0.1",
+    "@types/blessed": "^0.1.25"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "tui",
+    "terminal",
+    "ai",
+    "chat",
+    "streaming",
+    "blessed",
+    "typescript"
+  ]
+}

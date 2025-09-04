@@ -1,0 +1,31 @@
+{
+  "name": "tui-kit-ai",
+  "private": true,
+  "version": "0.1.0",
+  "description": "TUI-Kit-AI Monorepo - shadcn/ui for Terminal with Vercel AI SDK",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run build:packages",
+    "validate:tsc": "npm run validate:tsc:packages && npm run validate:tsc:examples",
+    "validate:tsc:packages": "tsc --noEmit -p packages/core/tsconfig.json && tsc --noEmit -p packages/ai/tsconfig.json && tsc --noEmit -p packages/agents/tsconfig.json && tsc --noEmit -p packages/providers/tsconfig.json && tsc --noEmit -p packages/cli/tsconfig.json",
+    "validate:tsc:examples": "tsc --noEmit -p examples/todo-agent/tsconfig.json && tsc --noEmit -p examples/code-assistant/tsconfig.json && tsc --noEmit -p examples/multi-agent/tsconfig.json",
+    "clean": "npm run clean:packages && npm run clean:examples",
+    "test": "npm run test:packages",
+    "dev": "echo 'Run dev from examples/*'",
+    "generate": "node scripts/generate.js",
+    "tui": "npm run -w @tui-kit-ai/cli tui",
+    "build:packages": "npm run build -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli",
+    "build:examples": "npm run build -w examples/todo-agent -w examples/code-assistant -w examples/multi-agent",
+    "clean:packages": "npm run clean -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli",
+    "clean:examples": "npm run clean -w examples/todo-agent -w examples/code-assistant -w examples/multi-agent",
+    "test:packages": "npm run test -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "tsx": "^4.17.0"
+  }
+}

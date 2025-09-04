@@ -1,0 +1,520 @@
+---
+title: 'Installation Guide'
+description: 'Complete installation and setup guide for TUI-Kit-AI development'
+---
+
+## Prerequisites
+
+Before installing TUI-Kit-AI, ensure your development environment meets these requirements:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 18.x or higher (20.x+ recommended for best performance)
+  </Card>
+  <Card title="Package Manager" icon="package">
+    npm 9.x+, yarn 3.x+, or pnpm 8.x+
+  </Card>
+  <Card title="Terminal" icon="terminal">
+    Any modern terminal with ANSI color and Unicode support
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Optional but recommended for the best development experience
+  </Card>
+</CardGroup>
+
+## Quick Installation
+
+Choose your installation method based on your project needs:
+
+<Tabs>
+  <Tab title="New Project">
+    Start a new project with TUI-Kit-AI:
+    
+    <CodeGroup>
+    
+    ```bash npm
+    mkdir my-tui-app && cd my-tui-app
+    npm init -y
+    npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    npm install --save-dev typescript @types/node tsx
+    ```
+    
+    ```bash yarn
+    mkdir my-tui-app && cd my-tui-app
+    yarn init -y
+    yarn add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    yarn add --dev typescript @types/node tsx
+    ```
+    
+    ```bash pnpm
+    mkdir my-tui-app && cd my-tui-app
+    pnpm init
+    pnpm add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    pnpm add -D typescript @types/node tsx
+    ```
+    
+    </CodeGroup>
+  </Tab>
+  
+  <Tab title="Existing Project">
+    Add TUI-Kit-AI to an existing Node.js project:
+    
+    <CodeGroup>
+    
+    ```bash npm
+    npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    ```
+    
+    ```bash yarn
+    yarn add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    ```
+    
+    ```bash pnpm
+    pnpm add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    ```
+    
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+## Package Selection Guide
+
+Install only the packages you need for your specific use case:
+
+<AccordionGroup>
+  <Accordion title="Basic TUI Application" icon="square">
+    For simple terminal interfaces without AI:
+    
+    ```bash
+    npm install @tui-kit-ai/core
+    ```
+    
+    **Includes:**
+    - All UI components (Box, Text, Button, etc.)
+    - Terminal management
+    - Theme system
+    - Event handling
+  </Accordion>
+  
+  <Accordion title="AI-Powered Application" icon="brain">
+    For applications with AI integration:
+    
+    ```bash
+    npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/providers
+    ```
+    
+    **Adds:**
+    - AI service abstraction
+    - Streaming text components
+    - Chat containers
+    - Provider implementations
+  </Accordion>
+  
+  <Accordion title="Multi-Agent System" icon="users">
+    For complex applications with multiple AI agents:
+    
+    ```bash
+    npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+    ```
+    
+    **Adds:**
+    - Agent management system
+    - BaseAgent class
+    - TodoAgent implementation
+    - Inter-agent communication
+  </Accordion>
+  
+  <Accordion title="Full Installation" icon="download">
+    Everything including CLI tools:
+    
+    ```bash
+    npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents @tui-kit-ai/cli
+    ```
+    
+    **Adds:**
+    - Project scaffolding
+    - Code generators
+    - Build tools
+    - Templates
+  </Accordion>
+</AccordionGroup>
+
+## Project Setup
+
+### 1. TypeScript Configuration
+
+Create a `tsconfig.json` file optimized for TUI-Kit-AI:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node", "blessed"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
+```
+
+### 2. Package.json Scripts
+
+Add development scripts to your `package.json`:
+
+```json package.json
+{
+  "name": "my-tui-app",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "bin": {
+    "my-app": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "test": "tsx src/test.ts"
+  },
+  "keywords": ["tui", "cli", "ai", "terminal"],
+  "dependencies": {
+    "@tui-kit-ai/core": "^0.1.0",
+    "@tui-kit-ai/ai": "^0.1.0",
+    "@tui-kit-ai/agents": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "@types/blessed": "^0.1.25"
+  }
+}
+```
+
+### 3. Project Structure
+
+Create the recommended directory structure:
+
+```
+my-tui-app/
+├── src/
+│   ├── index.ts          # Main application entry
+│   ├── components/       # Custom UI components
+│   ├── agents/           # Custom AI agents
+│   ├── services/         # AI and external services
+│   └── utils/            # Utility functions
+├── dist/                 # Compiled JavaScript
+├── package.json
+├── tsconfig.json
+├── .env                  # Environment variables
+└── README.md
+```
+
+### 4. Environment Variables
+
+Create a `.env` file for configuration:
+
+```bash .env
+# AI Provider Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+OLLAMA_HOST=http://localhost:11434
+
+# Application Settings
+APP_NAME=My TUI App
+LOG_LEVEL=info
+DEVELOPMENT=true
+
+# AI Model Settings
+DEFAULT_MODEL=gpt-4
+AI_TEMPERATURE=0.7
+MAX_TOKENS=2000
+```
+
+## Development Environment
+
+### Terminal Configuration
+
+For the best TUI-Kit-AI experience, configure your terminal:
+
+<Tabs>
+  <Tab title="VS Code Integrated Terminal">
+    Add to VS Code settings.json:
+    
+    ```json
+    {
+      "terminal.integrated.env.osx": {
+        "TERM": "xterm-256color",
+        "COLORTERM": "truecolor"
+      },
+      "terminal.integrated.env.linux": {
+        "TERM": "xterm-256color",
+        "COLORTERM": "truecolor"
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="iTerm2 (macOS)">
+    1. Enable true color: `Preferences > Profiles > Terminal > Report Terminal Type: xterm-256color`
+    2. Enable mouse reporting: `Preferences > Profiles > Terminal > Mouse Reporting: Yes`
+    3. Unicode support: `Preferences > Profiles > Text > Unicode normalization: NFC`
+  </Tab>
+  
+  <Tab title="Windows Terminal">
+    Add to settings.json:
+    
+    ```json
+    {
+      "profiles": {
+        "defaults": {
+          "colorScheme": "Campbell Powershell",
+          "font": {
+            "face": "Cascadia Code",
+            "size": 12
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### AI Provider Setup
+
+Configure your preferred AI providers:
+
+<AccordionGroup>
+  <Accordion title="OpenAI Setup" icon="openai">
+    1. Create an account at [OpenAI](https://platform.openai.com)
+    2. Generate an API key in your account settings
+    3. Add to your `.env` file:
+    
+    ```bash
+    OPENAI_API_KEY=sk-your-key-here
+    OPENAI_ORG_ID=org-your-org-here  # Optional
+    ```
+    
+    4. Test the connection:
+    
+    ```typescript
+    import { AIService } from '@tui-kit-ai/ai';
+    
+    const ai = new AIService({
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY
+    });
+    
+    const response = await ai.complete('Hello, world!');
+    console.log(response);
+    ```
+  </Accordion>
+  
+  <Accordion title="Anthropic Setup" icon="anthropic">
+    1. Sign up at [Anthropic](https://console.anthropic.com)
+    2. Create an API key
+    3. Add to your `.env` file:
+    
+    ```bash
+    ANTHROPIC_API_KEY=sk-ant-your-key-here
+    ```
+    
+    4. Test the connection:
+    
+    ```typescript
+    const ai = new AIService({
+      provider: 'anthropic',
+      apiKey: process.env.ANTHROPIC_API_KEY
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Ollama Setup (Local)" icon="server">
+    1. Install Ollama from [ollama.com](https://ollama.com)
+    2. Pull a model:
+    
+    ```bash
+    ollama pull llama2
+    ```
+    
+    3. Start the service:
+    
+    ```bash
+    ollama serve
+    ```
+    
+    4. Configure in your application:
+    
+    ```typescript
+    const ai = new AIService({
+      provider: 'ollama',
+      baseURL: 'http://localhost:11434',
+      model: 'llama2'
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Verification
+
+Create a test file to verify your installation:
+
+```typescript src/test.ts
+import { useTerminal, Box, Text, Button } from '@tui-kit-ai/core';
+import { AIService } from '@tui-kit-ai/ai';
+
+console.log('🧪 Testing TUI-Kit-AI installation...');
+
+// Test 1: Terminal initialization
+try {
+  const { screen } = useTerminal();
+  console.log('✅ Terminal initialization successful');
+  
+  // Test 2: Component creation
+  const testBox = new Box({
+    parent: screen,
+    width: 40,
+    height: 10,
+    border: { type: 'line' },
+    label: ' Installation Test '
+  });
+  
+  new Text({
+    parent: testBox.el,
+    top: 2,
+    left: 2,
+    content: '✅ TUI-Kit-AI installed correctly!'
+  });
+  
+  new Button({
+    parent: testBox.el,
+    top: 4,
+    left: 2,
+    width: 20,
+    height: 3,
+    content: 'Test Button',
+    onPress: () => {
+      console.log('✅ Event handling works!');
+      process.exit(0);
+    }
+  });
+  
+  console.log('✅ Component creation successful');
+  console.log('✅ Press the button or Ctrl+C to exit');
+  
+  screen.render();
+  
+  // Test 3: AI Service (if API key available)
+  if (process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY) {
+    console.log('🤖 Testing AI integration...');
+    // Add AI test here
+  }
+  
+} catch (error) {
+  console.error('❌ Installation test failed:', error);
+  process.exit(1);
+}
+
+process.on('SIGINT', () => {
+  console.log('\n👋 Test completed successfully!');
+  process.exit(0);
+});
+```
+
+Run the test:
+
+```bash
+npm run test
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Module Not Found Errors">
+    **Problem**: `Cannot find module '@tui-kit-ai/core'`
+    
+    **Solutions**:
+    1. Verify installation: `npm list @tui-kit-ai/core`
+    2. Clear cache: `npm cache clean --force`
+    3. Reinstall: `rm -rf node_modules package-lock.json && npm install`
+    4. Check Node.js version: `node --version` (should be 18+)
+  </Accordion>
+  
+  <Accordion title="Terminal Rendering Issues">
+    **Problem**: Strange characters or broken layouts
+    
+    **Solutions**:
+    1. Check terminal capabilities: `echo $TERM`
+    2. Force color mode: `export FORCE_COLOR=3`
+    3. Use compatible terminal (VS Code, iTerm2, Windows Terminal)
+    4. Update terminal settings for Unicode support
+  </Accordion>
+  
+  <Accordion title="TypeScript Compilation Errors">
+    **Problem**: Type errors or compilation failures
+    
+    **Solutions**:
+    1. Install type definitions: `npm install --save-dev @types/blessed`
+    2. Update TypeScript: `npm install --save-dev typescript@latest`
+    3. Check tsconfig.json configuration
+    4. Restart TypeScript server in your IDE
+  </Accordion>
+  
+  <Accordion title="AI Provider Connection Issues">
+    **Problem**: API connection failures
+    
+    **Solutions**:
+    1. Verify API keys are correct
+    2. Check network connectivity
+    3. Test with curl:
+    ```bash
+    curl -H "Authorization: Bearer $OPENAI_API_KEY" \
+         https://api.openai.com/v1/models
+    ```
+    4. Check rate limits and billing status
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Build Your First App"
+    icon="play"
+    href="/getting-started/first-app"
+  >
+    Create a complete AI chat application step by step
+  </Card>
+  <Card
+    title="Explore Components"
+    icon="palette"
+    href="/components/overview"
+  >
+    Learn about all available UI components
+  </Card>
+  <Card
+    title="AI Integration"
+    icon="brain"
+    href="/ai/overview"
+  >
+    Dive deep into AI features and providers
+  </Card>
+  <Card
+    title="Example Applications"
+    icon="code"
+    href="/examples/overview"
+  >
+    Study complete example applications
+  </Card>
+</CardGroup>

@@ -1,0 +1,185 @@
+---
+title: Introduction
+description: 'Welcome to TUI-Kit-AI - The future of terminal user interfaces for AI applications'
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/introduction-light.png"
+  alt="Introduction"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/introduction-dark.png"
+  alt="Introduction"
+/>
+
+## Welcome to TUI-Kit-AI
+
+TUI-Kit-AI revolutionizes how developers build terminal-based AI applications by providing a comprehensive, modular component library specifically designed for AI-powered CLI tools and agents.
+
+## What is TUI-Kit-AI?
+
+TUI-Kit-AI is a **TypeScript-first terminal UI library** that combines the power of modern terminal interfaces with seamless AI integration. Built on top of the proven Blessed.js foundation, it offers:
+
+<CardGroup cols={2}>
+  <Card
+    title="40+ TUI Components"
+    icon="components"
+  >
+    From simple text and buttons to complex tables, modals, and interactive forms
+  </Card>
+  <Card
+    title="AI-Native Architecture"
+    icon="brain"
+  >
+    Built-in streaming support, chat containers, and AI provider abstractions
+  </Card>
+  <Card
+    title="Agent System"
+    icon="robot"
+  >
+    Modular agent architecture with BaseAgent, TodoAgent, and custom agent support
+  </Card>
+  <Card
+    title="Monorepo Design"
+    icon="folder-tree"
+  >
+    Clean package separation allowing you to use only what you need
+  </Card>
+</CardGroup>
+
+## Core Philosophy
+
+### 🎯 AI-First Design
+Unlike generic TUI libraries, TUI-Kit-AI is built specifically for AI applications. Every component considers AI workflows, streaming responses, and real-time interactions.
+
+### 🧩 Modular Architecture
+The monorepo structure allows you to install only the packages you need:
+- `@tui-kit-ai/core` - Essential TUI components
+- `@tui-kit-ai/ai` - AI integration and streaming
+- `@tui-kit-ai/agents` - Agent system and management
+- `@tui-kit-ai/providers` - AI provider implementations
+- `@tui-kit-ai/cli` - CLI framework and bootstrapping
+
+### 💡 Developer Experience
+TypeScript-first design with comprehensive type definitions, intelligent autocomplete, and clear error messages make development smooth and productive.
+
+## Architecture Overview
+
+```mermaid
+graph TB
+    A[Terminal Application] --> B[@tui-kit-ai/core]
+    A --> C[@tui-kit-ai/ai]
+    A --> D[@tui-kit-ai/agents]
+    
+    B --> E[Blessed.js Foundation]
+    B --> F[Theme System]
+    B --> G[Component Library]
+    
+    C --> H[AI Service]
+    C --> I[Streaming Components]
+    C --> J[Chat System]
+    
+    D --> K[BaseAgent]
+    D --> L[AgentManager]
+    D --> M[Specialized Agents]
+    
+    H --> N[OpenAI Provider]
+    H --> O[Anthropic Provider]
+    H --> P[Ollama Provider]
+```
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion title="Rich Component Library">
+    **Layout Components**: Box, Flex, Grid, Panel for structuring your interface
+    
+    **Input Components**: TextInput, Select, Checkbox, RadioGroup, MultiSelect for user interaction
+    
+    **Display Components**: Text, Heading, Badge, Avatar for presenting information
+    
+    **Feedback Components**: Spinner, ProgressBar, Toast, StatusIndicator for user feedback
+    
+    **Navigation Components**: Menu, Tabs, Breadcrumb, Tree for app navigation
+    
+    **Container Components**: Modal, Scrollable, Tooltip, Collapsible for content organization
+  </Accordion>
+
+  <Accordion title="AI Integration Layer">
+    **Streaming Support**: Real-time AI response handling with visual feedback
+    
+    **Provider Abstraction**: Unified interface for OpenAI, Anthropic, and Ollama
+    
+    **Chat Components**: Pre-built conversation interfaces with message history
+    
+    **Tool Integration**: Support for function calling and tool use in AI conversations
+  </Accordion>
+
+  <Accordion title="Agent System">
+    **BaseAgent**: Abstract foundation for creating specialized AI agents
+    
+    **AgentManager**: Central coordination and lifecycle management
+    
+    **Event System**: Inter-agent communication and state synchronization
+    
+    **Task Distribution**: Intelligent routing of tasks to appropriate agents
+  </Accordion>
+
+  <Accordion title="Development Tools">
+    **Code Generation**: Built-in generators for components, agents, and CLI templates
+    
+    **TypeScript Support**: Full type safety with excellent IDE integration
+    
+    **Theme System**: Customizable dark/light themes and color schemes
+    
+    **Live Examples**: Working examples in the `examples/` directory
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+TUI-Kit-AI is perfect for building:
+
+<Tabs>
+  <Tab title="AI Assistants">
+    Create intelligent terminal assistants that help with coding, system administration, or domain-specific tasks. The chat system and streaming support make it perfect for conversational AI interfaces.
+  </Tab>
+  <Tab title="Development Tools">
+    Build CLI tools for developers with AI-powered features like code generation, refactoring assistance, or automated testing. The component library handles complex UIs while AI integration adds intelligence.
+  </Tab>
+  <Tab title="Agent Systems">
+    Develop multi-agent systems where different AI agents handle specialized tasks. The agent management system provides coordination and communication between agents.
+  </Tab>
+  <Tab title="Data Processing">
+    Create terminal applications for AI-powered data analysis, transformation, or reporting with rich progress indicators and interactive result exploration.
+  </Tab>
+</Tabs>
+
+## Getting Started
+
+Ready to build your first AI-powered terminal application?
+
+<CardGroup cols={2}>
+  <Card
+    title="Quick Start Guide"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get up and running in 5 minutes with our quick start guide
+  </Card>
+  <Card
+    title="First Application"
+    icon="play"
+    href="/getting-started/first-app"
+  >
+    Build your first TUI-Kit-AI application step by step
+  </Card>
+</CardGroup>
+
+---
+
+<Info>
+**New to terminal UIs?** Check out our [Architecture Guide](/getting-started/architecture) to understand the core concepts and patterns used in TUI-Kit-AI applications.
+</Info>

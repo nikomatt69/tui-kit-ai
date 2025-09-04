@@ -1,0 +1,491 @@
+---
+title: 'API Reference'
+description: 'Complete API reference for TUI-Kit-AI components, services, and utilities'
+---
+
+## API Reference
+
+This section provides comprehensive API documentation for all TUI-Kit-AI packages, including detailed method signatures, properties, and usage examples.
+
+<CardGroup cols={2}>
+  <Card
+    title="@tui-kit-ai/core"
+    icon="cube"
+    href="/api-reference/core"
+  >
+    Core TUI components and utilities
+  </Card>
+  <Card
+    title="@tui-kit-ai/ai"
+    icon="brain"
+    href="/api-reference/ai"
+  >
+    AI service integration and components
+  </Card>
+  <Card
+    title="@tui-kit-ai/agents"
+    icon="robot"
+    href="/api-reference/agents"
+  >
+    Agent system and management
+  </Card>
+  <Card
+    title="@tui-kit-ai/providers"
+    icon="plug"
+    href="/api-reference/providers"
+  >
+    AI provider implementations
+  </Card>
+</CardGroup>
+
+## Package Overview
+
+### @tui-kit-ai/core
+
+The core package provides the foundation for all TUI applications:
+
+```typescript
+import {
+  // Terminal management
+  useTerminal,
+  
+  // Layout components
+  Box, Flex, Grid, Panel,
+  
+  // Input components
+  TextInput, Select, Button, Checkbox, RadioGroup,
+  
+  // Display components
+  Text, Heading, Table, Tree, Badge,
+  
+  // Feedback components
+  Spinner, ProgressBar, Toast, StatusIndicator,
+  
+  // Navigation components
+  Menu, Tabs, Breadcrumb,
+  
+  // Container components
+  Modal, Scrollable, Tooltip, Collapsible,
+  
+  // Themes
+  darkTheme, lightTheme, createTheme
+} from '@tui-kit-ai/core';
+```
+
+### @tui-kit-ai/ai
+
+AI integration components and services:
+
+```typescript
+import {
+  // Core AI service
+  AIService,
+  
+  // Chat components
+  ChatContainer, MessageBubble, MessageHistory,
+  
+  // Streaming components
+  StreamingText, ToolOutput, ToolProgress,
+  
+  // Utilities
+  TokenCounter, ContextManager
+} from '@tui-kit-ai/ai';
+```
+
+### @tui-kit-ai/agents
+
+Agent system for building intelligent applications:
+
+```typescript
+import {
+  // Base classes
+  BaseAgent, AgentManager,
+  
+  // Built-in agents
+  TodoAgent,
+  
+  // Utilities
+  EventBus, TaskQueue
+} from '@tui-kit-ai/agents';
+```
+
+### @tui-kit-ai/providers
+
+AI provider implementations:
+
+```typescript
+import {
+  OpenAIProvider,
+  AnthropicProvider,
+  OllamaProvider
+} from '@tui-kit-ai/providers';
+```
+
+## Common Patterns
+
+### Component Creation
+
+All TUI-Kit-AI components follow consistent patterns:
+
+```typescript
+interface BaseProps {
+  parent: Widgets.Node;        // Required parent element
+  theme?: ThemeConfig;         // Optional theme override
+  
+  // Position and size
+  top?: string | number;
+  left?: string | number;
+  right?: string | number;
+  bottom?: string | number;
+  width?: string | number;
+  height?: string | number;
+  
+  // Styling
+  style?: StyleConfig;
+  border?: BorderConfig;
+  
+  // Behavior
+  hidden?: boolean;
+  clickable?: boolean;
+  focusable?: boolean;
+}
+
+// Example component creation
+const component = new ComponentName({
+  parent: parentElement,
+  top: 2,
+  left: 2,
+  width: 30,
+  height: 10,
+  // Component-specific props...
+});
+```
+
+### Event Handling
+
+Components use Node.js EventEmitter pattern:
+
+```typescript
+// Listen to component events
+component.on('eventName', (data) => {
+  console.log('Event triggered:', data);
+});
+
+// Component-specific events
+textInput.on('submit', (value) => {
+  console.log('User entered:', value);
+});
+
+button.on('press', () => {
+  console.log('Button clicked');
+});
+
+// Cleanup
+component.removeListener('eventName', handler);
+component.removeAllListeners();
+```
+
+### Theming
+
+Apply themes globally or per component:
+
+```typescript
+import { setGlobalTheme, darkTheme } from '@tui-kit-ai/core';
+
+// Global theme
+setGlobalTheme(darkTheme);
+
+// Per-component theme
+const component = new Box({
+  parent: screen,
+  theme: darkTheme
+});
+
+// Custom theme
+const customTheme = createTheme({
+  colors: {
+    primary: '#00ff88',
+    background: '#1a1a1a'
+  }
+});
+```
+
+### Lifecycle Management
+
+Proper cleanup to prevent memory leaks:
+
+```typescript
+class ComponentManager {
+  private components: Set<Component> = new Set();
+  
+  createComponent<T extends Component>(
+    ComponentClass: new (...args: any[]) => T,
+    ...args: any[]
+  ): T {
+    const component = new ComponentClass(...args);
+    this.components.add(component);
+    return component;
+  }
+  
+  destroyComponent(component: Component) {
+    component.destroy();
+    this.components.delete(component);
+  }
+  
+  cleanup() {
+    this.components.forEach(component => {
+      component.destroy();
+    });
+    this.components.clear();
+  }
+}
+
+// Use on app exit
+process.on('exit', () => {
+  componentManager.cleanup();
+});
+```
+
+## TypeScript Support
+
+TUI-Kit-AI is built with TypeScript-first design:
+
+### Generic Components
+
+```typescript
+// Type-safe component props
+interface MyComponentProps extends BaseProps {
+  data: MyDataType[];
+  onSelect: (item: MyDataType) => void;
+}
+
+class MyComponent extends BaseComponent<MyComponentProps> {
+  constructor(props: MyComponentProps) {
+    super(props);
+  }
+}
+```
+
+### Type Guards
+
+```typescript
+// Check component types
+if (isTextInput(component)) {
+  // TypeScript knows this is a TextInput
+  component.setValue('new value');
+}
+
+if (isModal(component)) {
+  // TypeScript knows this is a Modal
+  component.setTitle('New Title');
+}
+```
+
+### Utility Types
+
+```typescript
+// Extract component props type
+type BoxProps = ComponentProps<typeof Box>;
+
+// Event handler types
+type EventHandler<T> = (data: T) => void;
+type SubmitHandler = EventHandler<string>;
+type SelectHandler<T> = EventHandler<T>;
+```
+
+## Error Handling
+
+Consistent error handling across all components:
+
+```typescript
+try {
+  const component = new SomeComponent({
+    parent: screen,
+    invalidProp: 'value' // This would throw
+  });
+} catch (error) {
+  if (error instanceof TUIKitError) {
+    console.error('Component error:', error.message);
+    console.error('Error code:', error.code);
+  }
+}
+
+// Async operations
+try {
+  const result = await aiService.complete(messages);
+} catch (error) {
+  if (error instanceof AIServiceError) {
+    console.error('AI error:', error.message);
+    console.error('Provider:', error.provider);
+    console.error('Status:', error.status);
+  }
+}
+```
+
+## Performance Considerations
+
+### Rendering Optimization
+
+```typescript
+// Batch screen renders
+class RenderManager {
+  private renderScheduled = false;
+  
+  scheduleRender() {
+    if (!this.renderScheduled) {
+      this.renderScheduled = true;
+      process.nextTick(() => {
+        screen.render();
+        this.renderScheduled = false;
+      });
+    }
+  }
+}
+
+// Use with component updates
+component.updateProperty('value', newValue);
+renderManager.scheduleRender();
+```
+
+### Memory Management
+
+```typescript
+// Proper cleanup
+class Application {
+  private components: Component[] = [];
+  private intervals: NodeJS.Timeout[] = [];
+  
+  cleanup() {
+    // Clear intervals
+    this.intervals.forEach(interval => {
+      clearInterval(interval);
+    });
+    
+    // Destroy components
+    this.components.forEach(component => {
+      component.destroy();
+    });
+    
+    // Clear references
+    this.components = [];
+    this.intervals = [];
+  }
+}
+```
+
+## Testing
+
+### Unit Testing
+
+```typescript
+import { MockTerminal } from '@tui-kit-ai/testing';
+
+describe('MyComponent', () => {
+  let mockTerminal: MockTerminal;
+  
+  beforeEach(() => {
+    mockTerminal = new MockTerminal();
+  });
+  
+  afterEach(() => {
+    mockTerminal.cleanup();
+  });
+  
+  test('should render correctly', () => {
+    const component = new MyComponent({
+      parent: mockTerminal.screen
+    });
+    
+    expect(component.getContent()).toBe('expected content');
+  });
+  
+  test('should handle events', async () => {
+    const component = new TextInput({
+      parent: mockTerminal.screen
+    });
+    
+    const onSubmit = jest.fn();
+    component.on('submit', onSubmit);
+    
+    // Simulate user input
+    mockTerminal.sendKey('enter');
+    
+    expect(onSubmit).toHaveBeenCalled();
+  });
+});
+```
+
+### Integration Testing
+
+```typescript
+describe('AI Integration', () => {
+  test('should handle AI responses', async () => {
+    const mockAI = new MockAIService();
+    const chat = new ChatContainer({
+      parent: mockTerminal.screen,
+      aiService: mockAI
+    });
+    
+    mockAI.mockResponse('Hello! How can I help you?');
+    
+    await chat.sendMessage('Hello');
+    
+    expect(chat.getMessages()).toHaveLength(2);
+    expect(chat.getLastMessage().content).toBe('Hello! How can I help you?');
+  });
+});
+```
+
+## Migration Guide
+
+### From v0.1 to v0.2
+
+```typescript
+// Old API (v0.1)
+const box = new Box(screen, { width: 30 });
+
+// New API (v0.2+)
+const box = new Box({
+  parent: screen,
+  width: 30
+});
+```
+
+### Breaking Changes
+
+- `parent` prop is now required for all components
+- Event names have been normalized (`onSubmit` → `submit` event)
+- Theme API has been redesigned for better TypeScript support
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Core API"
+    icon="cube"
+    href="/api-reference/core"
+  >
+    Detailed API reference for core components
+  </Card>
+  <Card
+    title="AI API"
+    icon="brain"
+    href="/api-reference/ai"
+  >
+    AI service and component APIs
+  </Card>
+  <Card
+    title="Examples"
+    icon="code"
+    href="/examples/overview"
+  >
+    See API usage in real applications
+  </Card>
+  <Card
+    title="Migration Guide"
+    icon="arrow-right"
+    href="/migration"
+  >
+    Migrate from older versions
+  </Card>
+</CardGroup>

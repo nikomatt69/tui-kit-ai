@@ -1,0 +1,656 @@
+---
+title: 'Build Your First App'
+description: 'Step-by-step tutorial: Create an AI-powered chat application with TUI-Kit-AI'
+---
+
+## What We'll Build
+
+In this tutorial, we'll create a fully functional AI-powered chat application that demonstrates the core concepts of TUI-Kit-AI. Our app will feature:
+
+- Beautiful terminal interface with chat history
+- Real-time AI response streaming
+- Multiple AI provider support
+- Keyboard shortcuts and navigation
+- Error handling and user feedback
+
+<Frame>
+  <img src="/images/first-app-demo.gif" alt="First App Demo" />
+</Frame>
+
+## Prerequisites
+
+Make sure you have completed the [installation guide](/getting-started/installation) and have:
+
+- Node.js 18+ installed
+- TUI-Kit-AI packages installed
+- At least one AI provider API key configured
+
+## Project Setup
+
+<Steps>
+  <Step title="Create Project Structure">
+    Set up the basic project structure:
+    
+    ```bash
+    mkdir ai-chat-app && cd ai-chat-app
+    npm init -y
+    npm install @tui-kit-ai/core @tui-kit-ai/ai
+    npm install --save-dev typescript @types/node tsx
+    ```
+    
+    Create the directory structure:
+    ```bash
+    mkdir src
+    touch src/index.ts src/app.ts src/config.ts
+    touch .env tsconfig.json
+    ```
+  </Step>
+  
+  <Step title="Configure TypeScript">
+    Add TypeScript configuration in `tsconfig.json`:
+    
+    ```json tsconfig.json
+    {
+      "compilerOptions": {
+        "target": "ES2022",
+        "module": "commonjs",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Environment Configuration">
+    Create `.env` file with your AI provider keys:
+    
+    ```bash .env
+    # Choose your preferred AI provider
+    OPENAI_API_KEY=your-openai-api-key-here
+    # ANTHROPIC_API_KEY=your-anthropic-api-key-here
+    # OLLAMA_HOST=http://localhost:11434
+    
+    # App configuration
+    APP_TITLE="AI Chat Assistant"
+    AI_MODEL=gpt-4
+    ```
+  </Step>
+  
+  <Step title="Add Package Scripts">
+    Update `package.json` with development scripts:
+    
+    ```json package.json
+    {
+      "scripts": {
+        "dev": "tsx src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js"
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Building the Application
+
+### 1. Configuration Module
+
+First, let's create a configuration module to handle environment variables and settings:
+
+```typescript src/config.ts
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+export interface AppConfig {
+  aiProvider: 'openai' | 'anthropic' | 'ollama';
+  apiKey?: string;
+  model: string;
+  appTitle: string;
+  maxMessages: number;
+  temperature: number;
+}
+
+export const config: AppConfig = {
+  // Determine AI provider based on available API keys
+  aiProvider: process.env.OPENAI_API_KEY 
+    ? 'openai' 
+    : process.env.ANTHROPIC_API_KEY 
+    ? 'anthropic' 
+    : 'ollama',
+  
+  apiKey: process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY,
+  
+  model: process.env.AI_MODEL || (
+    process.env.OPENAI_API_KEY ? 'gpt-4' :
+    process.env.ANTHROPIC_API_KEY ? 'claude-3-sonnet-20240229' :
+    'llama2'
+  ),
+  
+  appTitle: process.env.APP_TITLE || 'AI Chat Assistant',
+  maxMessages: parseInt(process.env.MAX_MESSAGES || '50'),
+  temperature: parseFloat(process.env.AI_TEMPERATURE || '0.7')
+};
+
+// Validation
+if (config.aiProvider !== 'ollama' && !config.apiKey) {
+  console.error('❌ Error: No AI provider API key found!');
+  console.log('Please set one of the following environment variables:');
+  console.log('- OPENAI_API_KEY for OpenAI GPT models');
+  console.log('- ANTHROPIC_API_KEY for Anthropic Claude models');
+  console.log('- Or use Ollama for local models (no API key needed)');
+  process.exit(1);
+}
+```
+
+### 2. Main Application Class
+
+Create the main application class in `src/app.ts`:
+
+```typescript src/app.ts
+import { 
+  useTerminal, 
+  Box, 
+  Text, 
+  TextInput, 
+  Spinner,
+  StatusBar,
+  KeyHint
+} from '@tui-kit-ai/core';
+import { ChatContainer, AIService } from '@tui-kit-ai/ai';
+import { config } from './config';
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp?: Date;
+}
+
+export class ChatApp {
+  private screen: any;
+  private aiService: AIService;
+  private chatContainer: ChatContainer;
+  private inputBox: TextInput;
+  private statusBar: StatusBar;
+  private spinner: Spinner;
+  private isProcessing: boolean = false;
+  private messages: ChatMessage[] = [];
+
+  constructor() {
+    this.initializeTerminal();
+    this.initializeAI();
+    this.createInterface();
+    this.setupEventHandlers();
+    this.showWelcomeMessage();
+  }
+
+  private initializeTerminal() {
+    const { screen } = useTerminal({
+      smartCSR: true,
+      title: config.appTitle
+    });
+    this.screen = screen;
+  }
+
+  private initializeAI() {
+    this.aiService = new AIService({
+      provider: config.aiProvider,
+      apiKey: config.apiKey,
+      model: config.model,
+      temperature: config.temperature
+    });
+  }
+
+  private createInterface() {
+    // Main container
+    const mainContainer = new Box({
+      parent: this.screen,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 4,
+      border: { type: 'line' },
+      label: ` ${config.appTitle} `,
+      style: {
+        border: { fg: 'cyan' }
+      }
+    });
+
+    // Chat container
+    this.chatContainer = new ChatContainer({
+      parent: mainContainer.el,
+      top: 1,
+      left: 1,
+      right: 1,
+      bottom: 1,
+      scrollable: true,
+      alwaysScroll: true,
+      messages: [],
+      messageStyle: {
+        user: { fg: 'cyan', bold: true },
+        assistant: { fg: 'green' },
+        system: { fg: 'yellow' }
+      }
+    });
+
+    // Input container
+    const inputContainer = new Box({
+      parent: this.screen,
+      bottom: 2,
+      left: 0,
+      right: 0,
+      height: 3,
+      border: { type: 'line' },
+      label: ' Type your message ',
+      style: {
+        border: { fg: 'blue' }
+      }
+    });
+
+    // Input box
+    this.inputBox = new TextInput({
+      parent: inputContainer.el,
+      top: 0,
+      left: 1,
+      right: 1,
+      height: 1,
+      placeholder: 'Enter your message and press Enter...',
+      onSubmit: (value) => this.handleUserMessage(value),
+      style: {
+        fg: 'white',
+        bg: 'transparent'
+      }
+    });
+
+    // Status bar
+    this.statusBar = new StatusBar({
+      parent: this.screen,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 1,
+      content: `Model: ${config.model} | Provider: ${config.aiProvider}`,
+      style: {
+        fg: 'black',
+        bg: 'white'
+      }
+    });
+
+    // Spinner for AI processing
+    this.spinner = new Spinner({
+      parent: this.screen,
+      top: 1,
+      right: 1,
+      width: 3,
+      height: 1,
+      hidden: true,
+      style: { fg: 'cyan' }
+    });
+
+    // Key hints
+    new KeyHint({
+      parent: this.screen,
+      bottom: 1,
+      right: 0,
+      content: 'ESC: quit | Ctrl+C: quit | Ctrl+L: clear',
+      style: { fg: 'gray' }
+    });
+  }
+
+  private setupEventHandlers() {
+    // Exit handlers
+    this.screen.key(['escape', 'C-c'], () => {
+      this.cleanup();
+      process.exit(0);
+    });
+
+    // Clear chat
+    this.screen.key(['C-l'], () => {
+      this.clearChat();
+    });
+
+    // Focus input by default
+    this.inputBox.focus();
+  }
+
+  private showWelcomeMessage() {
+    const welcomeMessage: ChatMessage = {
+      role: 'assistant',
+      content: `Hello! I'm your AI assistant powered by ${config.model}.\n\nI'm here to help you with any questions or tasks you have. What would you like to talk about?`,
+      timestamp: new Date()
+    };
+
+    this.addMessage(welcomeMessage);
+    this.render();
+  }
+
+  private async handleUserMessage(content: string) {
+    if (!content.trim() || this.isProcessing) return;
+
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: content.trim(),
+      timestamp: new Date()
+    };
+
+    this.addMessage(userMessage);
+    this.inputBox.clearValue();
+    this.setProcessingState(true);
+
+    try {
+      await this.getAIResponse();
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.setProcessingState(false);
+    }
+  }
+
+  private async getAIResponse() {
+    // Prepare messages for AI
+    const aiMessages = this.messages
+      .slice(-config.maxMessages) // Limit history
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+    // Start AI completion stream
+    const stream = await this.aiService.streamCompletion(aiMessages);
+    
+    // Create empty assistant message
+    const assistantMessage: ChatMessage = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date()
+    };
+
+    this.addMessage(assistantMessage);
+
+    // Stream the response
+    for await (const chunk of stream.textStream) {
+      assistantMessage.content += chunk;
+      this.updateLastMessage(assistantMessage.content);
+      this.render();
+    }
+  }
+
+  private addMessage(message: ChatMessage) {
+    this.messages.push(message);
+    this.chatContainer.addMessage({
+      role: message.role,
+      content: message.content,
+      timestamp: message.timestamp
+    });
+  }
+
+  private updateLastMessage(content: string) {
+    if (this.messages.length > 0) {
+      this.messages[this.messages.length - 1].content = content;
+      this.chatContainer.updateLastMessage(content);
+    }
+  }
+
+  private setProcessingState(processing: boolean) {
+    this.isProcessing = processing;
+    this.spinner.setHidden(!processing);
+    
+    if (processing) {
+      this.spinner.start();
+      this.statusBar.setContent('🤖 AI is thinking...');
+    } else {
+      this.spinner.stop();
+      this.statusBar.setContent(`Model: ${config.model} | Provider: ${config.aiProvider}`);
+    }
+    
+    this.render();
+  }
+
+  private handleError(error: any) {
+    console.error('AI Error:', error);
+    
+    const errorMessage: ChatMessage = {
+      role: 'system',
+      content: `❌ Error: ${error.message || 'Failed to get AI response. Please try again.'}`,
+      timestamp: new Date()
+    };
+
+    this.addMessage(errorMessage);
+    this.statusBar.setContent('❌ Error occurred');
+    this.render();
+  }
+
+  private clearChat() {
+    this.messages = [];
+    this.chatContainer.clearMessages();
+    this.showWelcomeMessage();
+  }
+
+  private render() {
+    this.screen.render();
+  }
+
+  private cleanup() {
+    // Cleanup resources
+    this.spinner.stop();
+    console.log('\n👋 Thanks for using the AI Chat Assistant!');
+  }
+
+  public start() {
+    this.render();
+    console.log(`🚀 ${config.appTitle} started!`);
+    console.log(`Using ${config.aiProvider} with model: ${config.model}`);
+  }
+}
+```
+
+### 3. Application Entry Point
+
+Create the main entry point in `src/index.ts`:
+
+```typescript src/index.ts
+#!/usr/bin/env node
+
+import { ChatApp } from './app';
+
+// Handle uncaught errors gracefully
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error.message);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled Rejection:', reason);
+  process.exit(1);
+});
+
+// Start the application
+try {
+  const app = new ChatApp();
+  app.start();
+} catch (error) {
+  console.error('❌ Failed to start application:', error);
+  process.exit(1);
+}
+```
+
+## Running Your Application
+
+<Steps>
+  <Step title="Install Dependencies">
+    Make sure all dependencies are installed:
+    ```bash
+    npm install dotenv
+    ```
+  </Step>
+  
+  <Step title="Set Environment Variables">
+    Configure your `.env` file with a valid API key:
+    ```bash
+    OPENAI_API_KEY=your-actual-api-key-here
+    APP_TITLE="My AI Chat App"
+    ```
+  </Step>
+  
+  <Step title="Run in Development Mode">
+    Start your application:
+    ```bash
+    npm run dev
+    ```
+  </Step>
+  
+  <Step title="Test the Application">
+    - Type messages and press Enter
+    - Try keyboard shortcuts (Ctrl+L to clear, ESC to quit)
+    - Watch AI responses stream in real-time
+  </Step>
+</Steps>
+
+## Features Walkthrough
+
+Your AI chat application now includes:
+
+<AccordionGroup>
+  <Accordion title="Chat Interface" icon="chat">
+    - **Message History**: Scrollable chat container with message threading
+    - **Real-time Streaming**: AI responses appear as they're generated
+    - **Message Styling**: Different colors for user/assistant/system messages
+    - **Timestamps**: Each message includes creation time
+  </Accordion>
+
+  <Accordion title="User Interaction" icon="keyboard">
+    - **Text Input**: Clean input box with placeholder text
+    - **Keyboard Shortcuts**: ESC/Ctrl+C to quit, Ctrl+L to clear
+    - **Focus Management**: Input automatically focused for typing
+    - **Input Validation**: Prevents empty messages and duplicate processing
+  </Accordion>
+
+  <Accordion title="AI Integration" icon="brain">
+    - **Provider Flexibility**: Supports OpenAI, Anthropic, or Ollama
+    - **Streaming Responses**: Real-time text generation display
+    - **Context Management**: Maintains conversation history with limits
+    - **Error Handling**: Graceful failure with user-friendly messages
+  </Accordion>
+
+  <Accordion title="UI/UX Features" icon="paintbrush">
+    - **Status Indicators**: Processing spinner and status bar
+    - **Visual Feedback**: Color-coded messages and borders
+    - **Help Text**: Keyboard shortcut hints
+    - **Responsive Layout**: Adapts to terminal size changes
+  </Accordion>
+</AccordionGroup>
+
+## Extending Your Application
+
+Now that you have a working chat application, try adding these features:
+
+<CardGroup cols={2}>
+  <Card
+    title="Message History"
+    icon="clock"
+    href="/examples/chat-assistant#message-persistence"
+  >
+    Save and load conversation history to/from files
+  </Card>
+  <Card
+    title="Custom Commands"
+    icon="terminal"
+    href="/examples/chat-assistant#slash-commands"
+  >
+    Add `/help`, `/clear`, `/model` commands
+  </Card>
+  <Card
+    title="Multiple Conversations"
+    icon="tabs"
+    href="/examples/multi-agent-system"
+  >
+    Support multiple chat sessions with tabs
+  </Card>
+  <Card
+    title="File Upload"
+    icon="upload"
+    href="/ai/providers#file-handling"
+  >
+    Add support for analyzing files and images
+  </Card>
+</CardGroup>
+
+## Common Issues & Solutions
+
+<AccordionGroup>
+  <Accordion title="Terminal rendering problems">
+    **Problem**: Text appears garbled or components overlap
+    
+    **Solution**: 
+    ```typescript
+    const { screen } = useTerminal({
+      smartCSR: true,
+      fullUnicode: false, // Try disabling if you see strange chars
+      title: 'My App'
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="AI responses not streaming">
+    **Problem**: All text appears at once instead of streaming
+    
+    **Solution**: Ensure you're using `for await` loop and calling `render()`:
+    ```typescript
+    for await (const chunk of stream.textStream) {
+      assistantMessage.content += chunk;
+      this.updateLastMessage(assistantMessage.content);
+      this.render(); // Important!
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="API key errors">
+    **Problem**: Authentication or API connection failures
+    
+    **Solution**: 
+    1. Verify API key is correct
+    2. Check your account balance/limits
+    3. Test with a simple API call first
+    4. Ensure proper environment variable loading
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Congratulations! You've built your first AI-powered TUI application. Here's what to explore next:
+
+<CardGroup cols={2}>
+  <Card
+    title="Component Library"
+    icon="palette"
+    href="/components/overview"
+  >
+    Learn about all available UI components
+  </Card>
+  <Card
+    title="AI Features"
+    icon="brain"
+    href="/ai/overview"
+  >
+    Explore advanced AI integration patterns
+  </Card>
+  <Card
+    title="Agent System"
+    icon="robot"
+    href="/agents/introduction"
+  >
+    Build multi-agent applications
+  </Card>
+  <Card
+    title="Example Apps"
+    icon="code"
+    href="/examples/overview"
+  >
+    Study more complex example applications
+  </Card>
+</CardGroup>

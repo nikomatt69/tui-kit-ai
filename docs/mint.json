@@ -1,0 +1,144 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "TUI-Kit-AI",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0D9488",
+    "light": "#14B8A6",
+    "dark": "#0F766E",
+    "anchors": {
+      "from": "#0D9488",
+      "to": "#14B8A6"
+    }
+  },
+  "metadata": {
+    "title": "TUI-Kit-AI - Terminal UI Library for AI Applications",
+    "description": "A comprehensive Terminal User Interface (TUI) component library for building AI-powered CLI applications and agents. Built with TypeScript, designed for modern AI copilots.",
+    "og:title": "TUI-Kit-AI Documentation",
+    "og:description": "Build powerful AI-driven terminal applications with TUI-Kit-AI's comprehensive component library and agent system.",
+    "twitter:card": "summary_large_image"
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/tui-kit-ai/tui-kit-ai"
+    },
+    {
+      "name": "NPM",
+      "url": "https://www.npmjs.com/org/tui-kit-ai"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "/quickstart"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "Examples",
+      "url": "examples"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "GitHub Repository",
+      "icon": "github",
+      "url": "https://github.com/tui-kit-ai/tui-kit-ai"
+    },
+    {
+      "name": "NPM Package",
+      "icon": "box",
+      "url": "https://www.npmjs.com/org/tui-kit-ai"
+    },
+    {
+      "name": "Discord Community",
+      "icon": "discord",
+      "url": "https://discord.gg/tui-kit-ai"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Introduction",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "installation"
+      ]
+    },
+    {
+      "group": "Getting Started",
+      "pages": [
+        "getting-started/overview",
+        "getting-started/installation",
+        "getting-started/first-app",
+        "getting-started/architecture"
+      ]
+    },
+    {
+      "group": "Core Components",
+      "pages": [
+        "components/overview",
+        "components/layout",
+        "components/input",
+        "components/display",
+        "components/feedback",
+        "components/navigation",
+        "components/containers"
+      ]
+    },
+    {
+      "group": "AI Integration",
+      "pages": [
+        "ai/overview"
+      ]
+    },
+    {
+      "group": "Agent System",
+      "pages": [
+        "agents/introduction"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    }
+  ],
+  "api": {
+    "baseUrl": "https://api.tui-kit-ai.dev",
+    "auth": {
+      "method": "bearer"
+    }
+  },
+  "footerSocials": {
+    "github": "https://github.com/tui-kit-ai/tui-kit-ai",
+    "discord": "https://discord.gg/tui-kit-ai",
+    "twitter": "https://twitter.com/tuikitai"
+  },
+  "backgroundImage": "/background.png",
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": false
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
+  "search": {
+    "prompt": "Search TUI-Kit-AI docs..."
+  },
+  "analytics": {
+    "gtm": {
+      "tagId": "GTM-XXXXXXX"
+    }
+  }
+}

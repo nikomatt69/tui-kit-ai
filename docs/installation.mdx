@@ -1,0 +1,462 @@
+---
+title: 'Installation'
+description: 'Complete installation guide for TUI-Kit-AI'
+---
+
+## System Requirements
+
+Before installing TUI-Kit-AI, ensure your system meets these requirements:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 16.x or higher (18.x+ recommended)
+  </Card>
+  <Card title="Terminal" icon="terminal">
+    Any modern terminal with ANSI color support
+  </Card>
+  <Card title="Package Manager" icon="package">
+    npm, yarn, or pnpm
+  </Card>
+  <Card title="Operating System" icon="desktop">
+    Windows 10+, macOS 10.15+, or Linux
+  </Card>
+</CardGroup>
+
+## Package Installation
+
+TUI-Kit-AI follows a modular architecture. Install only the packages you need:
+
+### Core Installation
+
+The minimal setup requires only the core package:
+
+<CodeGroup>
+
+```bash npm
+npm install @tui-kit-ai/core
+```
+
+```bash yarn
+yarn add @tui-kit-ai/core
+```
+
+```bash pnpm
+pnpm add @tui-kit-ai/core
+```
+
+</CodeGroup>
+
+### Full Installation
+
+For complete functionality including AI and agent features:
+
+<CodeGroup>
+
+```bash npm
+npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents @tui-kit-ai/providers
+```
+
+```bash yarn
+yarn add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents @tui-kit-ai/providers
+```
+
+```bash pnpm
+pnpm add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents @tui-kit-ai/providers
+```
+
+</CodeGroup>
+
+### CLI Tools (Optional)
+
+For project scaffolding and generators:
+
+<CodeGroup>
+
+```bash npm
+npm install -g @tui-kit-ai/cli
+```
+
+```bash yarn
+yarn global add @tui-kit-ai/cli
+```
+
+```bash pnpm
+pnpm add -g @tui-kit-ai/cli
+```
+
+</CodeGroup>
+
+## Package Overview
+
+<AccordionGroup>
+  <Accordion title="@tui-kit-ai/core" icon="cube">
+    **Essential TUI Components**
+    
+    Contains the fundamental building blocks for terminal user interfaces:
+    - Layout components (Box, Flex, Grid)
+    - Input components (TextInput, Select, Button)
+    - Display components (Text, Heading, Table)
+    - Feedback components (Spinner, ProgressBar, Toast)
+    - Navigation components (Menu, Tabs, Tree)
+    
+    **Dependencies**: blessed, @types/blessed
+    
+    **Size**: ~2.1MB
+  </Accordion>
+
+  <Accordion title="@tui-kit-ai/ai" icon="brain">
+    **AI Integration Layer**
+    
+    Provides AI-specific components and services:
+    - ChatContainer for conversations
+    - StreamingText for real-time responses
+    - AIService with provider abstraction
+    - Tool integration system
+    
+    **Dependencies**: @tui-kit-ai/core, @tui-kit-ai/providers, ai
+    
+    **Size**: ~1.8MB
+  </Accordion>
+
+  <Accordion title="@tui-kit-ai/agents" icon="robot">
+    **Agent System**
+    
+    Framework for building intelligent agents:
+    - BaseAgent abstract class
+    - AgentManager for coordination
+    - TodoAgent implementation
+    - Event system for inter-agent communication
+    
+    **Dependencies**: @tui-kit-ai/ai
+    
+    **Size**: ~0.9MB
+  </Accordion>
+
+  <Accordion title="@tui-kit-ai/providers" icon="plug">
+    **AI Provider Implementations**
+    
+    Ready-to-use AI provider integrations:
+    - OpenAIProvider (GPT models)
+    - AnthropicProvider (Claude models)
+    - OllamaProvider (Local models)
+    
+    **Dependencies**: openai, @anthropic-ai/sdk, ollama
+    
+    **Size**: ~3.2MB (includes provider SDKs)
+  </Accordion>
+
+  <Accordion title="@tui-kit-ai/cli" icon="terminal">
+    **CLI Tools & Scaffolding**
+    
+    Development tools and project generators:
+    - Project templates
+    - Component generator
+    - Agent generator
+    - Build tools
+    
+    **Dependencies**: All TUI-Kit-AI packages
+    
+    **Size**: ~4.5MB
+  </Accordion>
+</AccordionGroup>
+
+## Development Dependencies
+
+For TypeScript development, install these additional packages:
+
+<CodeGroup>
+
+```bash npm
+npm install --save-dev typescript @types/node tsx
+npm install --save-dev @types/blessed  # if using core components directly
+```
+
+```bash yarn
+yarn add --dev typescript @types/node tsx
+yarn add --dev @types/blessed
+```
+
+```bash pnpm
+pnpm add -D typescript @types/node tsx
+pnpm add -D @types/blessed
+```
+
+</CodeGroup>
+
+## TypeScript Configuration
+
+Create or update your `tsconfig.json`:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node", "blessed"]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
+```
+
+## Package.json Scripts
+
+Add these scripts to your `package.json`:
+
+```json package.json
+{
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist"
+  }
+}
+```
+
+## Platform-Specific Setup
+
+### Windows
+
+<Tabs>
+  <Tab title="Windows Terminal (Recommended)">
+    1. Install [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701) from Microsoft Store
+    2. Set as default terminal application
+    3. Enable UTF-8 support in your application:
+    ```typescript
+    process.stdout.setEncoding('utf8');
+    process.env.FORCE_COLOR = '1';
+    ```
+  </Tab>
+  <Tab title="Command Prompt">
+    Enable ANSI color support:
+    ```bash
+    reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
+    ```
+  </Tab>
+  <Tab title="WSL">
+    Use Windows Subsystem for Linux for the best experience:
+    ```bash
+    wsl --install
+    ```
+  </Tab>
+</Tabs>
+
+### macOS
+
+<Tabs>
+  <Tab title="Terminal.app">
+    Works out of the box with full TUI-Kit-AI support.
+  </Tab>
+  <Tab title="iTerm2">
+    Recommended for advanced features and better Unicode support.
+  </Tab>
+  <Tab title="Alacritty">
+    High-performance GPU-accelerated terminal with excellent TUI support.
+  </Tab>
+</Tabs>
+
+### Linux
+
+<Tabs>
+  <Tab title="GNOME Terminal">
+    Default terminal for most Linux distributions. Full support.
+  </Tab>
+  <Tab title="Konsole">
+    KDE's terminal emulator with excellent Unicode support.
+  </Tab>
+  <Tab title="Alacritty">
+    Cross-platform GPU-accelerated terminal.
+  </Tab>
+</Tabs>
+
+## Verification
+
+Verify your installation by creating a simple test file:
+
+<CodeGroup>
+
+```typescript test.ts
+import { useTerminal, Box, Text } from '@tui-kit-ai/core';
+
+const { screen } = useTerminal();
+
+const box = new Box({
+  parent: screen,
+  top: 'center',
+  left: 'center',
+  width: 50,
+  height: 7,
+  border: { type: 'line' },
+  label: ' TUI-Kit-AI Installation Test '
+});
+
+new Text({
+  parent: box.el,
+  top: 2,
+  left: 'center',
+  content: '✅ Installation successful!',
+  style: { fg: 'green' }
+});
+
+screen.render();
+
+screen.key(['escape', 'q', 'C-c'], () => {
+  process.exit(0);
+});
+```
+
+```javascript test.js
+const { useTerminal, Box, Text } = require('@tui-kit-ai/core');
+
+const { screen } = useTerminal();
+
+const box = new Box({
+  parent: screen,
+  top: 'center',
+  left: 'center',
+  width: 50,
+  height: 7,
+  border: { type: 'line' },
+  label: ' TUI-Kit-AI Installation Test '
+});
+
+new Text({
+  parent: box.el,
+  top: 2,
+  left: 'center',
+  content: '✅ Installation successful!',
+  style: { fg: 'green' }
+});
+
+screen.render();
+
+screen.key(['escape', 'q', 'C-c'], () => {
+  process.exit(0);
+});
+```
+
+</CodeGroup>
+
+Run the test:
+
+<CodeGroup>
+
+```bash TypeScript
+npx tsx test.ts
+```
+
+```bash JavaScript
+node test.js
+```
+
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Module resolution errors">
+    If you encounter module resolution issues:
+    
+    1. **Clear package manager cache:**
+    ```bash
+    npm cache clean --force
+    # or
+    yarn cache clean
+    # or
+    pnpm store prune
+    ```
+    
+    2. **Reinstall dependencies:**
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+    
+    3. **Check Node.js version:**
+    ```bash
+    node --version  # Should be 16.x or higher
+    ```
+  </Accordion>
+
+  <Accordion title="Terminal compatibility issues">
+    For terminal rendering problems:
+    
+    1. **Test basic ANSI support:**
+    ```bash
+    echo -e "\033[31mRed text\033[0m"
+    ```
+    
+    2. **Check terminal capabilities:**
+    ```bash
+    echo $TERM
+    echo $COLORTERM
+    ```
+    
+    3. **Force color support:**
+    ```typescript
+    process.env.FORCE_COLOR = '3';
+    process.env.TERM = 'xterm-256color';
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript configuration issues">
+    For TypeScript-related problems:
+    
+    1. **Install missing type definitions:**
+    ```bash
+    npm install --save-dev @types/node @types/blessed
+    ```
+    
+    2. **Update TypeScript:**
+    ```bash
+    npm install --save-dev typescript@latest
+    ```
+    
+    3. **Check tsconfig.json paths:**
+    ```json
+    {
+      "compilerOptions": {
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Build your first application in 5 minutes
+  </Card>
+  <Card
+    title="Component Overview"
+    icon="palette"
+    href="/components/overview"
+  >
+    Explore the complete component library
+  </Card>
+</CardGroup>

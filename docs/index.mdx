@@ -1,0 +1,170 @@
+---
+title: TUI-Kit-AI - Modern Terminal UI for AI Applications
+description: A comprehensive Terminal User Interface (TUI) component library for building AI-powered CLI applications and agents
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="Hero Dark"
+/>
+
+# Build Powerful AI Terminal Applications
+
+TUI-Kit-AI is a **comprehensive Terminal User Interface component library** designed specifically for building modern AI-powered CLI applications and intelligent agents.
+
+<CardGroup cols={2}>
+  <Card
+    title="Rich TUI Components"
+    icon="palette"
+    href="/components/overview"
+  >
+    40+ pre-built terminal components with theming support
+  </Card>
+  <Card
+    title="AI Integration"
+    icon="brain"
+    href="/ai/overview"
+  >
+    Seamless integration with OpenAI, Anthropic, and local models
+  </Card>
+  <Card
+    title="Agent System"
+    icon="robot"
+    href="/agents/introduction"
+  >
+    Modular agent architecture for specialized AI tasks
+  </Card>
+  <Card
+    title="TypeScript First"
+    icon="code"
+    href="/getting-started/first-app"
+  >
+    Full type safety and excellent developer experience
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+Get up and running with TUI-Kit-AI in minutes:
+
+<CodeGroup>
+
+```bash npm
+npm install @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+```
+
+```bash yarn
+yarn add @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
+```
+
+</CodeGroup>
+
+### Basic Chat Application
+
+```typescript
+import { useTerminal, Box, TextInput } from '@tui-kit-ai/core';
+import { ChatContainer, AIService } from '@tui-kit-ai/ai';
+
+const { screen } = useTerminal();
+
+const aiService = new AIService({
+  provider: 'openai',
+  model: 'gpt-4',
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const chatContainer = new ChatContainer({
+  parent: screen,
+  messages: [],
+  onMessageSubmit: async (content) => {
+    const result = await aiService.streamCompletion([
+      { role: 'user', content }
+    ]);
+    
+    for await (const chunk of result.textStream) {
+      // Handle streaming response
+    }
+  }
+});
+
+screen.render();
+```
+
+## Why TUI-Kit-AI?
+
+<AccordionGroup>
+  <Accordion title="🎨 Beautiful Terminal UIs">
+    Built on Blessed.js with modern theming support. Create professional-looking terminal applications with rich components like modals, tables, progress bars, and interactive forms.
+  </Accordion>
+
+  <Accordion title="🤖 AI-First Architecture">
+    Purpose-built for AI applications with streaming support, chat containers, and seamless integration with popular AI providers. Handle real-time AI responses with visual feedback.
+  </Accordion>
+
+  <Accordion title="🏗️ Modular Design">
+    Use only what you need. Each package (@core, @ai, @agents, @providers, @cli) can be used independently or together for maximum flexibility.
+  </Accordion>
+
+  <Accordion title="📦 Monorepo Architecture">
+    Workspace-based structure with shared TypeScript configuration, making it easy to extend and contribute to the library.
+  </Accordion>
+</AccordionGroup>
+
+## Featured Examples
+
+<CardGroup cols={3}>
+  <Card
+    title="Todo Agent"
+    icon="list-check"
+    href="/examples/todo-app"
+  >
+    Interactive task management with AI assistance
+  </Card>
+  <Card
+    title="Code Assistant"
+    icon="code"
+    href="/examples/chat-assistant"
+  >
+    AI-powered coding companion with syntax highlighting
+  </Card>
+  <Card
+    title="Multi-Agent System"
+    icon="users"
+    href="/examples/multi-agent-system"
+  >
+    Coordinated AI agents working together
+  </Card>
+</CardGroup>
+
+## Supported AI Providers
+
+<CardGroup cols={3}>
+  <Card
+    title="OpenAI"
+    icon="openai"
+  >
+    GPT-4, GPT-3.5 with streaming support
+  </Card>
+  <Card
+    title="Anthropic"
+    icon="anthropic"  
+  >
+    Claude 3.5 Sonnet, Claude 3 Opus
+  </Card>
+  <Card
+    title="Local Models"
+    icon="server"
+  >
+    Ollama integration for offline AI
+  </Card>
+</CardGroup>
+
+---
+
+<Snippet file="cta-section.mdx" />
