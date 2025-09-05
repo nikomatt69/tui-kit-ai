@@ -1,11 +1,15 @@
-import { Widgets } from 'blessed';
-import { BaseProps, Component, createBoxBase } from './BaseComponent';
-import { ComponentVariant, ComponentSize, ComponentState } from '../theming/design-tokens';
+import { Widgets } from "blessed";
+import {
+  ComponentSize,
+  ComponentState,
+  ComponentVariant,
+} from "../theming/design-tokens";
+import { BaseProps, Component, createBoxBase } from "./BaseComponent";
 
 export type ParagraphProps = BaseProps & {
-  text: string;
+  text?: string;
   wrap?: boolean;
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
   lineSpacing?: number;
 };
 
@@ -19,22 +23,26 @@ export class Paragraph implements Component<Widgets.BoxElement> {
   constructor(props: ParagraphProps) {
     this.props = props;
 
-    const comp = createBoxBase<Widgets.BoxElement>({
-      ...props,
-      borderStyle: 'none',
-    }, 'paragraph');
+    const comp = createBoxBase<Widgets.BoxElement>(
+      {
+        ...props,
+        borderStyle: "none",
+      },
+      "paragraph"
+    );
 
     this.el = comp.el;
     this.theme = comp.theme;
     this.destroy = comp.destroy;
     this.baseComponent = comp;
 
-    this.el.setContent(props.text);
+    this.el.setContent(props.text || "");
     this.applyTextStyling();
   }
 
   // Implement required methods by delegating to base component
-  setVariant = (variant: ComponentVariant) => this.baseComponent.setVariant(variant);
+  setVariant = (variant: ComponentVariant) =>
+    this.baseComponent.setVariant(variant);
   setSize = (size: ComponentSize) => this.baseComponent.setSize(size);
   setState = (state: ComponentState) => this.baseComponent.setState(state);
   getConfig = () => this.baseComponent.getConfig();
@@ -61,31 +69,33 @@ export class Paragraph implements Component<Widgets.BoxElement> {
 
   private formatTextAlignment() {
     const { align, text } = this.props;
-    const width = typeof this.el.width === 'number' ? this.el.width : 50;
+    const width = typeof this.el.width === "number" ? this.el.width : 50;
 
-    if (align === 'center') {
-      const lines = text.split('\n');
-      const centeredLines = lines.map(line => {
+    if (align === "center") {
+      const lines = text?.split("\n") || [];
+      const centeredLines = lines.map((line) => {
         const padding = Math.max(0, Math.floor((width - line.length) / 2));
-        return ' '.repeat(padding) + line;
+        return " ".repeat(padding) + line;
       });
-      this.el.setContent(centeredLines.join('\n'));
-    } else if (align === 'right') {
-      const lines = text.split('\n');
-      const rightAlignedLines = lines.map(line => {
+      this.el.setContent(centeredLines.join("\n"));
+    } else if (align === "right") {
+      const lines = text?.split("\n") || [];
+      const rightAlignedLines = lines.map((line) => {
         const padding = Math.max(0, width - line.length);
-        return ' '.repeat(padding) + line;
+        return " ".repeat(padding) + line;
       });
-      this.el.setContent(rightAlignedLines.join('\n'));
+      this.el.setContent(rightAlignedLines.join("\n"));
     }
   }
 
   private applyLineSpacing() {
     const { lineSpacing, text } = this.props;
     if (lineSpacing && lineSpacing > 1) {
-      const lines = text.split('\n');
-      const spacedLines = lines.map(line => line + '\n'.repeat(lineSpacing - 1));
-      this.el.setContent(spacedLines.join(''));
+      const lines = text?.split("\n") || [];
+      const spacedLines = lines.map(
+        (line) => line + "\n".repeat(lineSpacing - 1)
+      );
+      this.el.setContent(spacedLines.join(""));
     }
   }
 
@@ -98,7 +108,7 @@ export class Paragraph implements Component<Widgets.BoxElement> {
   }
 
   // Method to set text alignment
-  setAlignment(align: 'left' | 'center' | 'right') {
+  setAlignment(align: "left" | "center" | "right") {
     this.props.align = align;
     this.applyTextStyling();
     this.el.screen.render();
@@ -121,7 +131,7 @@ export class Paragraph implements Component<Widgets.BoxElement> {
 
   // Method to append text
   appendText(text: string) {
-    const currentText = this.el.getContent() || '';
+    const currentText = this.el.getContent() || "";
     this.props.text = currentText + text;
     this.el.setContent(this.props.text);
     this.applyTextStyling();
@@ -130,7 +140,7 @@ export class Paragraph implements Component<Widgets.BoxElement> {
 
   // Method to prepend text
   prependText(text: string) {
-    const currentText = this.el.getContent() || '';
+    const currentText = this.el.getContent() || "";
     this.props.text = text + currentText;
     this.el.setContent(this.props.text);
     this.applyTextStyling();
@@ -139,17 +149,17 @@ export class Paragraph implements Component<Widgets.BoxElement> {
 
   // Method to get current text
   getText(): string {
-    return this.props.text;
+    return this.props.text || "";
   }
 
   // Method to get text length
   getTextLength(): number {
-    return this.props.text.length;
+    return this.props.text?.length || 0;
   }
 
   // Method to get line count
   getLineCount(): number {
-    return this.props.text.split('\n').length;
+    return this.props.text?.split("\n").length || 0;
   }
 
   // Static method to create paragraph with specific configuration
@@ -157,5 +167,3 @@ export class Paragraph implements Component<Widgets.BoxElement> {
     return new Paragraph(props);
   }
 }
-
-

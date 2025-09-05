@@ -10,6 +10,7 @@ import {
 // Box Component Schema
 export const BoxSchema = BasePropsSchema.extend({
   content: z.string().optional(),
+  label: z.string().optional(),
   scrollable: z.boolean().optional(),
   alwaysScroll: z.boolean().optional(),
   scrollableOptions: z
@@ -61,7 +62,7 @@ export const StackSchema = BasePropsSchema.extend({
 
 // Text Component Schema
 export const TextSchema = BasePropsSchema.extend({
-  content: z.string(),
+  content: z.string().optional(),
   align: z.enum(["left", "center", "right"]).optional(),
   wrap: z.boolean().optional(),
   shrink: z.boolean().optional(),
@@ -73,7 +74,7 @@ export const TextSchema = BasePropsSchema.extend({
 
 // Heading Component Schema
 export const HeadingSchema = BasePropsSchema.extend({
-  text: z.string(),
+  text: z.string().optional(),
   level: z.enum(["1", "2", "3", "4", "5", "6"]).optional(),
   align: z.enum(["left", "center", "right"]).optional(),
   color: z.string().optional(),
@@ -82,18 +83,24 @@ export const HeadingSchema = BasePropsSchema.extend({
 
 // Paragraph Component Schema
 export const ParagraphSchema = BasePropsSchema.extend({
-  content: z.string(),
+  text: z.string().optional(),
   align: z.enum(["left", "center", "right", "justify"]).optional(),
   lineHeight: z.number().optional(),
   indent: z.number().optional(),
   wrap: z.boolean().optional(),
 });
 
+// Avatar Component Schema
+export const AvatarSchema = BasePropsSchema.extend({
+  initials: z.string(),
+  size: z.enum(["sm", "md", "lg"]).optional(),
+});
+
 // ===== INTERACTIVE COMPONENTS =====
 
 // Button Component Schema
 export const ButtonSchema = BasePropsSchema.extend({
-  text: z.string(),
+  text: z.string().optional(),
   onClick: z.function().args().returns(z.void()).optional(),
   disabled: z.boolean().optional(),
   loading: z.boolean().optional(),
@@ -143,13 +150,16 @@ export const TextareaSchema = BasePropsSchema.extend({
 
 // Select Component Schema
 export const SelectSchema = BasePropsSchema.extend({
-  options: z.array(
-    z.object({
-      value: z.string(),
-      label: z.string(),
-      disabled: z.boolean().optional(),
-    })
-  ),
+  options: z.union([
+    z.array(z.string()),
+    z.array(
+      z.object({
+        value: z.string(),
+        label: z.string(),
+        disabled: z.boolean().optional(),
+      })
+    ),
+  ]),
   value: z.string().optional(),
   placeholder: z.string().optional(),
   multiple: z.boolean().optional(),
@@ -219,16 +229,7 @@ export const BadgeSchema = BasePropsSchema.extend({
 
 // StatusIndicator Component Schema
 export const StatusIndicatorSchema = BasePropsSchema.extend({
-  status: z.enum([
-    "online",
-    "offline",
-    "away",
-    "busy",
-    "error",
-    "warning",
-    "info",
-    "success",
-  ]),
+  status: z.enum(["idle", "running", "success", "warning", "error"]),
   text: z.string().optional(),
   animated: z.boolean().optional(),
   size: z.enum(["xs", "sm", "md", "lg", "xl"]).optional(),
@@ -239,7 +240,7 @@ export const StatusIndicatorSchema = BasePropsSchema.extend({
 // Table Component Schema
 export const TableSchema = BasePropsSchema.extend({
   headers: z.array(z.string()),
-  rows: z.array(z.array(z.string())),
+  rows: z.array(z.array(z.union([z.string(), z.number()]))),
   sortable: z.boolean().optional(),
   selectable: z.boolean().optional(),
   pagination: z.boolean().optional(),
@@ -432,6 +433,7 @@ export const ComponentSchemas = {
   text: TextSchema,
   heading: HeadingSchema,
   paragraph: ParagraphSchema,
+  avatar: AvatarSchema,
 
   // Interactive
   button: ButtonSchema,
@@ -476,6 +478,7 @@ export type ZodStackProps = z.infer<typeof StackSchema>;
 export type ZodTextProps = z.infer<typeof TextSchema>;
 export type ZodHeadingProps = z.infer<typeof HeadingSchema>;
 export type ZodParagraphProps = z.infer<typeof ParagraphSchema>;
+export type ZodAvatarProps = z.infer<typeof AvatarSchema>;
 export type ZodButtonProps = z.infer<typeof ButtonSchema>;
 export type ZodTextInputProps = z.infer<typeof TextInputSchema>;
 export type ZodTextareaProps = z.infer<typeof TextareaSchema>;

@@ -1,0 +1,20 @@
+{
+  "name": "examples-core-gallery",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
+    "start": "node dist/index.js",
+    "start:tsx": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@tui-kit-ai/core": "*",
+    "blessed": "^0.1.81"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/blessed": "^0.1.25"
+  }
+}

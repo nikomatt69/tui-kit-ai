@@ -1,15 +1,10 @@
 import { Widgets } from "blessed";
-import {
-  ComponentSize,
-  ComponentState,
-  ComponentVariant,
-} from "../types/schemas";
+import { z } from 'zod';
 import { BaseProps, Component, createBoxBase } from "./BaseComponent";
+import { BadgeSchema } from "../types/component-schemas";
+import { validateComponent } from "../validation/component-validator";
 
-export type BadgeProps = BaseProps & {
-  text: string;
-  variant?: "default" | "success" | "warning" | "destructive" | "info";
-};
+export type BadgeProps = z.infer<typeof BadgeSchema>;
 
 export class Badge implements Component<Widgets.BoxElement> {
   el: Widgets.BoxElement;
@@ -19,6 +14,11 @@ export class Badge implements Component<Widgets.BoxElement> {
   private props: BadgeProps;
 
   constructor(props: BadgeProps) {
+    const validation = validateComponent('badge', props);
+    if (!validation.success) {
+      console.error('Invalid badge props:', validation.errors?.issues);
+      throw new Error(`Invalid badge props: ${validation.errors?.issues.map(i => i.message).join(', ')}`);
+    }
     this.props = props;
 
     const comp = createBoxBase<Widgets.BoxElement>(
@@ -41,10 +41,9 @@ export class Badge implements Component<Widgets.BoxElement> {
   }
 
   // Implement required methods by delegating to base component
-  setVariant = (variant: ComponentVariant) =>
-    this.baseComponent.setVariant(variant);
-  setSize = (size: ComponentSize) => this.baseComponent.setSize(size);
-  setState = (state: ComponentState) => this.baseComponent.setState(state);
+  setVariant = (variant: any) => this.baseComponent.setVariant(variant);
+  setSize = (size: any) => this.baseComponent.setSize(size);
+  setState = (state: any) => this.baseComponent.setState(state);
   getConfig = () => this.baseComponent.getConfig();
   update = (props: Partial<BaseProps>) => this.baseComponent.update(props);
 
@@ -56,11 +55,9 @@ export class Badge implements Component<Widgets.BoxElement> {
   }
 
   // Method to set badge variant
-  setBadgeVariant(
-    variant: "default" | "success" | "warning" | "destructive" | "info"
-  ) {
+  setBadgeVariant(variant: BadgeProps['variant'] extends string ? BadgeProps['variant'] : any) {
     this.props.variant = variant;
-    this.setVariant(variant as ComponentVariant);
+    this.setVariant(variant as any);
   }
 
   // Static method to create badge with specific configuration

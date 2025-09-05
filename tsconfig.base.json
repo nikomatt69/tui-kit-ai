@@ -15,7 +15,19 @@
     ],
     "types": [
       "node"
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@tui-kit-ai/core": ["packages/core/src"],
+      "@tui-kit-ai/ai": ["packages/ai/src"],
+      "@tui-kit-ai/agents": ["packages/agents/src"],
+      "@tui-kit-ai/providers": ["packages/providers/src"],
+      "@tui-kit-ai/chat-tui": ["packages/chat-tui/src"],
+      "@tui-kit-ai/cli": ["packages/cli/src"],
+      "@tui-kit-ai/ui": ["packages/ui/src"],
+      "@tui-kit-ai/themes": ["packages/themes/src"],
+      "@tui-kit-ai/utils": ["packages/utils/src"]
+    }
   },
   "exclude": [
     "**/node_modules/**",

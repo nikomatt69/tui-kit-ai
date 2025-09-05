@@ -60,12 +60,14 @@ export const darkTheme: Theme = {
 
 export type StyleProps = {
   theme?: Partial<Theme> & { __base?: 'light' | 'dark' };
-  padding?: number | [number, number] | [number, number, number, number];
-  margin?: number | [number, number] | [number, number, number, number];
+  padding?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number };
+  margin?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number };
   borderStyle?: 'line' | 'double' | 'round' | 'bold' | 'classic' | 'none';
-  borderColor?: string;
-  bg?: string;
-  fg?: string;
+  borderColor?: string | number;
+  // Keep in sync with Zod StylePropsSchema
+  border?: any;
+  bg?: string | number;
+  fg?: string | number;
   align?: 'left' | 'center' | 'right';
   variant?: string;
   size?: string;
@@ -75,6 +77,8 @@ export type StyleProps = {
   opacity?: number;
   gradient?: { from: string; to: string; direction?: string };
   borderWidth?: number;
+  style?: any;
+  animation?: string;
 };
 
 export function resolveTheme(overrides?: StyleProps['theme']): Theme {
@@ -106,5 +110,3 @@ export const colorPalettes = {
     glow: '#38bdf8',
   },
 };
-
-

@@ -2,7 +2,7 @@ import { Widgets } from "blessed";
 import { BaseProps, Component, createBoxBase } from "./BaseComponent";
 
 export type TextProps = BaseProps & {
-  text: string;
+  content: string;
   align?: "left" | "center" | "right";
   wrap?: boolean;
 };
@@ -24,7 +24,7 @@ export class Text implements Component<Widgets.BoxElement> {
     this.destroy = comp.destroy;
     this.baseComponent = comp;
 
-    this.el.setContent(props.text);
+    this.el.setContent(props.content);
     // alignment and wrap are not enforced due to typings; content aligns via blessed defaults
   }
 

@@ -3,7 +3,7 @@ import { BaseProps, Component, createBoxBase } from './BaseComponent';
 import { ComponentVariant, ComponentSize, ComponentState } from '../theming/design-tokens';
 
 export type TooltipProps = BaseProps & { 
-  text: string; 
+  content: string; 
   target: Widgets.BlessedElement;
   position?: 'top' | 'bottom' | 'left' | 'right';
   offset?: number;
@@ -11,6 +11,8 @@ export type TooltipProps = BaseProps & {
   hideDelay?: number;
   maxWidth?: number;
   arrow?: boolean;
+  // Back-compat alias
+  text?: string;
 };
 
 export class Tooltip implements Component<Widgets.BoxElement> {
@@ -43,7 +45,8 @@ export class Tooltip implements Component<Widgets.BoxElement> {
     };
     this.baseComponent = comp;
 
-    this.el.setContent(` ${props.text} `);
+    const txt = props.content || props.text || '';
+    this.el.setContent(` ${txt} `);
     this.setupTooltipBehavior();
     this.hide(); // Start hidden
   }
@@ -130,16 +133,16 @@ export class Tooltip implements Component<Widgets.BoxElement> {
       let arrowContent = '';
       switch (position) {
         case 'top':
-          arrowContent = ` ${this.props.text} ↓`;
+          arrowContent = ` ${this.props.content || this.props.text} ↓`;
           break;
         case 'bottom':
-          arrowContent = ` ↑ ${this.props.text}`;
+          arrowContent = ` ↑ ${this.props.content || this.props.text}`;
           break;
         case 'left':
-          arrowContent = ` ${this.props.text} →`;
+          arrowContent = ` ${this.props.content || this.props.text} →`;
           break;
         case 'right':
-          arrowContent = ` ← ${this.props.text}`;
+          arrowContent = ` ← ${this.props.content || this.props.text}`;
           break;
       }
       this.el.setContent(arrowContent);
@@ -171,7 +174,7 @@ export class Tooltip implements Component<Widgets.BoxElement> {
 
   // Method to set tooltip text
   setText(text: string) {
-    this.props.text = text;
+    this.props.content = text;
     this.el.setContent(` ${text} `);
     this.el.screen.render();
   }
@@ -207,7 +210,8 @@ export class Tooltip implements Component<Widgets.BoxElement> {
   // Method to set max width
   setMaxWidth(width: number) {
     this.props.maxWidth = width;
-    this.el.width = Math.min(width, this.props.text.length + 4);
+    const t = this.props.content || this.props.text || '';
+    this.el.width = Math.min(width, t.length + 4);
     this.el.screen.render();
   }
 
@@ -237,7 +241,7 @@ export class Tooltip implements Component<Widgets.BoxElement> {
 
   // Method to get tooltip text
   getText(): string {
-    return this.props.text;
+    return this.props.content || this.props.text || '';
   }
 
   // Method to get tooltip position
@@ -288,13 +292,11 @@ export class Tooltip implements Component<Widgets.BoxElement> {
 
   // Static method to create simple tooltip
   static simple(text: string, target: Widgets.BlessedElement): Tooltip {
-    return new Tooltip({ text, target });
+    return new Tooltip({ content: text, target } as any);
   }
 
   // Static method to create tooltip with position
   static positioned(text: string, target: Widgets.BlessedElement, position: 'top' | 'bottom' | 'left' | 'right'): Tooltip {
-    return new Tooltip({ text, target, position });
+    return new Tooltip({ content: text, target, position } as any);
   }
 }
-
-

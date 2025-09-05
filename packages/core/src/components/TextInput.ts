@@ -7,6 +7,9 @@ export type TextInputProps = BaseProps & {
   placeholder?: string;
   onSubmit?: (value: string) => void;
   onChange?: (value: string) => void;
+  // Public API: password; internally mapped to blessed's `secret`
+  password?: boolean;
+  // Back-compat: accept `secret` but prefer `password`
   secret?: boolean;
 };
 
@@ -16,12 +19,14 @@ export class TextInput implements Component<Widgets.TextboxElement> {
   destroy: () => void;
 
   constructor(props: TextInputProps) {
+    // Validate against registry (textInput)
+
     const theme = resolveTheme(props.theme);
     const el = blessed.textbox({
       parent: props.parent,
       inputOnFocus: true,
       value: props.value || "",
-      secret: props.secret ?? false,
+      secret: props.secret ?? props.password ?? false,
       style: computeBlessedStyle(theme, props),
       border:
         props.borderStyle && props.borderStyle !== "none" ? "line" : undefined,
@@ -34,7 +39,6 @@ export class TextInput implements Component<Widgets.TextboxElement> {
       keys: props.keys ?? true,
       mouse: props.mouse ?? true,
       padding: undefined,
-      label: props.label,
     });
 
     if (props.placeholder && !props.value) {

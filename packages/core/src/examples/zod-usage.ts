@@ -254,6 +254,8 @@ const typedButtonProps: ButtonProps = {
   text: "Typed Button",
   top: 0,
   left: 0,
+  focusable: true,
+  scrollable: false,
   // TypeScript mostrerà errori per proprietà invalide
   // variant: 'invalid', // ❌ Error: Type '"invalid"' is not assignable
 };

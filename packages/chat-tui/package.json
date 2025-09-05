@@ -1,0 +1,22 @@
+{
+  "name": "@tui-kit-ai/chat-tui",
+  "version": "0.1.0",
+  "description": "Prebuilt TUI chatbot components for blessed using @tui-kit-ai/core and providers",
+  "license": "MIT",
+  "main": "dist/index.ts",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "@tui-kit-ai/core": "*",
+    "@tui-kit-ai/providers": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/blessed": "^0.1.25"
+  }
+}

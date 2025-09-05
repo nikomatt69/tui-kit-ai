@@ -3,8 +3,8 @@ import { Theme, StyleProps, colorPalettes } from './theme';
 // Advanced styling utilities for dynamic component customization
 
 export interface ComputedStyles {
-  bg: string;
-  fg: string;
+  bg: string | number;
+  fg: string | number;
   border: any;
   padding: any;
   margin: any;
@@ -172,7 +172,7 @@ export function computeAdvancedStyle(props: StyleProps, theme: Theme): ComputedS
 }
 
 // Helper functions for padding/margin normalization with 4-value support
-export function normalizePadding(p?: number | [number, number] | [number, number, number, number]) {
+export function normalizePadding(p?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number }) {
   if (!p && p !== 0) return undefined;
 
   if (typeof p === 'number') {
@@ -193,7 +193,7 @@ export function normalizePadding(p?: number | [number, number] | [number, number
   return undefined;
 }
 
-export function normalizeMargin(m?: number | [number, number] | [number, number, number, number]) {
+export function normalizeMargin(m?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number }) {
   return normalizePadding(m); // Same logic as padding
 }
 

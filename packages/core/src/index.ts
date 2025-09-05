@@ -1,30 +1,107 @@
-// Core TUI Components
-export * from "./components/Box";
-export * from "./components/Button";
-export * from "./components/Card";
-export * from "./components/Divider";
-export * from "./components/Heading";
-export * from "./components/ProgressBar";
-export * from "./components/Spinner";
-export * from "./components/StatusIndicator";
-export * from "./components/Text";
-export * from "./components/TextInput";
+// ===== CORE TYPES AND INTERFACES =====
+export * from "./types/core-types";
 
-// Base Component System
+// ===== THEME SYSTEM =====
+export * from "./theming/theme-system";
+export * from "./theming/theme";
+// Avoid re-exporting design-tokens types that collide with core types
+export {
+  tokens,
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+  shadows,
+  animations,
+  componentTokens,
+} from "./theming/design-tokens";
+
+// ===== BASE COMPONENT SYSTEM =====
 export * from "./components/BaseComponent";
 
-// Configuration System
+// ===== TUI COMPONENTS =====
+// Layout Components
+export * from "./components/Box";
+export * from "./components/Card";
+export * from "./components/Divider";
+export * from "./components/Grid";
+export * from "./components/Panel";
+export * from "./components/Flex";
+
+// Interactive Components  
+export * from "./components/Button";
+export * from "./components/TextInput";
+export * from "./components/Select";
+export * from "./components/MultiSelect";
+export * from "./components/Checkbox";
+export * from "./components/RadioGroup";
+export * from "./components/Tabs";
+export * from "./components/Menu";
+export * from "./components/Prompt";
+
+// Display Components
+export * from "./components/Text";
+export * from "./components/Heading";
+export * from "./components/Badge";
+export * from "./components/StatusIndicator";
+export * from "./components/Avatar";
+export * from "./components/Paragraph";
+
+// Feedback Components
+export * from "./components/Spinner";
+export * from "./components/ProgressBar";
+export * from "./components/ProgressSpinner";
+export * from "./components/ProgressDots";
+export * from "./components/ProgressList";
+export * from "./components/Notification";
+export * from "./components/Toast";
+export * from "./components/Modal";
+export * from "./components/StatusBar";
+
+// Navigation Components
+export * from "./components/Breadcrumb";
+export * from "./components/Stepper";
+
+// Data Components
+export * from "./components/Table";
+export * from "./components/Tree";
+export * from "./components/LogViewer";
+
+// Utility Components
+export * from "./components/Tooltip";
+export * from "./components/HelpOverlay";
+export * from "./components/Scrollable";
+export * from "./components/SearchBox";
+export * from "./components/KeyHint";
+export * from "./components/Collapsible";
+export * from "./components/Gauge";
+
+// ===== CONFIGURATION SYSTEM =====
 export * from "./config/tui-config";
 export type { TuiConfig, TuiTokens, TuiVariants } from "./config/tui-config";
 
-// Design System
-export * from "./theming/theme";
-export * from "./types/schemas";
-
-// Utility Functions
-export { resolveBlessedColor, resolveVariants } from "./lib/utils";
+// ===== VALIDATION SYSTEM =====
 export {
-  cn,
+  ComponentValidator,
+  componentValidator,
+  validateComponent,
+  validateComponentStrict,
+  validateWithSuggestions,
+} from "./validation/component-validator";
+// Selective re-exports of Zod schemas used by other packages
+export {
+  BasePropsSchema,
+  ComponentVariantSchema,
+  ComponentSizeSchema,
+} from "./types/schemas";
+// Public schema registry (single source of truth)
+export { ComponentSchemas } from "./types/component-schemas";
+// Utility validator for ad-hoc checks (from primitive schemas file)
+export { validateComponentProps } from "./types/schemas";
+
+// ===== UTILITIES =====
+export { cn, resolveBlessedColor, resolveVariants } from "./lib/utils";
+export {
   createCompoundVariants,
   createContextVariants,
   createResponsiveVariants,
@@ -35,12 +112,5 @@ export {
 } from "./utils/variants";
 export type { VariantProps } from "./utils/variants";
 
-// Zod Schemas and Validation
-
-export * from "./validation/component-validator";
-
-// Terminal Utilities
+// ===== TERMINAL INTEGRATION =====
 export * from "./terminal/useTerminal";
-
-// Theming
-// Removed duplicate theme export

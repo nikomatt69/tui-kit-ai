@@ -1,15 +1,17 @@
 import { Widgets } from "blessed";
-import {
-  ComponentSize,
-  ComponentState,
-  ComponentVariant,
-} from "../types/schemas";
+import { z } from 'zod';
 import { BaseProps, Component, createBoxBase } from "./BaseComponent";
+import { BreadcrumbSchema } from "../types/component-schemas";
+import { validateComponent } from "../validation/component-validator";
 
-export type BreadcrumbProps = BaseProps & {
-  segments: string[];
-  separator?: string;
+export type BreadcrumbItem = {
+  id: string;
+  label: string;
+  href?: string;
+  disabled?: boolean;
 };
+
+export type BreadcrumbProps = z.infer<typeof BreadcrumbSchema> & BaseProps;
 
 export class Breadcrumb implements Component<Widgets.BoxElement> {
   el: Widgets.BoxElement;
@@ -19,6 +21,11 @@ export class Breadcrumb implements Component<Widgets.BoxElement> {
   private props: BreadcrumbProps;
 
   constructor(props: BreadcrumbProps) {
+    const validation = validateComponent('breadcrumb', props);
+    if (!validation.success) {
+      console.error('Invalid breadcrumb props:', validation.errors?.issues);
+      throw new Error(`Invalid breadcrumb props: ${validation.errors?.issues.map(i => i.message).join(', ')}`);
+    }
     this.props = props;
 
     const comp = createBoxBase<Widgets.BoxElement>(
@@ -35,40 +42,41 @@ export class Breadcrumb implements Component<Widgets.BoxElement> {
     this.destroy = comp.destroy;
     this.baseComponent = comp;
 
-    this.setSegments(props.segments);
+    this.renderItems();
   }
 
   // Implement required methods by delegating to base component
-  setVariant = (variant: ComponentVariant) =>
-    this.baseComponent.setVariant(variant);
-  setSize = (size: ComponentSize) => this.baseComponent.setSize(size);
-  setState = (state: ComponentState) => this.baseComponent.setState(state);
+  setVariant = (variant: any) => this.baseComponent.setVariant(variant);
+  setSize = (size: any) => this.baseComponent.setSize(size);
+  setState = (state: any) => this.baseComponent.setState(state);
   getConfig = () => this.baseComponent.getConfig();
   update = (props: Partial<BaseProps>) => this.baseComponent.update(props);
 
-  setSegments(segments: string[]) {
-    this.props.segments = segments;
+  private renderItems() {
     const separator = this.props.separator || " › ";
-    this.el.setContent(segments.join(separator));
+    const text = (this.props.items || []).map(i => i.label).join(separator);
+    this.el.setContent(text);
     this.el.screen.render();
   }
 
-  // Method to add segment
-  addSegment(segment: string) {
-    this.props.segments.push(segment);
-    this.setSegments(this.props.segments);
+  setItems(items: BreadcrumbItem[]) {
+    this.props.items = items;
+    this.renderItems();
   }
 
-  // Method to remove last segment
-  removeLastSegment() {
-    this.props.segments.pop();
-    this.setSegments(this.props.segments);
+  addItem(item: BreadcrumbItem) {
+    this.props.items.push(item);
+    this.renderItems();
   }
 
-  // Method to clear all segments
-  clearSegments() {
-    this.props.segments = [];
-    this.setSegments(this.props.segments);
+  removeLastItem() {
+    this.props.items.pop();
+    this.renderItems();
+  }
+
+  clear() {
+    this.props.items = [];
+    this.renderItems();
   }
 
   // Static method to create breadcrumb with specific configuration

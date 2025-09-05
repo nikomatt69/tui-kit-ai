@@ -143,13 +143,15 @@ export type AnimationToken = {
 
 export type ComponentVariant =
     | 'default'
+    | 'primary'
+    | 'secondary'
     | 'destructive'
     | 'outline'
-    | 'secondary'
     | 'ghost'
     | 'link'
     | 'success'
     | 'warning'
+    | 'error'
     | 'info';
 
 export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -411,6 +413,11 @@ export const componentTokens = {
                 fg: colors.background.DEFAULT,
                 border: colors.primary.DEFAULT,
             },
+            primary: {
+                bg: colors.primary.DEFAULT,
+                fg: colors.background.DEFAULT,
+                border: colors.primary.DEFAULT,
+            },
             destructive: {
                 bg: colors.error.DEFAULT,
                 fg: colors.background.DEFAULT,
@@ -445,6 +452,11 @@ export const componentTokens = {
                 bg: colors.warning.DEFAULT,
                 fg: colors.background.DEFAULT,
                 border: colors.warning.DEFAULT,
+            },
+            error: {
+                bg: colors.error.DEFAULT,
+                fg: colors.background.DEFAULT,
+                border: colors.error.DEFAULT,
             },
             info: {
                 bg: colors.info.DEFAULT,

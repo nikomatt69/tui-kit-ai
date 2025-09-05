@@ -1,11 +1,9 @@
-import { Widgets } from 'blessed';
-import { BaseProps, Component, createBoxBase } from './BaseComponent';
-import { ZodBoxProps, BoxSchema } from '../types/component-schemas';
-import { validateComponent } from '../validation/component-validator';
+import { Widgets } from "blessed";
+import { z } from "zod";
+import { BoxSchema } from "../types/component-schemas";
+import { Component, createBoxBase } from "./BaseComponent";
 
-export type BoxProps = BaseProps & {
-  content?: string;
-};
+export type BoxProps = z.infer<typeof BoxSchema>;
 
 export class Box implements Component<Widgets.BoxElement> {
   el: Widgets.BoxElement;
@@ -14,16 +12,12 @@ export class Box implements Component<Widgets.BoxElement> {
   private baseComponent: any;
 
   constructor(props: BoxProps) {
-    // Validate props using Zod schema
-    const validation = validateComponent('box', props);
-    if (!validation.success) {
-      console.error('Invalid box props:', validation.errors?.issues);
-      throw new Error(`Invalid box props: ${validation.errors?.issues.map(i => i.message).join(', ')}`);
-    }
-    
-    const comp = createBoxBase<Widgets.BoxElement>({
-      ...props,
-    }, 'box');
+    const comp = createBoxBase<Widgets.BoxElement>(
+      {
+        ...props,
+      },
+      "box"
+    );
 
     this.el = comp.el;
     this.theme = comp.theme;
@@ -51,5 +45,3 @@ export class Box implements Component<Widgets.BoxElement> {
     return new Box(props);
   }
 }
-
-

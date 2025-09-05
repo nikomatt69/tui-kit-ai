@@ -1,15 +1,10 @@
 import { Widgets } from "blessed";
-import {
-  ComponentSize,
-  ComponentState,
-  ComponentVariant,
-} from "../types/schemas";
+import { z } from 'zod';
 import { BaseProps, Component, createBoxBase } from "./BaseComponent";
+import { AvatarSchema } from "../types/component-schemas";
+import { validateComponent } from "../validation/component-validator";
 
-export type AvatarProps = BaseProps & {
-  initials: string;
-  size?: "sm" | "md" | "lg";
-};
+export type AvatarProps = z.infer<typeof AvatarSchema>;
 
 export class Avatar implements Component<Widgets.BoxElement> {
   el: Widgets.BoxElement;
@@ -19,6 +14,13 @@ export class Avatar implements Component<Widgets.BoxElement> {
   private props: AvatarProps;
 
   constructor(props: AvatarProps) {
+    // Validate props using Zod schema
+    const validation = validateComponent('avatar', props);
+    if (!validation.success) {
+      console.error('Invalid avatar props:', validation.errors?.issues);
+      throw new Error(`Invalid avatar props: ${validation.errors?.issues.map(i => i.message).join(', ')}`);
+    }
+
     this.props = props;
 
     const size = props.size || "md";
@@ -48,10 +50,9 @@ export class Avatar implements Component<Widgets.BoxElement> {
   }
 
   // Implement required methods by delegating to base component
-  setVariant = (variant: ComponentVariant) =>
-    this.baseComponent.setVariant(variant);
-  setSize = (size: ComponentSize) => this.baseComponent.setSize(size);
-  setState = (state: ComponentState) => this.baseComponent.setState(state);
+  setVariant = (variant: any) => this.baseComponent.setVariant(variant);
+  setSize = (size: any) => this.baseComponent.setSize(size);
+  setState = (state: any) => this.baseComponent.setState(state);
   getConfig = () => this.baseComponent.getConfig();
   update = (props: Partial<BaseProps>) => this.baseComponent.update(props);
 

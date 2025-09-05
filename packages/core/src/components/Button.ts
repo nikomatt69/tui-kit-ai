@@ -1,24 +1,31 @@
-import blessed, { Widgets } from 'blessed';
-import { BaseProps, Component, computeBlessedStyle } from './BaseComponent';
-import { resolveTheme } from '../theming/theme';
-import { ComponentVariant, ComponentSize, ComponentState, tokens } from '../theming/design-tokens';
-import { VariantProps, getComponentTokens, mergeComponentStyles } from '../utils/variants';
-import { ZodButtonProps, ButtonSchema } from '../types/component-schemas';
-import { validateComponent } from '../validation/component-validator';
+import blessed, { Widgets } from "blessed";
+import {
+  ComponentSize,
+  ComponentState,
+  ComponentVariant,
+} from "../theming/design-tokens";
+import { resolveTheme } from "../theming/theme";
+import {
+  VariantProps,
+  getComponentTokens,
+  mergeComponentStyles,
+} from "../utils/variants";
+import { validateComponent } from "../validation/component-validator";
+import { BaseProps, Component, computeBlessedStyle } from "./BaseComponent";
 
 // Button configuration for variants
 const buttonConfig = {
-  base: 'button',
+  base: "button",
   variants: {
-    default: { style: 'default' },
-    destructive: { style: 'destructive' },
-    outline: { style: 'outline' },
-    secondary: { style: 'secondary' },
-    ghost: { style: 'ghost' },
-    link: { style: 'link' },
-    success: { style: 'success' },
-    warning: { style: 'warning' },
-    info: { style: 'info' },
+    default: { style: "default" },
+    destructive: { style: "destructive" },
+    outline: { style: "outline" },
+    secondary: { style: "secondary" },
+    ghost: { style: "ghost" },
+    link: { style: "link" },
+    success: { style: "success" },
+    warning: { style: "warning" },
+    info: { style: "info" },
   },
   sizes: {
     xs: { width: 8, height: 1, padding: [0, 1] },
@@ -28,31 +35,33 @@ const buttonConfig = {
     xl: { width: 24, height: 5, padding: [0, 5] },
   },
   states: {
-    default: { style: 'default' },
-    hover: { style: 'hover' },
-    focus: { style: 'focus' },
-    active: { style: 'active' },
-    disabled: { style: 'disabled' },
-    loading: { style: 'loading' },
+    default: { style: "default" },
+    hover: { style: "hover" },
+    focus: { style: "focus" },
+    active: { style: "active" },
+    disabled: { style: "disabled" },
+    loading: { style: "loading" },
   },
   defaultVariants: {
-    variant: 'default',
-    size: 'md',
-    state: 'default',
+    variant: "default",
+    size: "md",
+    state: "default",
   },
 };
 
-export type ButtonProps = BaseProps & VariantProps<{
-  text: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-  loadingText?: string;
-  icon?: string;
-  iconPosition?: 'left' | 'right';
-  fullWidth?: boolean;
-  blessedProps?: Partial<Widgets.ButtonOptions>;
-}>;
+export type ButtonProps = BaseProps &
+  VariantProps<{
+    text: string;
+    onClick?: () => void;
+    disabled?: boolean;
+    loading?: boolean;
+    loadingText?: string;
+    icon?: string;
+    iconPosition?: "left" | "right";
+    fullWidth?: boolean;
+    focusable?: boolean;
+    blessedProps?: Partial<Widgets.ButtonOptions>;
+  }>;
 
 export class Button implements Component<Widgets.ButtonElement> {
   el: Widgets.ButtonElement;
@@ -65,19 +74,31 @@ export class Button implements Component<Widgets.ButtonElement> {
 
   constructor(props: ButtonProps) {
     // Validate props using Zod schema
-    const validation = validateComponent('button', props);
+    const validation = validateComponent("button", props);
     if (!validation.success) {
-      console.error('Invalid button props:', validation.errors?.issues);
-      throw new Error(`Invalid button props: ${validation.errors?.issues.map(i => i.message).join(', ')}`);
+      console.error("Invalid button props:", validation.errors?.issues);
+      throw new Error(
+        `Invalid button props: ${validation.errors?.issues
+          .map((i) => i.message)
+          .join(", ")}`
+      );
     }
-    
+
     this.props = props;
-    this.currentVariant = props.variant || buttonConfig.defaultVariants.variant! as ComponentVariant;
-    this.currentSize = props.size || buttonConfig.defaultVariants.size! as ComponentSize;
-    this.currentState = props.state || buttonConfig.defaultVariants.state! as ComponentState;
+    this.currentVariant =
+      props.variant ||
+      (buttonConfig.defaultVariants.variant! as ComponentVariant);
+    this.currentSize =
+      props.size || (buttonConfig.defaultVariants.size! as ComponentSize);
+    this.currentState =
+      props.state || (buttonConfig.defaultVariants.state! as ComponentState);
 
     const theme = resolveTheme(props.theme);
-    const componentTokens = getComponentTokens('button', this.currentVariant, this.currentSize);
+    const componentTokens = getComponentTokens(
+      "button",
+      this.currentVariant,
+      this.currentSize
+    );
 
     // Merge styles based on variants
     const baseStyle = computeBlessedStyle(theme, props);
@@ -93,7 +114,7 @@ export class Button implements Component<Widgets.ButtonElement> {
 
     // Apply size-based dimensions
     const sizeConfig = buttonConfig.sizes[this.currentSize];
-    const width = props.fullWidth ? '100%' : (props.width || sizeConfig.width);
+    const width = props.fullWidth ? "100%" : props.width || sizeConfig.width;
     const height = props.height || sizeConfig.height;
 
     // Create button element
@@ -103,7 +124,8 @@ export class Button implements Component<Widgets.ButtonElement> {
       mouse: props.mouse ?? true,
       keys: props.keys ?? true,
       shrink: !props.fullWidth,
-      border: props.borderStyle && props.borderStyle !== 'none' ? 'line' : undefined,
+      border:
+        props.borderStyle && props.borderStyle !== "none" ? "line" : undefined,
       style: mergedStyle,
       top: props.top,
       left: props.left,
@@ -117,7 +139,7 @@ export class Button implements Component<Widgets.ButtonElement> {
     });
 
     if (props.onClick && !props.disabled) {
-      el.on('press', props.onClick);
+      el.on("press", props.onClick);
     }
 
     this.el = el;
@@ -126,10 +148,11 @@ export class Button implements Component<Widgets.ButtonElement> {
   }
 
   private getButtonContent(): string {
-    const { text, loading, loadingText, icon, iconPosition, disabled } = this.props;
+    const { text, loading, loadingText, icon, iconPosition, disabled } =
+      this.props;
 
     if (loading) {
-      return loadingText || 'Loading...';
+      return loadingText || "Loading...";
     }
 
     if (disabled) {
@@ -139,7 +162,7 @@ export class Button implements Component<Widgets.ButtonElement> {
     let content = text;
 
     if (icon) {
-      if (iconPosition === 'left') {
+      if (iconPosition === "left") {
         content = `${icon} ${content}`;
       } else {
         content = `${content} ${icon}`;
@@ -152,14 +175,22 @@ export class Button implements Component<Widgets.ButtonElement> {
   // Method to update button variant
   setVariant(variant: ComponentVariant) {
     this.currentVariant = variant;
-    const componentTokens = getComponentTokens('button', variant, this.currentSize);
+    const componentTokens = getComponentTokens(
+      "button",
+      variant,
+      this.currentSize
+    );
     this.updateButtonStyle(componentTokens);
   }
 
   // Method to update button size
   setSize(size: ComponentSize) {
     this.currentSize = size;
-    const componentTokens = getComponentTokens('button', this.currentVariant, size);
+    const componentTokens = getComponentTokens(
+      "button",
+      this.currentVariant,
+      size
+    );
     const sizeConfig = buttonConfig.sizes[size];
 
     this.el.width = sizeConfig.width;
@@ -200,16 +231,16 @@ export class Button implements Component<Widgets.ButtonElement> {
     this.el.setContent(this.getButtonContent());
 
     if (disabled) {
-      this.el.off('press', () => { });
+      this.el.off("press", () => {});
     } else if (this.props.onClick) {
-      this.el.on('press', this.props.onClick);
+      this.el.on("press", this.props.onClick);
     }
 
     this.el.screen.render();
   }
 
   // Method to update button icon
-  setIcon(icon: string, position?: 'left' | 'right') {
+  setIcon(icon: string, position?: "left" | "right") {
     this.props.icon = icon;
     if (position) {
       this.props.iconPosition = position;
@@ -222,7 +253,11 @@ export class Button implements Component<Widgets.ButtonElement> {
   private updateButtonStyle(styleOverrides: Record<string, any>) {
     const theme = resolveTheme(this.props.theme);
     const baseStyle = computeBlessedStyle(theme, this.props);
-    const variantStyle = getComponentTokens('button', this.currentVariant, this.currentSize);
+    const variantStyle = getComponentTokens(
+      "button",
+      this.currentVariant,
+      this.currentSize
+    );
 
     const mergedStyle = mergeComponentStyles(
       baseStyle,
@@ -268,21 +303,30 @@ export class Button implements Component<Widgets.ButtonElement> {
   }
 
   // Static method to create button group
-  static createGroup(buttons: ButtonProps[], options?: {
-    direction?: 'horizontal' | 'vertical';
-    spacing?: number;
-  }): Button[] {
-    const { direction = 'horizontal', spacing = 1 } = options || {};
+  static createGroup(
+    buttons: ButtonProps[],
+    options?: {
+      direction?: "horizontal" | "vertical";
+      spacing?: number;
+    }
+  ): Button[] {
+    const { direction = "horizontal", spacing = 1 } = options || {};
     const buttonInstances: Button[] = [];
 
     buttons.forEach((buttonProps, index) => {
       const button = new Button(buttonProps);
 
       if (index > 0) {
-        if (direction === 'horizontal') {
-          button.el.left = buttonInstances[index - 1].el.left as any + buttonInstances[index - 1].el.width + spacing;
+        if (direction === "horizontal") {
+          button.el.left =
+            (buttonInstances[index - 1].el.left as any) +
+            buttonInstances[index - 1].el.width +
+            spacing;
         } else {
-          button.el.top = buttonInstances[index - 1].el.top as any + buttonInstances[index - 1].el.height + spacing;
+          button.el.top =
+            (buttonInstances[index - 1].el.top as any) +
+            buttonInstances[index - 1].el.height +
+            spacing;
         }
       }
 
@@ -292,4 +336,3 @@ export class Button implements Component<Widgets.ButtonElement> {
     return buttonInstances;
   }
 }
-
