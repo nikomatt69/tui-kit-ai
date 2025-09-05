@@ -323,10 +323,18 @@ export function createBoxBase<
     style: mergedStyle as any,
   }) as T;
 
+  // Memory cleanup utility
+  const disposers: (() => void)[] = [];
+  function onDispose(fn: () => void) { disposers.push(fn); }
+
   const component: Component<T> = {
     el,
     theme,
-    destroy: () => el.destroy(),
+    destroy: () => {
+      // Clean up all registered disposers
+      disposers.splice(0).forEach(fn => fn());
+      el.destroy();
+    },
     setVariant: (newVariant: ComponentVariant) => {
       if (componentName) {
         const newTokens = getComponentTokens(componentName, newVariant, size);

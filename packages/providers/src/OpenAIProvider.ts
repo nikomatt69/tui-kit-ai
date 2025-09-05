@@ -81,6 +81,12 @@ export class OpenAIProvider implements ProviderClient {
           // Retry on transient errors (429, 5xx)
           if ((res.status === 429 || res.status >= 500) && attempt < this.maxRetries) {
             const delay = this.calculateRetryDelay(attempt);
+            
+            // Compact retry logging
+            if (process.env.TUI_AI_DEBUG === '1') {
+              console.log(`[OpenAI] Retry ${attempt + 1}/${this.maxRetries} in ${delay}ms (${res.status})`);
+            }
+            
             await this.sleep(delay);
             continue;
           }

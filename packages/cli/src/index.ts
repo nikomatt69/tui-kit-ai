@@ -181,14 +181,15 @@ program.hook('preAction', (thisCommand, actionCommand) => {
     }
   }
   
-  // Print active configuration
+  // Print active configuration with precedence
   if (options.debug) {
-    console.log('🔧 Active configuration:');
-    console.log(`   Provider: ${options.provider || 'openai'}`);
-    console.log(`   Model: ${options.model || 'gpt-4'}`);
-    console.log(`   Debug: ${options.debug ? 'enabled' : 'disabled'}`);
-    console.log(`   Color: ${options.color ? 'enabled' : 'disabled'}`);
-    console.log('');
+    const provider = options.provider || process.env.TUI_PROVIDER || 'openai';
+    const model = options.model || process.env.TUI_MODEL || 'gpt-4';
+    const theme = process.env.TUI_THEME || 'dark';
+    const stream = process.env.TUI_STREAM !== 'off' ? 'on' : 'off';
+    const retries = process.env.TUI_AI_MAX_RETRIES || '2';
+    
+    console.log(`[tui] provider=${provider} model=${model} theme=${theme} stream=${stream} retries=${retries}`);
   }
 });
 

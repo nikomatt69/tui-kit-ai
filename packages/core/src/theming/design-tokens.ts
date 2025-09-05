@@ -538,3 +538,60 @@ export const tokens = {
 };
 
 export type Tokens = typeof tokens;
+
+// Contrast helper for accessibility
+export function ensureContrast(fg: string, bg: string): { fg: string; bg: string } {
+  // Simple contrast check - in a real implementation, use proper WCAG contrast calculation
+  const fgLuminance = getLuminance(fg);
+  const bgLuminance = getLuminance(bg);
+  const contrast = (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
+  
+  // If contrast is too low, adjust colors
+  if (contrast < 3) {
+    if (fgLuminance > bgLuminance) {
+      // Light text on dark background - make text lighter
+      return { fg: '#FFFFFF', bg };
+    } else {
+      // Dark text on light background - make text darker
+      return { fg: '#000000', bg };
+    }
+  }
+  
+  return { fg, bg };
+}
+
+// Simple luminance calculation (approximation)
+function getLuminance(color: string): number {
+  // Remove # if present
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  
+  // Apply gamma correction
+  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+// Theme presets
+export const themes = {
+  dark: {
+    ...tokens,
+    color: {
+      ...tokens.color,
+      fg: '#E6E6E6',
+      bg: '#101010',
+      muted: '#A1A1A1',
+    }
+  },
+  dim: {
+    ...tokens,
+    color: {
+      ...tokens.color,
+      fg: '#D0D0D0',
+      bg: '#0c0c0c',
+      muted: '#808080',
+    }
+  }
+};

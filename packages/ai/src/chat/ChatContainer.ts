@@ -47,7 +47,7 @@ export class ChatContainer {
       left: 0,
       right: 0,
       height: 1,
-      content: 'Ready',
+      content: '⌨︎ Enter: send • Esc: clear • Ctrl+C: abort',
       style: { fg: 'gray' }
     });
     
@@ -113,6 +113,23 @@ export class ChatContainer {
 
       for await (const chunk of result.textStream) {
         chunkBuffer += chunk;
+        
+        // Check for stop sequences
+        const stopSequences = ['</tool>', '</function>', '<|end|>', '<|stop|>'];
+        const shouldStop = stopSequences.some(seq => chunkBuffer.includes(seq));
+        
+        if (shouldStop) {
+          // Trim content at stop sequence
+          const stopIndex = Math.min(...stopSequences.map(seq => {
+            const idx = chunkBuffer.indexOf(seq);
+            return idx === -1 ? Infinity : idx;
+          }));
+          chunkBuffer = chunkBuffer.substring(0, stopIndex);
+          assistantContent += chunkBuffer;
+          this.messages[this.messages.length - 1].content = assistantContent;
+          this.renderMessages();
+          break; // Stop streaming
+        }
         
         // Coalesce small chunks (< 10 chars) to reduce render frequency
         if (chunkBuffer.length >= 10 || chunk.includes('\n') || chunk.includes(' ')) {

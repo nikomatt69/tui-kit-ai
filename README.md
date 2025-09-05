@@ -124,6 +124,75 @@ interface ComponentProps {
 }
 ```
 
+## 📋 Component Reference
+
+### Box
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `Variant` | `'default'` | Visual style variant |
+| `size` | `Size` | `'md'` | Component size |
+| `padding` | `number \| [number, number]` | `2` | Internal spacing |
+| `radius` | `number` | `1` | Border radius |
+
+**Example:**
+```typescript
+<Box variant="primary" size="lg" padding={4}>
+  Content here
+</Box>
+```
+
+### TextInput
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `Variant` | `'default'` | Input style |
+| `placeholder` | `string` | - | Placeholder text |
+| `onChange` | `(value: string) => void` | - | Change handler |
+| `onSubmit` | `(value: string) => void` | - | Submit handler |
+
+**Keyboard:** `Enter` to submit, `Esc` to clear, `Ctrl+C` to abort
+
+**Example:**
+```typescript
+<TextInput 
+  placeholder="Type your message..."
+  onChange={(value) => console.log(value)}
+  onSubmit={(value) => handleSubmit(value)}
+/>
+```
+
+### Button
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `Variant` | `'default'` | Button style |
+| `size` | `Size` | `'md'` | Button size |
+| `onClick` | `() => void` | - | Click handler |
+| `disabled` | `boolean` | `false` | Disabled state |
+
+**Example:**
+```typescript
+<Button variant="primary" onClick={() => console.log('clicked')}>
+  Click me
+</Button>
+```
+
+### ChatContainer
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `ai` | `AIService` | - | AI service instance |
+| `systemPrompt` | `string` | - | System prompt |
+| `onError` | `(error: Error) => void` | - | Error handler |
+
+**Keyboard:** `Enter` to send, `Esc` to clear, `Ctrl+C` to abort stream
+
+**Example:**
+```typescript
+<ChatContainer 
+  ai={aiService}
+  systemPrompt="You are a helpful assistant"
+  onError={(error) => console.error(error)}
+/>
+```
+
 ### Core Components
 
 - **Layout**: `Box`, `Flex`, `Grid`, `Panel`
@@ -224,6 +293,23 @@ export TUI_AI_MAX_RETRIES=2
 Use `darkTheme` or `lightTheme` and override any token via `theme` prop on components.
 
 ## 📄 Changelog
+
+### v0.1.2 - "Production Ready" Release
+
+#### ✨ New Features
+- **API Future-Proof**: Soft deprecation warnings with backward compatibility
+- **Advanced Navigation**: Home/End/Ctrl+↑↓ keys with selection history
+- **Performance Optimized**: Coalescing streams, stable layouts, throttled updates
+- **AI Robustness**: Stop sequences, retry logging, token budget management
+- **Theme System**: Dark/dim presets with contrast accessibility
+- **CLI Enhanced**: Flag precedence, configuration recap, comprehensive docs
+
+#### 🔧 Improvements
+- **Memory Management**: Automatic cleanup of timers and event listeners
+- **Type Safety**: Centralized union types and consistent interfaces
+- **Error Handling**: Interactive component guards and strict mode warnings
+- **Accessibility**: Keyboard hints and contrast helpers
+- **Documentation**: Component reference tables with examples
 
 ### v0.1.1 - "shadcn for Terminal" Release
 

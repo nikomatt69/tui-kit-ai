@@ -14,6 +14,8 @@ export {
   shadows,
   animations,
   componentTokens,
+  ensureContrast,
+  themes,
 } from "./theming/design-tokens";
 export type { Tokens } from "./theming/design-tokens";
 
