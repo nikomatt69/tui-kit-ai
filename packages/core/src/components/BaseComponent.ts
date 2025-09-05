@@ -23,9 +23,15 @@ export type BaseProps = StyleProps &
     keys?: boolean;
     mouse?: boolean;
     scrollable?: boolean;
-    // New variant system props
-    variant?: ComponentVariant;
-    size?: ComponentSize;
+    // Unified shadcn-style props API
+    variant?: 'default' | 'muted' | 'ghost' | 'destructive' | 'primary' | 'secondary' | 'outline' | 'link' | 'success' | 'warning' | 'error' | 'info';
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    tone?: 'neutral' | 'info' | 'success' | 'warning' | 'error';
+    padding?: number | [number, number];
+    radius?: number;
+    focus?: boolean; // Force focus state for testing
+    disabled?: boolean;
+    // Legacy variant system props (for backward compatibility)
     state?: ComponentState;
     // Advanced styling props
     borderRadius?: string;
@@ -63,7 +69,7 @@ export type ComponentConfig = {
   responsive?: Record<string, Partial<BaseProps>>;
 };
 
-// Enhanced style computation with variants
+// Enhanced style computation with unified props API
 export function computeBlessedStyle(
   theme: Theme,
   props: BaseProps,
@@ -71,6 +77,9 @@ export function computeBlessedStyle(
   variant?: ComponentVariant,
   size?: ComponentSize
 ) {
+  // Import tokens for unified styling
+  const { tokens } = require('../theming/design-tokens');
+  
   const baseStyle: any = {
     bg: props.bg || theme.background,
     fg: props.fg || theme.foreground,
@@ -79,13 +88,108 @@ export function computeBlessedStyle(
     },
   };
 
-  // Apply component-specific tokens if available
+  // Apply unified variant mapping
+  if (props.variant) {
+    switch (props.variant) {
+      case 'muted':
+        baseStyle.fg = tokens.color.muted;
+        baseStyle.bg = tokens.color.bg;
+        break;
+      case 'ghost':
+        baseStyle.bg = 'transparent';
+        baseStyle.fg = tokens.color.fg;
+        break;
+      case 'destructive':
+        baseStyle.fg = tokens.color.error;
+        baseStyle.bg = tokens.color.bg;
+        break;
+      case 'primary':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.info;
+        break;
+      case 'secondary':
+        baseStyle.fg = tokens.color.fg;
+        baseStyle.bg = tokens.color.muted;
+        break;
+      case 'outline':
+        baseStyle.bg = 'transparent';
+        baseStyle.fg = tokens.color.info;
+        baseStyle.border = { fg: tokens.color.info };
+        break;
+      case 'success':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.success;
+        break;
+      case 'warning':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.warning;
+        break;
+      case 'error':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.error;
+        break;
+      case 'info':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.info;
+        break;
+    }
+  }
+
+  // Apply tone-based styling
+  if (props.tone) {
+    switch (props.tone) {
+      case 'info':
+        baseStyle.fg = tokens.color.info;
+        break;
+      case 'success':
+        baseStyle.fg = tokens.color.success;
+        break;
+      case 'warning':
+        baseStyle.fg = tokens.color.warning;
+        break;
+      case 'error':
+        baseStyle.fg = tokens.color.error;
+        break;
+    }
+  }
+
+  // Apply size-based padding
+  if (props.size && tokens.space) {
+    const sizeIndex = ['xs', 'sm', 'md', 'lg', 'xl'].indexOf(props.size);
+    if (sizeIndex >= 0 && tokens.space[sizeIndex]) {
+      baseStyle.padding = tokens.space[sizeIndex];
+    }
+  }
+
+  // Apply custom padding
+  if (props.padding !== undefined) {
+    baseStyle.padding = props.padding;
+  }
+
+  // Apply radius
+  if (props.radius !== undefined && tokens.radius) {
+    const radiusIndex = Math.min(props.radius, tokens.radius.length - 1);
+    baseStyle.borderRadius = tokens.radius[radiusIndex];
+  }
+
+  // Apply focus state
+  if (props.focus) {
+    baseStyle.border = { fg: tokens.color.focus, type: 'line' };
+  }
+
+  // Apply disabled state
+  if (props.disabled) {
+    baseStyle.fg = tokens.color.muted;
+    baseStyle.dim = true;
+  }
+
+  // Apply component-specific tokens if available (legacy)
   if (componentName && variant && size) {
     const componentTokens = getComponentTokens(componentName, variant, size);
     Object.assign(baseStyle, componentTokens);
   }
 
-  // Apply custom styling props
+  // Apply custom styling props (legacy)
   if (props.borderRadius) {
     baseStyle.borderRadius = props.borderRadius;
   }

@@ -2,6 +2,7 @@ import { Widgets } from "blessed";
 import { z } from "zod";
 import { BoxSchema } from "../types/component-schemas";
 import { Component, createBoxBase } from "./BaseComponent";
+import { safeRender } from "../terminal/useTerminal";
 
 export type BoxProps = z.infer<typeof BoxSchema>;
 
@@ -37,7 +38,7 @@ export class Box implements Component<Widgets.BoxElement> {
   // Method to set content
   setContent(content: string) {
     this.el.setContent(content);
-    this.el.screen.render();
+    safeRender(this.el.screen);
   }
 
   // Static method to create box with specific configuration

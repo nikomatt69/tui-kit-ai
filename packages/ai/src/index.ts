@@ -18,6 +18,7 @@ export { MessageBubble } from "./chat/MessageBubble";
 export { MessageHistory } from "./chat/MessageHistory";
 
 export { AIService } from "./streaming/AIService";
+export type { ProviderClient, StreamResult, AIServiceConfig } from "./streaming/AIService";
 export { StreamingText } from "./streaming/StreamingText";
 
 export { ToolOutput } from "./tools/ToolOutput";

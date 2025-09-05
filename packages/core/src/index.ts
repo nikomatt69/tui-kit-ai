@@ -4,7 +4,7 @@ export * from "./types/core-types";
 // ===== THEME SYSTEM =====
 export * from "./theming/theme-system";
 export * from "./theming/theme";
-// Avoid re-exporting design-tokens types that collide with core types
+// Unified token system (shadcn-style for terminal)
 export {
   tokens,
   colors,
@@ -15,6 +15,7 @@ export {
   animations,
   componentTokens,
 } from "./theming/design-tokens";
+export type { Tokens } from "./theming/design-tokens";
 
 // ===== BASE COMPONENT SYSTEM =====
 export * from "./components/BaseComponent";
@@ -114,3 +115,4 @@ export type { VariantProps } from "./utils/variants";
 
 // ===== TERMINAL INTEGRATION =====
 export * from "./terminal/useTerminal";
+export { KEY, safeRender, mountScreen } from "./terminal/useTerminal";

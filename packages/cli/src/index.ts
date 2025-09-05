@@ -14,7 +14,12 @@ const program = new Command();
 program
   .name('tui')
   .description('TUI-Kit-AI - shadcn/ui for Terminal with Vercel AI SDK')
-  .version('0.1.0');
+  .version('0.1.0')
+  // Global options
+  .option('--model <model>', 'AI model to use (e.g., gpt-4, claude-3-sonnet)', 'gpt-4')
+  .option('--provider <provider>', 'AI provider (openai|anthropic|ollama)', 'openai')
+  .option('--debug', 'Enable debug mode with verbose logging', false)
+  .option('--no-color', 'Disable colored output', false);
 
 // Initialize project (shadcn-like)
 program
@@ -145,6 +150,48 @@ program
     // Add development utilities here
   });
 
+// Global error handling and validation
+program.hook('preAction', (thisCommand, actionCommand) => {
+  const options = thisCommand.opts();
+  
+  // Set debug mode
+  if (options.debug) {
+    process.env.TUI_AI_DEBUG = '1';
+  }
+  
+  // Validate API keys based on provider
+  if (actionCommand.name() !== 'init' && actionCommand.name() !== 'add' && actionCommand.name() !== 'update') {
+    const provider = options.provider || 'openai';
+    
+    if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
+      console.error('❌ Missing OPENAI_API_KEY environment variable');
+      console.error('   Set it with: export OPENAI_API_KEY=your_key_here');
+      process.exit(1);
+    }
+    
+    if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+      console.error('❌ Missing ANTHROPIC_API_KEY environment variable');
+      console.error('   Set it with: export ANTHROPIC_API_KEY=your_key_here');
+      process.exit(1);
+    }
+    
+    if (provider === 'ollama' && !process.env.OLLAMA_BASE_URL) {
+      console.warn('⚠️  OLLAMA_BASE_URL not set, using default: http://localhost:11434');
+      process.env.OLLAMA_BASE_URL = 'http://localhost:11434';
+    }
+  }
+  
+  // Print active configuration
+  if (options.debug) {
+    console.log('🔧 Active configuration:');
+    console.log(`   Provider: ${options.provider || 'openai'}`);
+    console.log(`   Model: ${options.model || 'gpt-4'}`);
+    console.log(`   Debug: ${options.debug ? 'enabled' : 'disabled'}`);
+    console.log(`   Color: ${options.color ? 'enabled' : 'disabled'}`);
+    console.log('');
+  }
+});
+
 // Error handling
 program.configureOutput({
   outputError: (str, write) => {
@@ -157,6 +204,20 @@ program.configureOutput({
 program.on('command:*', () => {
   console.error('❌ Invalid command: %s\\n', program.args.join(' '));
   program.help();
+});
+
+// Global error handler
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error.message);
+  if (process.env.TUI_AI_DEBUG === '1') {
+    console.error(error.stack);
+  }
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled Rejection:', reason);
+  process.exit(1);
 });
 
 // Parse CLI arguments

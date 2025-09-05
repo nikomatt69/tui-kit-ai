@@ -500,13 +500,41 @@ export const componentTokens = {
     },
 };
 
-// Export all tokens
+// Unified token system for terminal (shadcn-style)
 export const tokens = {
+    // Spacing scale in terminal "cells"
+    space: [0, 1, 2, 3, 4, 6, 8, 12, 16, 20, 24, 32],
+    // Border radius scale
+    radius: [0, 1, 2, 3, 4],
+    // Color palette with semantic tokens
+    color: {
+        // Base colors
+        fg: '#E6E6E6',
+        bg: '#101010',
+        muted: '#A1A1A1',
+        // Semantic colors
+        info: '#3BA3FF',
+        success: '#22C55E', 
+        warning: '#F59E0B',
+        error: '#EF4444',
+        // Terminal-specific
+        border: '#404040',
+        focus: '#3BA3FF',
+    },
+    // Typography for terminal
+    typography: {
+        bold: true,
+        dim: true,
+        underline: true,
+    },
+    // Legacy compatibility
     colors,
     spacing,
     borderRadius,
-    typography,
+    typography: typography,
     shadows,
     animations,
     componentTokens,
 };
+
+export type Tokens = typeof tokens;
