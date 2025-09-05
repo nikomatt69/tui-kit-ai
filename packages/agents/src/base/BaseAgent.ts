@@ -18,15 +18,13 @@ export abstract class BaseAgent extends EventEmitter {
   description?: string;
   private isStarted = false;
   private timers: NodeJS.Timeout[] = [];
-  private intervals: NodeJS.Interval[] = [];
+  private intervals: ReturnType<typeof setInterval>[] = [];
 
   constructor(config: AgentConfig) {
     super();
     this.name = config.name;
     this.description = config.description;
   }
-
-  abstract start(): Promise<void> | void;
 
   // Lifecycle management
   async start(): Promise<void> {
@@ -66,7 +64,7 @@ export abstract class BaseAgent extends EventEmitter {
     return timer;
   }
 
-  protected setInterval(callback: () => void, delay: number): NodeJS.Interval {
+  protected setInterval(callback: () => void, delay: number): ReturnType<typeof setInterval> {
     const interval = setInterval(callback, delay);
     this.intervals.push(interval);
     return interval;

@@ -8,7 +8,7 @@ export type ProviderClient = {
     messages: Message[];
     stream?: boolean;
     abortSignal?: AbortSignal;
-  }): AsyncIterable<string> | Promise<{ text: string }>;
+  }): Promise<AsyncIterable<string> | { text: string }>;
 };
 
 export type StreamResult = {
@@ -78,11 +78,10 @@ export class AIService {
         abortSignal: ac.signal,
       });
       
-      if (result instanceof Promise) {
-        const resolved = await result;
-        baseStream = resolved.text ? (async function*() { yield resolved.text; }()) : (async function*() { yield ''; }());
+      if (typeof result === 'object' && 'text' in result) {
+        baseStream = (async function*() { yield result.text; }());
       } else {
-        baseStream = result;
+        baseStream = result as AsyncIterable<string>;
       }
     } else {
       // Use legacy provider

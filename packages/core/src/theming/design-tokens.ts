@@ -152,7 +152,8 @@ export type ComponentVariant =
     | 'success'
     | 'warning'
     | 'error'
-    | 'info';
+    | 'info'
+    | 'muted';
 
 export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -531,7 +532,6 @@ export const tokens = {
     colors,
     spacing,
     borderRadius,
-    typography: typography,
     shadows,
     animations,
     componentTokens,

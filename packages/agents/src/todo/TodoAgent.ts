@@ -20,7 +20,7 @@ export class TodoAgent extends BaseAgent {
   }
 
   // Type-safe task handling with discriminated unions
-  async handleTask(task: AgentTask): Promise<Todo | Todo[] | void> {
+  async handleTask(task: AgentTask): Promise<Todo | Todo[] | boolean> {
     switch (task.type) {
       case 'create':
         return this.createTodo(task as CreateTask);
@@ -44,14 +44,14 @@ export class TodoAgent extends BaseAgent {
     return todo;
   }
 
-  private async updateTodo(task: UpdateTask): Promise<Todo | undefined> {
+  private async updateTodo(task: UpdateTask): Promise<Todo | boolean> {
     const todo = this.todos.find(t => t.id === task.data.id);
     if (todo) {
       Object.assign(todo, task.data.patch);
       this.emit('todoUpdated', todo);
       return todo;
     }
-    return undefined;
+    return false;
   }
 
   private async deleteTodo(task: DeleteTask): Promise<boolean> {
@@ -69,12 +69,14 @@ export class TodoAgent extends BaseAgent {
     return this.handleTask({ type: 'create', data: { title } }) as Promise<Todo>;
   }
 
-  async completeTask(id: string): Promise<Todo | undefined> {
-    return this.handleTask({ type: 'update', data: { id, patch: { completed: true } } }) as Promise<Todo | undefined>;
+  async completeTask(id: string): Promise<Todo | boolean> {
+    const result = await this.handleTask({ type: 'update', data: { id, patch: { completed: true } } });
+    return typeof result === 'boolean' ? result : result as Todo;
   }
 
   async removeTask(id: string): Promise<boolean> {
-    return this.handleTask({ type: 'delete', data: { id } }) as Promise<boolean>;
+    const result = await this.handleTask({ type: 'delete', data: { id } });
+    return typeof result === 'boolean' ? result : false;
   }
 
   getAllTodos(): Todo[] {

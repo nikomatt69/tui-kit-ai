@@ -50,7 +50,7 @@ export class TextInput implements Component<Widgets.TextboxElement> {
       height: props.height,
       keys: props.keys ?? true,
       mouse: props.mouse ?? true,
-      padding: props.padding,
+      padding: props.padding as any,
     });
 
     // Enhanced placeholder handling with unified styling
@@ -80,7 +80,7 @@ export class TextInput implements Component<Widgets.TextboxElement> {
     });
 
     el.key([KEY.esc], () => {
-      el.blur();
+      el.focus();
     });
 
     if (props.onChange) {

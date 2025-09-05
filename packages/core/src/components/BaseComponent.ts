@@ -27,7 +27,7 @@ export type BaseProps = StyleProps &
     variant?: 'default' | 'muted' | 'ghost' | 'destructive' | 'primary' | 'secondary' | 'outline' | 'link' | 'success' | 'warning' | 'error' | 'info';
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
     tone?: 'neutral' | 'info' | 'success' | 'warning' | 'error';
-    padding?: number | [number, number];
+    padding?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number };
     radius?: number;
     focus?: boolean; // Force focus state for testing
     disabled?: boolean;
@@ -207,13 +207,18 @@ export function computeBlessedStyle(
 
 // Enhanced padding normalization
 export function normalizePadding(
-  p?: number | [number, number] | Record<string, number>
+  p?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number }
 ) {
   if (!p && p !== 0) return undefined as unknown as Widgets.Padding;
 
   if (Array.isArray(p)) {
-    const [v, h] = p;
-    return { top: v, bottom: v, left: h, right: h } as Widgets.Padding;
+    if (p.length === 2) {
+      const [v, h] = p;
+      return { top: v, bottom: v, left: h, right: h } as Widgets.Padding;
+    } else if (p.length === 4) {
+      const [top, right, bottom, left] = p;
+      return { top, right, bottom, left } as Widgets.Padding;
+    }
   }
 
   if (typeof p === "object" && !Array.isArray(p)) {
@@ -278,9 +283,7 @@ export function createBoxBase<
       : props.borderStyle && props.borderStyle !== "none"
       ? "line"
       : undefined,
-    padding: normalizePadding(
-      props.padding as number | [number, number] | Record<string, number>
-    ) as any,
+    padding: normalizePadding(props.padding) as any,
     style: mergedStyle as any,
   }) as T;
 
