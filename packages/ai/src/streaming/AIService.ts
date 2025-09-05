@@ -1,5 +1,8 @@
 export type Message = { role: 'system' | 'user' | 'assistant'; content: string };
 
+// Configurable stop sequences
+const STOP_SEQUENCES = ['</tool>', '</function>', '<|end|>', '<|stop|>', '<|im_end|>'];
+
 // Unified provider interface (shadcn-style)
 export type ProviderClient = {
   name: 'openai' | 'anthropic' | 'ollama';

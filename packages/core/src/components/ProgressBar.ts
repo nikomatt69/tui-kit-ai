@@ -65,7 +65,7 @@ export class ProgressBar implements Component<any> {
         progressUpdateTimer = setTimeout(() => {
             safeRender(this.el.screen);
             progressUpdateTimer = null;
-        }, 75); // 75ms for smooth updates
+        }, 100); // 100ms for smooth updates (80-120ms range)
     }
 
     // Static method to create progress bar with specific configuration

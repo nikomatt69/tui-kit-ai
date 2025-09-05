@@ -294,6 +294,24 @@ Use `darkTheme` or `lightTheme` and override any token via `theme` prop on compo
 
 ## 📄 Changelog
 
+### v0.1.3 - "Enterprise Grade" Release
+
+#### ✨ New Features
+- **Terminal Capability Detection**: Auto-detection of truecolor/unicode support with intelligent fallbacks
+- **Advanced Navigation**: Professional keymap with Home/End/Ctrl+Home/End, Alt+Up/Down, Shift+Tab
+- **Smart Resize Handling**: Debounced resize with stable layout preservation
+- **Intelligent Stream Coalescing**: Semantic chunk grouping for natural text flow
+- **Error Toast System**: Inline error notifications with retry suggestions
+- **Logging Levels**: Configurable logging with TUI_LOG environment variable
+- **Anonymous Telemetry**: Optional usage analytics for improving defaults
+
+#### 🔧 Improvements
+- **Performance**: Fixed cadence for spinners (80ms) and progress bars (100ms)
+- **Accessibility**: Enhanced contrast helpers with configurable minimum ratios
+- **Robustness**: ANSI sequence filtering and stop sequence detection
+- **Memory Management**: Improved cleanup with disposer pattern
+- **Type Safety**: Enhanced type definitions and error handling
+
 ### v0.1.2 - "Production Ready" Release
 
 #### ✨ New Features

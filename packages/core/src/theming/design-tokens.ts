@@ -540,14 +540,14 @@ export const tokens = {
 export type Tokens = typeof tokens;
 
 // Contrast helper for accessibility
-export function ensureContrast(fg: string, bg: string): { fg: string; bg: string } {
+export function ensureContrast(fg: string, bg: string, minRatio = 3.0): { fg: string; bg: string } {
   // Simple contrast check - in a real implementation, use proper WCAG contrast calculation
   const fgLuminance = getLuminance(fg);
   const bgLuminance = getLuminance(bg);
   const contrast = (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
   
   // If contrast is too low, adjust colors
-  if (contrast < 3) {
+  if (contrast < minRatio) {
     if (fgLuminance > bgLuminance) {
       // Light text on dark background - make text lighter
       return { fg: '#FFFFFF', bg };
@@ -572,6 +572,42 @@ function getLuminance(color: string): number {
   const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
   
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+// Logging levels (muted by default)
+const LVL = process.env.TUI_LOG ?? 'error'; // 'silent'|'error'|'warn'|'info'|'debug'
+export function log(level: 'error' | 'warn' | 'info' | 'debug', ...args: any[]) {
+  const order = ['silent', 'error', 'warn', 'info', 'debug'];
+  if (order.indexOf(level) <= order.indexOf(LVL as any)) {
+    console[level === 'debug' ? 'log' : level](...args);
+  }
+}
+
+// Terminal capability detection
+export const CAP = {
+  truecolor: !!process.env.COLORTERM?.includes('truecolor'),
+  unicode: !!process.stdout && (process.stdout as any).hasColors?.() !== false,
+  width: process.stdout?.columns ?? 80,
+  height: process.stdout?.rows ?? 24
+};
+
+// Color mapping for non-truecolor terminals
+export function mapTo256Color(hex: string): number {
+  if (CAP.truecolor) return parseInt(hex.replace('#', ''), 16);
+  
+  // Simple mapping to 256-color palette
+  const colorMap: Record<string, number> = {
+    '#E6E6E6': 253, // light gray
+    '#101010': 16,  // dark gray
+    '#A1A1A1': 247, // medium gray
+    '#3BA3FF': 75,  // blue
+    '#22C55E': 76,  // green
+    '#F59E0B': 214, // yellow
+    '#EF4444': 196, // red
+    '#404040': 238, // border gray
+  };
+  
+  return colorMap[hex] || 7; // fallback to white
 }
 
 // Theme presets

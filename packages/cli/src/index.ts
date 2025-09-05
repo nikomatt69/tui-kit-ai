@@ -191,6 +191,16 @@ program.hook('preAction', (thisCommand, actionCommand) => {
     
     console.log(`[tui] provider=${provider} model=${model} theme=${theme} stream=${stream} retries=${retries}`);
   }
+  
+  // Anonymous telemetry (local debug only)
+  if (process.env.TUI_TELEMETRY === '1') {
+    const os = process.platform;
+    const truecolor = !!process.env.COLORTERM?.includes('truecolor');
+    const width = process.stdout?.columns ?? 80;
+    const widthRange = width <= 80 ? '<=80' : width <= 120 ? '81-120' : '>120';
+    
+    console.log(`[telemetry] os=${os} truecolor=${truecolor} width=${widthRange}`);
+  }
 });
 
 // Error handling

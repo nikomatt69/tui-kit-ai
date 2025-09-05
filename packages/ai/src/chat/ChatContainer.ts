@@ -16,6 +16,7 @@ export class ChatContainer {
   history: Widgets.BoxElement;
   input: Widgets.TextboxElement;
   statusBar: Widgets.BoxElement;
+  errorToast: Widgets.BoxElement;
   private currentStream: { abort: () => void } | null = null;
   private messages: Message[] = [];
 
@@ -49,6 +50,18 @@ export class ChatContainer {
       height: 1,
       content: '⌨︎ Enter: send • Esc: clear • Ctrl+C: abort',
       style: { fg: 'gray' }
+    });
+    
+    // Error toast (hidden by default)
+    this.errorToast = blessed.box({
+      parent: this.root,
+      top: 1,
+      left: 1,
+      right: 1,
+      height: 3,
+      content: '',
+      style: { fg: 'white', bg: 'red', border: { fg: 'red' } },
+      hidden: true
     });
     
     this.input = blessed.textbox({ 
@@ -88,6 +101,16 @@ export class ChatContainer {
         safeRender(this.root.screen);
       }
     });
+    
+    // Ctrl+R to retry last message
+    this.root.key(['C-r'], () => {
+      if (this.messages.length > 0 && props.ai) {
+        const lastUserMessage = [...this.messages].reverse().find(m => m.role === 'user');
+        if (lastUserMessage) {
+          this.handleAIResponse(props.ai, props.systemPrompt, props.onError);
+        }
+      }
+    });
   }
 
   private addMessage(message: Message) {
@@ -112,7 +135,9 @@ export class ChatContainer {
       this.addMessage({ role: 'assistant', content: '' });
 
       for await (const chunk of result.textStream) {
-        chunkBuffer += chunk;
+        // Filter unwanted ANSI sequences from AI output
+        const cleanChunk = chunk.replace(/\x1B\[[0-9;]*[A-Za-z]/g, '');
+        chunkBuffer += cleanChunk;
         
         // Check for stop sequences
         const stopSequences = ['</tool>', '</function>', '<|end|>', '<|stop|>'];
@@ -131,8 +156,12 @@ export class ChatContainer {
           break; // Stop streaming
         }
         
-        // Coalesce small chunks (< 10 chars) to reduce render frequency
-        if (chunkBuffer.length >= 10 || chunk.includes('\n') || chunk.includes(' ')) {
+        // Coalesce chunks until semantically complete (sentence end or 40-80 chars)
+        const isSentenceEnd = /[.!?…)]\s$/.test(chunkBuffer);
+        const isLongEnough = chunkBuffer.length >= 40;
+        const isWordBoundary = chunk.includes(' ') || chunk.includes('\n');
+        
+        if (isSentenceEnd || isLongEnough || (chunkBuffer.length >= 10 && isWordBoundary)) {
           assistantContent += chunkBuffer;
           this.messages[this.messages.length - 1].content = assistantContent;
           this.renderMessages();
@@ -171,6 +200,19 @@ export class ChatContainer {
     this.history.setContent(formatted);
     this.history.setScrollPerc(100);
     safeRender(this.root.screen);
+  }
+  
+  private showError(message: string, backoffMs?: number) {
+    const backoffText = backoffMs ? ` Riprova tra ${Math.ceil(backoffMs / 1000)}s (Ctrl+R).` : '';
+    this.errorToast.setContent(`⚠️ ${message}${backoffText}`);
+    this.errorToast.show();
+    safeRender(this.root.screen);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      this.errorToast.hide();
+      safeRender(this.root.screen);
+    }, 5000);
   }
 
   // Public methods

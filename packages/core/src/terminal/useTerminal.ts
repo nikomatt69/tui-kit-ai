@@ -22,6 +22,11 @@ export const KEY = {
   ctrlDown: 'C-down',
   ctrlLeft: 'C-left',
   ctrlRight: 'C-right',
+  ctrlHome: 'C-home',
+  ctrlEnd: 'C-end',
+  altUp: 'M-up',
+  altDown: 'M-down',
+  shiftTab: 'S-tab',
 } as const;
 
 // Safe render with 60fps throttling
@@ -32,6 +37,51 @@ export function safeRender(screen: Widgets.Screen) {
     screen.render(); 
     raf = null; 
   }, 16); // ~60fps
+}
+
+// Resize debouncing for stable layouts
+let resizeTimer: NodeJS.Timeout | null = null;
+export function debouncedResize(screen: Widgets.Screen, callback?: () => void) {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    // Recalculate layout for streaming content
+    const minWidth = (screen as any).minWidth || 0;
+    const minHeight = (screen as any).minHeight || 0;
+    
+    if (screen.width && typeof screen.width === 'number' && screen.width < minWidth) {
+      (screen as any).minWidth = Math.max(minWidth, screen.width);
+    }
+    if (screen.height && typeof screen.height === 'number' && screen.height < minHeight) {
+      (screen as any).minHeight = Math.max(minHeight, screen.height);
+    }
+    
+    callback?.();
+    safeRender(screen);
+    resizeTimer = null;
+  }, 120); // 120ms debounce
+}
+
+// Navigation binding utility for consistent behavior across components
+export function bindNav(node: any, opts: {
+  onUp?: () => void;
+  onDown?: () => void;
+  onHome?: () => void;
+  onEnd?: () => void;
+  onCtrlHome?: () => void;
+  onCtrlEnd?: () => void;
+  onAltUp?: () => void;
+  onAltDown?: () => void;
+  onShiftTab?: () => void;
+}) {
+  if (opts.onUp && node.key) node.key([KEY.up], opts.onUp);
+  if (opts.onDown && node.key) node.key([KEY.down], opts.onDown);
+  if (opts.onHome && node.key) node.key([KEY.home], opts.onHome);
+  if (opts.onEnd && node.key) node.key([KEY.end], opts.onEnd);
+  if (opts.onCtrlHome && node.key) node.key([KEY.ctrlHome], opts.onCtrlHome);
+  if (opts.onCtrlEnd && node.key) node.key([KEY.ctrlEnd], opts.onCtrlEnd);
+  if (opts.onAltUp && node.key) node.key([KEY.altUp], opts.onAltUp);
+  if (opts.onAltDown && node.key) node.key([KEY.altDown], opts.onAltDown);
+  if (opts.onShiftTab && node.key) node.key([KEY.shiftTab], opts.onShiftTab);
 }
 
 export type TerminalContext = {

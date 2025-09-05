@@ -16,6 +16,9 @@ export {
   componentTokens,
   ensureContrast,
   themes,
+  CAP,
+  mapTo256Color,
+  log,
 } from "./theming/design-tokens";
 export type { Tokens } from "./theming/design-tokens";
 
@@ -119,4 +122,4 @@ export type { VariantProps } from "./utils/variants";
 
 // ===== TERMINAL INTEGRATION =====
 export * from "./terminal/useTerminal";
-export { KEY, safeRender, mountScreen, SelectionManager } from "./terminal/useTerminal";
+export { KEY, safeRender, mountScreen, SelectionManager, debouncedResize, bindNav } from "./terminal/useTerminal";
