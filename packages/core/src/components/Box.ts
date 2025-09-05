@@ -2,6 +2,10 @@ import { Widgets } from "blessed";
 import { z } from "zod";
 import { BoxSchema } from "../types/component-schemas";
 import { Component, createBoxBase } from "./BaseComponent";
+import { safeRender } from "../terminal/useTerminal";
+
+// Stable width tracking for consistent layouts during streaming
+let maxContentWidth = 0;
 
 export type BoxProps = z.infer<typeof BoxSchema>;
 
@@ -34,10 +38,21 @@ export class Box implements Component<Widgets.BoxElement> {
   getConfig = () => this.baseComponent.getConfig();
   update = (props: any) => this.baseComponent.update(props);
 
-  // Method to set content
+  // Method to set content with stable width
   setContent(content: string) {
+    // Track maximum content width for stable layouts
+    const contentWidth = content.length;
+    if (contentWidth > maxContentWidth) {
+      maxContentWidth = contentWidth;
+    }
+    
+    // Set minimum width to prevent layout shifts during streaming
+    if (!this.el.width || this.el.width === 'auto') {
+      this.el.width = Math.max(maxContentWidth + 4, 20); // +4 for padding/borders
+    }
+    
     this.el.setContent(content);
-    this.el.screen.render();
+    safeRender(this.el.screen);
   }
 
   // Static method to create box with specific configuration

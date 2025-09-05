@@ -152,7 +152,8 @@ export type ComponentVariant =
     | 'success'
     | 'warning'
     | 'error'
-    | 'info';
+    | 'info'
+    | 'muted';
 
 export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -500,13 +501,133 @@ export const componentTokens = {
     },
 };
 
-// Export all tokens
+// Unified token system for terminal (shadcn-style)
 export const tokens = {
+    // Spacing scale in terminal "cells"
+    space: [0, 1, 2, 3, 4, 6, 8, 12, 16, 20, 24, 32],
+    // Border radius scale
+    radius: [0, 1, 2, 3, 4],
+    // Color palette with semantic tokens
+    color: {
+        // Base colors
+        fg: '#E6E6E6',
+        bg: '#101010',
+        muted: '#A1A1A1',
+        // Semantic colors
+        info: '#3BA3FF',
+        success: '#22C55E', 
+        warning: '#F59E0B',
+        error: '#EF4444',
+        // Terminal-specific
+        border: '#404040',
+        focus: '#3BA3FF',
+    },
+    // Typography for terminal
+    typography: {
+        bold: true,
+        dim: true,
+        underline: true,
+    },
+    // Legacy compatibility
     colors,
     spacing,
     borderRadius,
-    typography,
     shadows,
     animations,
     componentTokens,
+};
+
+export type Tokens = typeof tokens;
+
+// Contrast helper for accessibility
+export function ensureContrast(fg: string, bg: string, minRatio = 3.0): { fg: string; bg: string } {
+  // Simple contrast check - in a real implementation, use proper WCAG contrast calculation
+  const fgLuminance = getLuminance(fg);
+  const bgLuminance = getLuminance(bg);
+  const contrast = (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
+  
+  // If contrast is too low, adjust colors
+  if (contrast < minRatio) {
+    if (fgLuminance > bgLuminance) {
+      // Light text on dark background - make text lighter
+      return { fg: '#FFFFFF', bg };
+    } else {
+      // Dark text on light background - make text darker
+      return { fg: '#000000', bg };
+    }
+  }
+  
+  return { fg, bg };
+}
+
+// Simple luminance calculation (approximation)
+function getLuminance(color: string): number {
+  // Remove # if present
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  
+  // Apply gamma correction
+  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+// Logging levels (muted by default)
+const LVL = process.env.TUI_LOG ?? 'error'; // 'silent'|'error'|'warn'|'info'|'debug'
+export function log(level: 'error' | 'warn' | 'info' | 'debug', ...args: any[]) {
+  const order = ['silent', 'error', 'warn', 'info', 'debug'];
+  if (order.indexOf(level) <= order.indexOf(LVL as any)) {
+    console[level === 'debug' ? 'log' : level](...args);
+  }
+}
+
+// Terminal capability detection
+export const CAP = {
+  truecolor: !!process.env.COLORTERM?.includes('truecolor'),
+  unicode: !!process.stdout && (process.stdout as any).hasColors?.() !== false,
+  width: process.stdout?.columns ?? 80,
+  height: process.stdout?.rows ?? 24
+};
+
+// Color mapping for non-truecolor terminals
+export function mapTo256Color(hex: string): number {
+  if (CAP.truecolor) return parseInt(hex.replace('#', ''), 16);
+  
+  // Simple mapping to 256-color palette
+  const colorMap: Record<string, number> = {
+    '#E6E6E6': 253, // light gray
+    '#101010': 16,  // dark gray
+    '#A1A1A1': 247, // medium gray
+    '#3BA3FF': 75,  // blue
+    '#22C55E': 76,  // green
+    '#F59E0B': 214, // yellow
+    '#EF4444': 196, // red
+    '#404040': 238, // border gray
+  };
+  
+  return colorMap[hex] || 7; // fallback to white
+}
+
+// Theme presets
+export const themes = {
+  dark: {
+    ...tokens,
+    color: {
+      ...tokens.color,
+      fg: '#E6E6E6',
+      bg: '#101010',
+      muted: '#A1A1A1',
+    }
+  },
+  dim: {
+    ...tokens,
+    color: {
+      ...tokens.color,
+      fg: '#D0D0D0',
+      bg: '#0c0c0c',
+      muted: '#808080',
+    }
+  }
 };

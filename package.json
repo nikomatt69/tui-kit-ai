@@ -1,7 +1,7 @@
 {
   "name": "tui-kit-ai",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "TUI-Kit-AI Monorepo - shadcn/ui for Terminal with Vercel AI SDK",
   "license": "MIT",
   "workspaces": [
@@ -31,7 +31,8 @@
     "test:packages": "npm run test -w @tui-kit-ai/core -w @tui-kit-ai/ai -w @tui-kit-ai/agents -w @tui-kit-ai/providers -w @tui-kit-ai/cli -w @tui-kit-ai/ui -w @tui-kit-ai/themes -w @tui-kit-ai/utils -w @tui-kit-ai/chat-tui"
   },
   "devDependencies": {
-    "typescript": "^5.5.4",
-    "tsx": "^4.17.0"
+    "@types/node": "^24.3.1",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
   }
 }

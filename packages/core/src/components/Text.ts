@@ -1,6 +1,12 @@
 import { Widgets } from "blessed";
 import { BaseProps, Component, createBoxBase } from "./BaseComponent";
 
+// Safe ANSI & Unicode helper
+function sanitizeText(input: string): string {
+  // Strip unwanted ANSI sequences if not allowing markup
+  return input.replace(/\x1B\[[0-9;]*[A-Za-z]/g, '');
+}
+
 export type TextProps = BaseProps & {
   content: string;
   align?: "left" | "center" | "right";
@@ -24,7 +30,9 @@ export class Text implements Component<Widgets.BoxElement> {
     this.destroy = comp.destroy;
     this.baseComponent = comp;
 
-    this.el.setContent(props.content);
+    // Sanitize content for safe rendering
+    const safeContent = sanitizeText(props.content);
+    this.el.setContent(safeContent);
     // alignment and wrap are not enforced due to typings; content aligns via blessed defaults
   }
 

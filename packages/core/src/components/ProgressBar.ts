@@ -1,6 +1,10 @@
 import blessed from 'blessed';
 import { BaseProps, Component, createBoxBase } from './BaseComponent';
 import { resolveTheme } from '../theming/theme';
+import { safeRender } from '../terminal/useTerminal';
+
+// Throttled progress updates (50-100ms)
+let progressUpdateTimer: NodeJS.Timeout | null = null;
 
 export type ProgressBarProps = BaseProps & {
     value?: number; // 0..100
@@ -53,7 +57,15 @@ export class ProgressBar implements Component<any> {
     setValue(value: number) {
         const v = Math.max(0, Math.min(100, value));
         this.el.setProgress(v);
-        this.el.screen.render();
+        
+        // Throttled render updates (50-100ms)
+        if (progressUpdateTimer) {
+            clearTimeout(progressUpdateTimer);
+        }
+        progressUpdateTimer = setTimeout(() => {
+            safeRender(this.el.screen);
+            progressUpdateTimer = null;
+        }, 100); // 100ms for smooth updates (80-120ms range)
     }
 
     // Static method to create progress bar with specific configuration

@@ -7,6 +7,22 @@ import {
 import { StyleProps, Theme, resolveTheme } from "../theming/theme";
 import { getComponentTokens, mergeComponentStyles } from "../utils/variants";
 
+// Centralized union types for consistency across all components
+export type Variant = 'default' | 'muted' | 'ghost' | 'destructive' | 'primary' | 'secondary' | 'outline' | 'link' | 'success' | 'warning' | 'error' | 'info';
+export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'error';
+
+// Default values for consistent behavior
+export const COMPONENT_DEFAULTS = {
+  variant: 'default' as Variant,
+  size: 'md' as Size,
+  tone: 'neutral' as Tone,
+  padding: 2,
+  radius: 1,
+  focus: false,
+  disabled: false,
+};
+
 export type PositionProps = {
   top?: number | string;
   left?: number | string;
@@ -23,9 +39,15 @@ export type BaseProps = StyleProps &
     keys?: boolean;
     mouse?: boolean;
     scrollable?: boolean;
-    // New variant system props
-    variant?: ComponentVariant;
-    size?: ComponentSize;
+    // Unified shadcn-style props API
+    variant?: Variant;
+    size?: Size;
+    tone?: Tone;
+    padding?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number };
+    radius?: number;
+    focus?: boolean; // Force focus state for testing
+    disabled?: boolean;
+    // Legacy variant system props (for backward compatibility)
     state?: ComponentState;
     // Advanced styling props
     borderRadius?: string;
@@ -63,7 +85,7 @@ export type ComponentConfig = {
   responsive?: Record<string, Partial<BaseProps>>;
 };
 
-// Enhanced style computation with variants
+// Enhanced style computation with unified props API
 export function computeBlessedStyle(
   theme: Theme,
   props: BaseProps,
@@ -71,6 +93,9 @@ export function computeBlessedStyle(
   variant?: ComponentVariant,
   size?: ComponentSize
 ) {
+  // Import tokens for unified styling
+  const { tokens } = require('../theming/design-tokens');
+  
   const baseStyle: any = {
     bg: props.bg || theme.background,
     fg: props.fg || theme.foreground,
@@ -79,13 +104,108 @@ export function computeBlessedStyle(
     },
   };
 
-  // Apply component-specific tokens if available
+  // Apply unified variant mapping
+  if (props.variant) {
+    switch (props.variant) {
+      case 'muted':
+        baseStyle.fg = tokens.color.muted;
+        baseStyle.bg = tokens.color.bg;
+        break;
+      case 'ghost':
+        baseStyle.bg = 'transparent';
+        baseStyle.fg = tokens.color.fg;
+        break;
+      case 'destructive':
+        baseStyle.fg = tokens.color.error;
+        baseStyle.bg = tokens.color.bg;
+        break;
+      case 'primary':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.info;
+        break;
+      case 'secondary':
+        baseStyle.fg = tokens.color.fg;
+        baseStyle.bg = tokens.color.muted;
+        break;
+      case 'outline':
+        baseStyle.bg = 'transparent';
+        baseStyle.fg = tokens.color.info;
+        baseStyle.border = { fg: tokens.color.info };
+        break;
+      case 'success':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.success;
+        break;
+      case 'warning':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.warning;
+        break;
+      case 'error':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.error;
+        break;
+      case 'info':
+        baseStyle.fg = tokens.color.bg;
+        baseStyle.bg = tokens.color.info;
+        break;
+    }
+  }
+
+  // Apply tone-based styling
+  if (props.tone) {
+    switch (props.tone) {
+      case 'info':
+        baseStyle.fg = tokens.color.info;
+        break;
+      case 'success':
+        baseStyle.fg = tokens.color.success;
+        break;
+      case 'warning':
+        baseStyle.fg = tokens.color.warning;
+        break;
+      case 'error':
+        baseStyle.fg = tokens.color.error;
+        break;
+    }
+  }
+
+  // Apply size-based padding
+  if (props.size && tokens.space) {
+    const sizeIndex = ['xs', 'sm', 'md', 'lg', 'xl'].indexOf(props.size);
+    if (sizeIndex >= 0 && tokens.space[sizeIndex]) {
+      baseStyle.padding = tokens.space[sizeIndex];
+    }
+  }
+
+  // Apply custom padding
+  if (props.padding !== undefined) {
+    baseStyle.padding = props.padding;
+  }
+
+  // Apply radius
+  if (props.radius !== undefined && tokens.radius) {
+    const radiusIndex = Math.min(props.radius, tokens.radius.length - 1);
+    baseStyle.borderRadius = tokens.radius[radiusIndex];
+  }
+
+  // Apply focus state
+  if (props.focus) {
+    baseStyle.border = { fg: tokens.color.focus, type: 'line' };
+  }
+
+  // Apply disabled state
+  if (props.disabled) {
+    baseStyle.fg = tokens.color.muted;
+    baseStyle.dim = true;
+  }
+
+  // Apply component-specific tokens if available (legacy)
   if (componentName && variant && size) {
     const componentTokens = getComponentTokens(componentName, variant, size);
     Object.assign(baseStyle, componentTokens);
   }
 
-  // Apply custom styling props
+  // Apply custom styling props (legacy)
   if (props.borderRadius) {
     baseStyle.borderRadius = props.borderRadius;
   }
@@ -103,13 +223,18 @@ export function computeBlessedStyle(
 
 // Enhanced padding normalization
 export function normalizePadding(
-  p?: number | [number, number] | Record<string, number>
+  p?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number }
 ) {
   if (!p && p !== 0) return undefined as unknown as Widgets.Padding;
 
   if (Array.isArray(p)) {
-    const [v, h] = p;
-    return { top: v, bottom: v, left: h, right: h } as Widgets.Padding;
+    if (p.length === 2) {
+      const [v, h] = p;
+      return { top: v, bottom: v, left: h, right: h } as Widgets.Padding;
+    } else if (p.length === 4) {
+      const [top, right, bottom, left] = p;
+      return { top, right, bottom, left } as Widgets.Padding;
+    }
   }
 
   if (typeof p === "object" && !Array.isArray(p)) {
@@ -128,12 +253,32 @@ export function normalizePadding(
 export function createBoxBase<
   T extends Widgets.BoxElement = Widgets.BoxElement
 >(props: BaseProps, componentName?: string): Component<T> {
-  // Validate props using Zod schema
+  // Handle deprecated props with soft deprecation warnings
+  const processedProps = { ...props };
+  
+  // Deprecation warnings (only in debug mode)
+  if (process.env.TUI_DEBUG === '1') {
+    if ('rounded' in props && !('radius' in props)) {
+      console.warn(`[core/${componentName || 'Component'}] "rounded" is deprecated: use "radius".`);
+      processedProps.radius = (props as any).rounded;
+    }
+    if ('p' in props && !('padding' in props)) {
+      console.warn(`[core/${componentName || 'Component'}] "p" is deprecated: use "padding".`);
+      processedProps.padding = (props as any).p;
+    }
+    if ('color' in props && !('tone' in props)) {
+      console.warn(`[core/${componentName || 'Component'}] "color" is deprecated: use "tone".`);
+      processedProps.tone = (props as any).color;
+    }
+  }
 
-  const theme = resolveTheme(props.theme);
-  const variant = props.variant || "default";
-  const size = props.size || "md";
-  const state = props.state || "default";
+  // Apply defaults with proper precedence
+  const opts = { ...COMPONENT_DEFAULTS, ...processedProps };
+
+  const theme = resolveTheme(opts.theme);
+  const variant = opts.variant;
+  const size = opts.size;
+  const state = opts.state || "default";
 
   // Get component-specific styling
   const componentTokens = componentName
@@ -141,7 +286,7 @@ export function createBoxBase<
     : {};
   const baseStyle = computeBlessedStyle(
     theme,
-    props,
+    opts,
     componentName,
     variant,
     size
@@ -152,38 +297,44 @@ export function createBoxBase<
     baseStyle,
     componentTokens,
     {},
-    props.blessedProps?.style || {}
+    opts.blessedProps?.style || {}
   );
 
   const el = blessed.box({
-    parent: props.parent,
-    label: props.label,
-    keys: props.keys ?? true,
-    mouse: props.mouse ?? true,
-    scrollable: props.scrollable ?? false,
-    top: props.top,
-    left: props.left,
-    right: props.right,
-    bottom: props.bottom,
-    width: props.width,
-    height: props.height,
-    border: props.border
-      ? typeof props.border === "string"
-        ? props.border
-        : (props.border as any).type || "line"
-      : props.borderStyle && props.borderStyle !== "none"
+    parent: opts.parent,
+    label: opts.label,
+    keys: opts.keys ?? true,
+    mouse: opts.mouse ?? true,
+    scrollable: opts.scrollable ?? false,
+    top: opts.top,
+    left: opts.left,
+    right: opts.right,
+    bottom: opts.bottom,
+    width: opts.width,
+    height: opts.height,
+    border: opts.border
+      ? typeof opts.border === "string"
+        ? opts.border
+        : (opts.border as any).type || "line"
+      : opts.borderStyle && opts.borderStyle !== "none"
       ? "line"
       : undefined,
-    padding: normalizePadding(
-      props.padding as number | [number, number] | Record<string, number>
-    ) as any,
+    padding: normalizePadding(opts.padding) as any,
     style: mergedStyle as any,
   }) as T;
+
+  // Memory cleanup utility
+  const disposers: (() => void)[] = [];
+  function onDispose(fn: () => void) { disposers.push(fn); }
 
   const component: Component<T> = {
     el,
     theme,
-    destroy: () => el.destroy(),
+    destroy: () => {
+      // Clean up all registered disposers
+      disposers.splice(0).forEach(fn => fn());
+      el.destroy();
+    },
     setVariant: (newVariant: ComponentVariant) => {
       if (componentName) {
         const newTokens = getComponentTokens(componentName, newVariant, size);

@@ -4,12 +4,13 @@ A comprehensive Terminal User Interface (TUI) component library for building AI-
 
 ## 🚀 Features
 
-- **Rich TUI Components**: Pre-built terminal components (boxes, inputs, spinners, etc.)
-- **AI Integration**: Seamless integration with AI providers (OpenAI, Anthropic, etc.)
-- **Agent System**: Modular agent architecture for specialized AI tasks
-- **Streaming Support**: Real-time AI response streaming with visual feedback
-- **CLI Framework**: Quick setup for professional CLI applications
-- **TypeScript First**: Full type safety and excellent developer experience
+- **Rich TUI Components**: Pre-built terminal components with unified shadcn-style API
+- **AI Integration**: Seamless integration with AI providers (OpenAI, Anthropic, Ollama)
+- **Robust Streaming**: Real-time AI response streaming with backpressure and abort support
+- **Agent System**: Modular agent architecture with lifecycle management and type safety
+- **CLI Framework**: Professional CLI applications with standard flags and error handling
+- **Performance Optimized**: 60fps rendering with throttling and safe updates
+- **TypeScript First**: Full type safety with discriminated unions and strong typing
 - **Modular Architecture**: Use only what you need, when you need it
 
 ## 📦 Packages
@@ -33,36 +34,43 @@ npm i @tui-kit-ai/core @tui-kit-ai/ai @tui-kit-ai/agents
 ### Basic Chat Application
 
 ```typescript
-import { useTerminal, Box, TextInput } from '@tui-kit-ai/core';
-import { ChatContainer, AIService } from '@tui-kit-ai/ai';
+import { useTerminal, Box, TextInput, KEY, safeRender } from '@tui-kit-ai/core';
+import { ChatContainer, AIService, ProviderClient } from '@tui-kit-ai/ai';
+import { OpenAIProvider } from '@tui-kit-ai/providers';
+
+// Create unified provider client
+const client: ProviderClient = new OpenAIProvider(
+  process.env.OPENAI_API_KEY,
+  'gpt-4'
+);
 
 const aiService = new AIService({
   provider: 'openai',
   model: 'gpt-4',
   apiKey: process.env.OPENAI_API_KEY
-});
+}, undefined, client);
 
-const { screen } = useTerminal();
+const { screen, render } = useTerminal();
 
 const chatContainer = new ChatContainer({
   parent: screen,
   messages: [],
-  onMessageSubmit: async (content) => {
-    const result = await aiService.streamCompletion([
-      { role: 'user', content }
-    ]);
-    
-    for await (const chunk of result.textStream) {
-      // Handle streaming response
-    }
-  }
+  ai: aiService,
+  systemPrompt: 'You are a helpful coding assistant.',
+  onError: (error) => console.error('Chat error:', error)
+});
+
+// Abort streaming with Ctrl+C
+screen.key([KEY.ctrlC], () => {
+  chatContainer.destroy();
+  process.exit(0);
 });
 ```
 
 ### Agent-Based Application
 
 ```typescript
-import { AgentManager, TodoAgent } from '@tui-kit-ai/agents';
+import { AgentManager, TodoAgent, AgentTask, CreateTask } from '@tui-kit-ai/agents';
 
 const agentManager = new AgentManager();
 
@@ -74,14 +82,116 @@ const todoAgent = new TodoAgent({
 agentManager.registerAgent(todoAgent);
 await agentManager.startAllAgents();
 
-// Add a task to the todo agent
-await todoAgent.addTask({
+// Type-safe task creation with discriminated unions
+const createTask: CreateTask = {
   type: 'create',
   data: { title: 'Implement user authentication' }
+};
+
+await todoAgent.handleTask(createTask);
+
+// Or use the simplified API
+await todoAgent.addTask('Implement user authentication');
+
+// Lifecycle management
+agentManager.on('agentRegistered', (name) => {
+  console.log(`Agent ${name} registered`);
+});
+
+// Clean shutdown
+process.on('SIGINT', async () => {
+  await agentManager.stopAllAgents();
+  agentManager.destroy();
+  process.exit(0);
 });
 ```
 
 ## 🏗️ Architecture
+
+### Unified Component API (shadcn-style)
+
+All components support consistent props for predictable behavior:
+
+```typescript
+interface ComponentProps {
+  variant?: 'default' | 'muted' | 'ghost' | 'destructive' | 'primary' | 'secondary' | 'outline' | 'link' | 'success' | 'warning' | 'error' | 'info';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  tone?: 'neutral' | 'info' | 'success' | 'warning' | 'error';
+  padding?: number | [number, number];
+  radius?: number;
+  focus?: boolean;
+  disabled?: boolean;
+}
+```
+
+## 📋 Component Reference
+
+### Box
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `Variant` | `'default'` | Visual style variant |
+| `size` | `Size` | `'md'` | Component size |
+| `padding` | `number \| [number, number]` | `2` | Internal spacing |
+| `radius` | `number` | `1` | Border radius |
+
+**Example:**
+```typescript
+<Box variant="primary" size="lg" padding={4}>
+  Content here
+</Box>
+```
+
+### TextInput
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `Variant` | `'default'` | Input style |
+| `placeholder` | `string` | - | Placeholder text |
+| `onChange` | `(value: string) => void` | - | Change handler |
+| `onSubmit` | `(value: string) => void` | - | Submit handler |
+
+**Keyboard:** `Enter` to submit, `Esc` to clear, `Ctrl+C` to abort
+
+**Example:**
+```typescript
+<TextInput 
+  placeholder="Type your message..."
+  onChange={(value) => console.log(value)}
+  onSubmit={(value) => handleSubmit(value)}
+/>
+```
+
+### Button
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `Variant` | `'default'` | Button style |
+| `size` | `Size` | `'md'` | Button size |
+| `onClick` | `() => void` | - | Click handler |
+| `disabled` | `boolean` | `false` | Disabled state |
+
+**Example:**
+```typescript
+<Button variant="primary" onClick={() => console.log('clicked')}>
+  Click me
+</Button>
+```
+
+### ChatContainer
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `ai` | `AIService` | - | AI service instance |
+| `systemPrompt` | `string` | - | System prompt |
+| `onError` | `(error: Error) => void` | - | Error handler |
+
+**Keyboard:** `Enter` to send, `Esc` to clear, `Ctrl+C` to abort stream
+
+**Example:**
+```typescript
+<ChatContainer 
+  ai={aiService}
+  systemPrompt="You are a helpful assistant"
+  onError={(error) => console.error(error)}
+/>
+```
 
 ### Core Components
 
@@ -94,13 +204,15 @@ await todoAgent.addTask({
 
 ### AI Components
 
-- **Chat**: `ChatContainer`
-- **Streaming**: `AIService` with provider injection
+- **Chat**: `ChatContainer` with abort support and status indicators
+- **Streaming**: `AIService` with unified `ProviderClient` interface
+- **Providers**: `OpenAIProvider`, `AnthropicProvider`, `OllamaProvider` with retry logic
 
 ### Agent System
 
-- **Base**: `BaseAgent`, `AgentManager`
-- **Specialized**: `TodoAgent`
+- **Base**: `BaseAgent` with lifecycle management and timer cleanup
+- **Manager**: `AgentManager` with event handling and graceful shutdown
+- **Specialized**: `TodoAgent` with discriminated union types
 
 ## 📋 Examples
 
@@ -136,6 +248,34 @@ npm install
 
 # Build all packages
 npm run build
+
+# Run examples
+npm run start:chat-cli
+npm run start:core-gallery
+npm run start:ai-chat-app
+```
+
+## 🚀 CLI Usage
+
+The TUI-Kit-AI CLI provides standard flags and robust error handling:
+
+```bash
+# Global options
+tui --model gpt-4 --provider openai --debug --no-color
+
+# Initialize project
+tui init --renderer blessed --force
+
+# Add components
+tui add button input chat-layout --force
+
+# Environment variables
+export OPENAI_API_KEY=your_key_here
+export ANTHROPIC_API_KEY=your_key_here
+export OLLAMA_BASE_URL=http://localhost:11434
+export TUI_AI_DEBUG=1
+export TUI_AI_TIMEOUT_MS=30000
+export TUI_AI_MAX_RETRIES=2
 ```
 
 ## 📚 Documentation
@@ -151,6 +291,65 @@ npm run build
 ## 🎨 Theming
 
 Use `darkTheme` or `lightTheme` and override any token via `theme` prop on components.
+
+## 📄 Changelog
+
+### v0.1.3 - "Enterprise Grade" Release
+
+#### ✨ New Features
+- **Terminal Capability Detection**: Auto-detection of truecolor/unicode support with intelligent fallbacks
+- **Advanced Navigation**: Professional keymap with Home/End/Ctrl+Home/End, Alt+Up/Down, Shift+Tab
+- **Smart Resize Handling**: Debounced resize with stable layout preservation
+- **Intelligent Stream Coalescing**: Semantic chunk grouping for natural text flow
+- **Error Toast System**: Inline error notifications with retry suggestions
+- **Logging Levels**: Configurable logging with TUI_LOG environment variable
+- **Anonymous Telemetry**: Optional usage analytics for improving defaults
+
+#### 🔧 Improvements
+- **Performance**: Fixed cadence for spinners (80ms) and progress bars (100ms)
+- **Accessibility**: Enhanced contrast helpers with configurable minimum ratios
+- **Robustness**: ANSI sequence filtering and stop sequence detection
+- **Memory Management**: Improved cleanup with disposer pattern
+- **Type Safety**: Enhanced type definitions and error handling
+
+### v0.1.2 - "Production Ready" Release
+
+#### ✨ New Features
+- **API Future-Proof**: Soft deprecation warnings with backward compatibility
+- **Advanced Navigation**: Home/End/Ctrl+↑↓ keys with selection history
+- **Performance Optimized**: Coalescing streams, stable layouts, throttled updates
+- **AI Robustness**: Stop sequences, retry logging, token budget management
+- **Theme System**: Dark/dim presets with contrast accessibility
+- **CLI Enhanced**: Flag precedence, configuration recap, comprehensive docs
+
+#### 🔧 Improvements
+- **Memory Management**: Automatic cleanup of timers and event listeners
+- **Type Safety**: Centralized union types and consistent interfaces
+- **Error Handling**: Interactive component guards and strict mode warnings
+- **Accessibility**: Keyboard hints and contrast helpers
+- **Documentation**: Component reference tables with examples
+
+### v0.1.1 - "shadcn for Terminal" Release
+
+#### ✨ New Features
+- **Unified Component API**: All components now support consistent shadcn-style props (`variant`, `size`, `tone`, `padding`, `radius`, `focus`, `disabled`)
+- **Performance Optimized**: 60fps rendering with `safeRender()` throttling and `KEY` constants
+- **Robust AI Streaming**: Backpressure handling, abort support, and token budget management
+- **Type-Safe Agents**: Discriminated union types for tasks and lifecycle management
+- **Provider Retry Logic**: Exponential backoff with jitter for transient errors
+- **Enhanced CLI**: Standard flags (`--model`, `--provider`, `--debug`, `--no-color`) and API key validation
+
+#### 🔧 Improvements
+- **Token System**: Unified design tokens for consistent theming across all components
+- **Focus Management**: Standardized focus/blur handling with visual indicators
+- **Error Handling**: Comprehensive error boundaries and graceful degradation
+- **Documentation**: Updated examples and API documentation
+
+#### 🐛 Bug Fixes
+- Fixed render flickering with throttled updates
+- Improved placeholder handling in TextInput
+- Better cleanup of timers and intervals in agents
+- Enhanced abort signal propagation
 
 ## 📄 License
 

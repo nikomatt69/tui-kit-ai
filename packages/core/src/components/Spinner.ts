@@ -1,7 +1,11 @@
 import { Widgets } from 'blessed';
 import { BaseProps, Component, createBoxBase } from './BaseComponent';
+import { CAP } from '../theming/design-tokens';
 
-const frames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+// Unicode frames for modern terminals, ASCII fallback for legacy
+const unicodeFrames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+const asciiFrames = ['-', '\\', '|', '/'];
+const frames = CAP.unicode ? unicodeFrames : asciiFrames;
 
 export type SpinnerProps = BaseProps & { 
   text?: string; 
