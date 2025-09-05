@@ -19,6 +19,8 @@ export type { Tokens } from "./theming/design-tokens";
 
 // ===== BASE COMPONENT SYSTEM =====
 export * from "./components/BaseComponent";
+export type { Variant, Size, Tone } from "./components/BaseComponent";
+export { COMPONENT_DEFAULTS } from "./components/BaseComponent";
 
 // ===== TUI COMPONENTS =====
 // Layout Components
@@ -115,4 +117,4 @@ export type { VariantProps } from "./utils/variants";
 
 // ===== TERMINAL INTEGRATION =====
 export * from "./terminal/useTerminal";
-export { KEY, safeRender, mountScreen } from "./terminal/useTerminal";
+export { KEY, safeRender, mountScreen, SelectionManager } from "./terminal/useTerminal";

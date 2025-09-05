@@ -15,6 +15,13 @@ export const KEY = {
   ctrlC: 'C-c',
   tab: 'tab',
   space: 'space',
+  // Advanced navigation
+  home: 'home',
+  end: 'end',
+  ctrlUp: 'C-up',
+  ctrlDown: 'C-down',
+  ctrlLeft: 'C-left',
+  ctrlRight: 'C-right',
 } as const;
 
 // Safe render with 60fps throttling
@@ -46,6 +53,35 @@ export function useTerminal(): TerminalContext {
     screen, 
     render: () => safeRender(screen)
   };
+}
+
+// Selection history utility for List/Table/Tree components
+export class SelectionManager {
+  private history = new Map<string, number>();
+  private currentId: string | null = null;
+
+  setSelection(id: string, index: number) {
+    this.history.set(id, index);
+    this.currentId = id;
+  }
+
+  getSelection(id: string): number | undefined {
+    return this.history.get(id);
+  }
+
+  // Try to restore selection by ID, fallback to clamped index
+  restoreSelection(id: string, items: any[], fallbackIndex: number = 0): number {
+    const savedIndex = this.history.get(id);
+    if (savedIndex !== undefined && savedIndex < items.length) {
+      return savedIndex;
+    }
+    return Math.min(fallbackIndex, Math.max(0, items.length - 1));
+  }
+
+  clearHistory() {
+    this.history.clear();
+    this.currentId = null;
+  }
 }
 
 // Mount screen utility for consistent setup

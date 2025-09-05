@@ -108,10 +108,24 @@ export class ChatContainer {
       this.currentStream = result;
 
       let assistantContent = '';
+      let chunkBuffer = '';
       this.addMessage({ role: 'assistant', content: '' });
 
       for await (const chunk of result.textStream) {
-        assistantContent += chunk;
+        chunkBuffer += chunk;
+        
+        // Coalesce small chunks (< 10 chars) to reduce render frequency
+        if (chunkBuffer.length >= 10 || chunk.includes('\n') || chunk.includes(' ')) {
+          assistantContent += chunkBuffer;
+          this.messages[this.messages.length - 1].content = assistantContent;
+          this.renderMessages();
+          chunkBuffer = '';
+        }
+      }
+      
+      // Flush remaining buffer
+      if (chunkBuffer) {
+        assistantContent += chunkBuffer;
         this.messages[this.messages.length - 1].content = assistantContent;
         this.renderMessages();
       }

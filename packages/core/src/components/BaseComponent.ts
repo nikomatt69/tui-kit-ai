@@ -7,6 +7,22 @@ import {
 import { StyleProps, Theme, resolveTheme } from "../theming/theme";
 import { getComponentTokens, mergeComponentStyles } from "../utils/variants";
 
+// Centralized union types for consistency across all components
+export type Variant = 'default' | 'muted' | 'ghost' | 'destructive' | 'primary' | 'secondary' | 'outline' | 'link' | 'success' | 'warning' | 'error' | 'info';
+export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'error';
+
+// Default values for consistent behavior
+export const COMPONENT_DEFAULTS = {
+  variant: 'default' as Variant,
+  size: 'md' as Size,
+  tone: 'neutral' as Tone,
+  padding: 2,
+  radius: 1,
+  focus: false,
+  disabled: false,
+};
+
 export type PositionProps = {
   top?: number | string;
   left?: number | string;
@@ -24,9 +40,9 @@ export type BaseProps = StyleProps &
     mouse?: boolean;
     scrollable?: boolean;
     // Unified shadcn-style props API
-    variant?: 'default' | 'muted' | 'ghost' | 'destructive' | 'primary' | 'secondary' | 'outline' | 'link' | 'success' | 'warning' | 'error' | 'info';
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-    tone?: 'neutral' | 'info' | 'success' | 'warning' | 'error';
+    variant?: Variant;
+    size?: Size;
+    tone?: Tone;
     padding?: number | [number, number] | [number, number, number, number] | { top?: number; right?: number; bottom?: number; left?: number };
     radius?: number;
     focus?: boolean; // Force focus state for testing
@@ -237,12 +253,32 @@ export function normalizePadding(
 export function createBoxBase<
   T extends Widgets.BoxElement = Widgets.BoxElement
 >(props: BaseProps, componentName?: string): Component<T> {
-  // Validate props using Zod schema
+  // Handle deprecated props with soft deprecation warnings
+  const processedProps = { ...props };
+  
+  // Deprecation warnings (only in debug mode)
+  if (process.env.TUI_DEBUG === '1') {
+    if ('rounded' in props && !('radius' in props)) {
+      console.warn(`[core/${componentName || 'Component'}] "rounded" is deprecated: use "radius".`);
+      processedProps.radius = (props as any).rounded;
+    }
+    if ('p' in props && !('padding' in props)) {
+      console.warn(`[core/${componentName || 'Component'}] "p" is deprecated: use "padding".`);
+      processedProps.padding = (props as any).p;
+    }
+    if ('color' in props && !('tone' in props)) {
+      console.warn(`[core/${componentName || 'Component'}] "color" is deprecated: use "tone".`);
+      processedProps.tone = (props as any).color;
+    }
+  }
 
-  const theme = resolveTheme(props.theme);
-  const variant = props.variant || "default";
-  const size = props.size || "md";
-  const state = props.state || "default";
+  // Apply defaults with proper precedence
+  const opts = { ...COMPONENT_DEFAULTS, ...processedProps };
+
+  const theme = resolveTheme(opts.theme);
+  const variant = opts.variant;
+  const size = opts.size;
+  const state = opts.state || "default";
 
   // Get component-specific styling
   const componentTokens = componentName
@@ -250,7 +286,7 @@ export function createBoxBase<
     : {};
   const baseStyle = computeBlessedStyle(
     theme,
-    props,
+    opts,
     componentName,
     variant,
     size
@@ -261,29 +297,29 @@ export function createBoxBase<
     baseStyle,
     componentTokens,
     {},
-    props.blessedProps?.style || {}
+    opts.blessedProps?.style || {}
   );
 
   const el = blessed.box({
-    parent: props.parent,
-    label: props.label,
-    keys: props.keys ?? true,
-    mouse: props.mouse ?? true,
-    scrollable: props.scrollable ?? false,
-    top: props.top,
-    left: props.left,
-    right: props.right,
-    bottom: props.bottom,
-    width: props.width,
-    height: props.height,
-    border: props.border
-      ? typeof props.border === "string"
-        ? props.border
-        : (props.border as any).type || "line"
-      : props.borderStyle && props.borderStyle !== "none"
+    parent: opts.parent,
+    label: opts.label,
+    keys: opts.keys ?? true,
+    mouse: opts.mouse ?? true,
+    scrollable: opts.scrollable ?? false,
+    top: opts.top,
+    left: opts.left,
+    right: opts.right,
+    bottom: opts.bottom,
+    width: opts.width,
+    height: opts.height,
+    border: opts.border
+      ? typeof opts.border === "string"
+        ? opts.border
+        : (opts.border as any).type || "line"
+      : opts.borderStyle && opts.borderStyle !== "none"
       ? "line"
       : undefined,
-    padding: normalizePadding(props.padding) as any,
+    padding: normalizePadding(opts.padding) as any,
     style: mergedStyle as any,
   }) as T;
 

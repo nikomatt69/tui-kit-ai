@@ -1,6 +1,10 @@
 import blessed from 'blessed';
 import { BaseProps, Component, createBoxBase } from './BaseComponent';
 import { resolveTheme } from '../theming/theme';
+import { safeRender } from '../terminal/useTerminal';
+
+// Throttled progress updates (50-100ms)
+let progressUpdateTimer: NodeJS.Timeout | null = null;
 
 export type ProgressBarProps = BaseProps & {
     value?: number; // 0..100

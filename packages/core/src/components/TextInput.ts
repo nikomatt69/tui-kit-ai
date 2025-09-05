@@ -21,6 +21,11 @@ export class TextInput implements Component<Widgets.TextboxElement> {
   destroy: () => void;
 
   constructor(props: TextInputProps) {
+    // Interactive component guards
+    if (process.env.TUI_STRICT === '1' && typeof props.onChange !== 'function') {
+      console.warn('[TextInput] onChange missing: component is read-only.');
+    }
+
     const theme = resolveTheme(props.theme);
     const style = computeBlessedStyle(theme, props);
     
